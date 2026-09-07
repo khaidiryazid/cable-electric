@@ -76,6 +76,23 @@
   .detail-list div{display:flex; justify-content:space-between;}
   .detail-list span:last-child{color:var(--text); font-weight:600;}
 
+  .status{text-align:center; font-family:'IBM Plex Mono', monospace; font-size:0.85rem; font-weight:600; padding:9px; border-radius:4px; letter-spacing:0.02em;}
+  .status.ok{background:rgba(47,107,98,0.10); color:var(--teal); border:1px solid rgba(47,107,98,0.35);}
+  .status.bad{background:rgba(168,64,47,0.10); color:var(--red); border:1px solid rgba(168,64,47,0.35);}
+
+  .reco{
+    background:var(--panel-2); border:1px solid var(--copper); border-radius:6px;
+    padding:14px; margin-bottom:16px; text-align:center;
+  }
+  .reco-label{font-size:0.72rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;}
+  .reco-val{font-family:'IBM Plex Mono', monospace; font-size:1rem; font-weight:600; color:var(--copper-bright); margin-bottom:10px;}
+  .reco-btn{
+    background:var(--copper); color:#fff9ef; border:none; border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.82rem; font-weight:600;
+    padding:8px 16px; cursor:pointer;
+  }
+  .reco-btn:hover{background:var(--copper-bright);}
+
   .drum-diagram{background:#fffdf8; border:1px solid var(--line); border-radius:6px; padding:8px; margin-bottom:18px; max-width:420px;}
   .drum-diagram svg{width:100%; height:auto; display:block;}
   :root[data-theme="dark"] .drum-diagram{background:var(--panel-2);}
@@ -194,10 +211,21 @@
         <select id="p_drum"></select>
       </div>
     </div>
-    <div class="field" style="max-width:260px;">
-      <label>Jumlah layer manual <span class="unit">(opsional, kosongkan untuk otomatis)</span></label>
-      <input type="number" id="p_layerManual" step="1" min="1">
+    <div class="row2" style="max-width:520px;">
+      <div class="field">
+        <label>Jumlah layer manual <span class="unit">(opsional, kosongkan untuk otomatis)</span></label>
+        <input type="number" id="p_layerManual" step="1" min="1">
+      </div>
+      <div class="field">
+        <label>Faktor bending radius <span class="unit">(x OD kabel)</span></label>
+        <input type="number" id="p_bendFactor" step="1" min="1" value="15">
+      </div>
     </div>
+    <div class="field" style="max-width:260px;">
+      <label>Target panjang kabel <span class="unit">(m, untuk rekomendasi drum)</span></label>
+      <input type="number" id="p_target" step="10" min="1" value="1000">
+    </div>
+    <div class="hint" style="margin-top:-10px;">Barrel drum harus punya diameter ≥ faktor × diameter kabel (OD), biar kabel nggak ketekuk kelewat tajam saat dililit. Faktor umum: 6–8x (kabel fleksibel) sampai 15–20x (kabel power/armored) — sesuaikan ke datasheet kabel kamu.</div>
   </div>
 
   <!-- ===================== HASIL ===================== -->
@@ -208,12 +236,19 @@
         <div class="value" id="out_panjang">— <small>m</small></div>
         <div class="label">Panjang maksimum kabel dalam drum</div>
       </div>
+      <div class="status ok" id="bendStatus" style="margin-bottom:16px;">—</div>
+      <div class="reco hidden" id="rekomendasiBox">
+        <div class="reco-label" id="rekomendasiLabel">—</div>
+        <div class="reco-val" id="rekomendasiVal">—</div>
+        <button class="reco-btn" id="rekomendasiBtn" onclick="pakaiRekomendasi()">Pakai drum ini</button>
+      </div>
       <div class="detail-list">
         <div><span>Diameter efektif (D + 5%)</span><span id="out_deff">—</span></div>
         <div><span>Clearance standar</span><span id="out_cstd">—</span></div>
         <div><span>Jumlah layer (dipakai)</span><span id="out_n">—</span></div>
         <div><span>Lilitan per layer</span><span id="out_t">—</span></div>
         <div><span>Sisa clearance aktual</span><span id="out_cact">—</span></div>
+        <div><span>Barrel minimum dibutuhkan</span><span id="out_bendMin">—</span></div>
       </div>
       <div class="btn-row">
         <button class="copy-btn" id="copyBtn" onclick="salinHasil()">📋 Salin Hasil</button>
@@ -259,7 +294,7 @@
   <!-- ===================== TABEL REFERENSI DRUM ===================== -->
   <div class="panel table-panel">
     <h2>Tabel Referensi Drum — <span id="tabelJudul">Haspel Biasa</span></h2>
-    <div class="hint">Semua ukuran tersedia untuk tipe drum yang dipilih. Klik baris untuk memilih.</div>
+    <div class="hint">Semua ukuran tersedia untuk tipe drum yang dipilih. Klik baris untuk memilih. Kolom "Bending" menandai drum yang barrelnya cukup lebar untuk faktor bending radius di atas — ✅ boleh, ❌ terlalu sempit.</div>
     <div class="table-scroll">
     <table>
       <thead>
@@ -270,6 +305,7 @@
           <th>External Width (mm)</th>
           <th>Berat (kg)</th>
           <th>Harga</th>
+          <th>Bending</th>
         </tr>
       </thead>
       <tbody id="tabelDrum"></tbody>
@@ -296,6 +332,8 @@
   const pTipe = document.getElementById('p_tipe');
   const pDrum = document.getElementById('p_drum');
   const pLayerManual = document.getElementById('p_layerManual');
+  const pBendFactor = document.getElementById('p_bendFactor');
+  const pTarget = document.getElementById('p_target');
 
   function labelDrum(row){
     return row.flange + ' mm' + (row.variant ? ' (' + row.variant + ')' : '');
@@ -336,6 +374,25 @@
     return 50;
   }
 
+  function cekBending(D, barrel, faktor){
+    const minBarrel = faktor * D;
+    return { minBarrel, ok: barrel >= minBarrel };
+  }
+
+  function cariDrumRekomendasi(D, tipeAwal, bendFactor, target){
+    const urutanTipe = [tipeAwal, ...Object.keys(DATA).filter(t => t !== tipeAwal)];
+    for (const tipe of urutanTipe){
+      const rows = (DATA[tipe] || []).slice().sort((a,b) => a.flange - b.flange);
+      for (const row of rows){
+        const bend = cekBending(D, row.barrel, bendFactor);
+        if (!bend.ok) continue;
+        const s = hitungSpek(D, row, null);
+        if (s.L >= target) return { row, s, tipe };
+      }
+    }
+    return null;
+  }
+
   function hitungSpek(D, row, layerManualInput){
     const Deff = Math.round(D * 1.05);
     const F = row.flange, B = row.barrel, IW = row.iw;
@@ -355,16 +412,20 @@
     const tipe = pTipe.value;
     const row = cariDrum(tipe, pDrum.value);
     const layerManual = parseFloat(pLayerManual.value);
+    const bendFactor = parseFloat(pBendFactor.value) || 0;
 
     if (!row || !(D > 0)){
       document.getElementById('out_panjang').innerHTML = '— <small>m</small>';
-      ['out_deff','out_cstd','out_n','out_t','out_cact'].forEach(id => document.getElementById(id).textContent = '—');
+      ['out_deff','out_cstd','out_n','out_t','out_cact','out_bendMin'].forEach(id => document.getElementById(id).textContent = '—');
       document.getElementById('tabelLayer').innerHTML = '';
+      document.getElementById('bendStatus').className = 'status ok';
+      document.getElementById('bendStatus').textContent = '—';
       renderTabelDrum();
       return;
     }
 
     const s = hitungSpek(D, row, layerManual);
+    const bend = cekBending(D, row.barrel, bendFactor);
 
     document.getElementById('out_panjang').innerHTML = s.L.toLocaleString('id-ID') + ' <small>m</small>';
     document.getElementById('out_deff').textContent = s.Deff + ' mm';
@@ -372,6 +433,42 @@
     document.getElementById('out_n').textContent = s.N + ' layer';
     document.getElementById('out_t').textContent = s.T + ' lilitan';
     document.getElementById('out_cact').textContent = s.Cact.toFixed(1) + ' mm';
+    document.getElementById('out_bendMin').textContent = bend.minBarrel.toFixed(1) + ' mm (' + bendFactor + '× OD)';
+
+    const bendStatus = document.getElementById('bendStatus');
+    if (bend.ok){
+      bendStatus.className = 'status ok';
+      bendStatus.textContent = '✅ Barrel ' + row.barrel + 'mm memenuhi bending radius (min ' + bend.minBarrel.toFixed(1) + 'mm)';
+    } else {
+      bendStatus.className = 'status bad';
+      bendStatus.textContent = '❌ Barrel ' + row.barrel + 'mm TERLALU KECIL — butuh minimum ' + bend.minBarrel.toFixed(1) + 'mm, pilih drum lebih besar';
+    }
+
+    const target = parseFloat(pTarget.value) || 0;
+    const rekomendasiBox = document.getElementById('rekomendasiBox');
+    const rekomendasiBtn = document.getElementById('rekomendasiBtn');
+    const perluRekomendasi = target > 0 && (!bend.ok || s.L < target);
+    if (perluRekomendasi){
+      const rec = cariDrumRekomendasi(D, tipe, bendFactor, target);
+      rekomendasiBox.classList.remove('hidden');
+      if (rec){
+        const bedaTipe = rec.tipe !== tipe;
+        document.getElementById('rekomendasiLabel').textContent =
+          'Rekomendasi: drum yang lolos bending & muat ≥ ' + target.toLocaleString('id-ID') + 'm' + (bedaTipe ? ' — tipe ' + TIPE_LABEL[rec.tipe] : '');
+        document.getElementById('rekomendasiVal').textContent =
+          'Flange ' + rec.row.flange + 'mm' + (rec.row.variant ? ' ('+rec.row.variant+')' : '') + ', Barrel ' + rec.row.barrel + 'mm → kapasitas ' + rec.s.L.toLocaleString('id-ID') + 'm';
+        rekomendasiBtn.style.display = '';
+        window.__rekomendasi = rec;
+      } else {
+        document.getElementById('rekomendasiLabel').textContent = 'Rekomendasi drum';
+        document.getElementById('rekomendasiVal').textContent = 'Tidak ada drum di tabel yang cukup besar untuk target ini — pertimbangkan drum custom yang lebih besar.';
+        rekomendasiBtn.style.display = 'none';
+        window.__rekomendasi = null;
+      }
+    } else {
+      rekomendasiBox.classList.add('hidden');
+      window.__rekomendasi = null;
+    }
 
     document.getElementById('out_tipeLabel').textContent = TIPE_LABEL[tipe] + ' (' + tipe.toUpperCase() + ')';
     document.getElementById('out_flange').textContent = row.flange + ' mm' + (row.variant ? ' ('+row.variant+')' : '');
@@ -403,13 +500,20 @@
   function renderTabelDrum(){
     const tipe = pTipe.value;
     const rows = DATA[tipe] || [];
+    const D = parseFloat(pDiameter.value);
+    const bendFactor = parseFloat(pBendFactor.value) || 0;
     document.getElementById('tabelJudul').textContent = TIPE_LABEL[tipe];
     const tbody = document.getElementById('tabelDrum');
     tbody.innerHTML = '';
     rows.forEach(row => {
       const tr = document.createElement('tr');
       if (keyDrum(row) === pDrum.value) tr.classList.add('picked');
-      tr.innerHTML = `<td>${row.flange}${row.variant ? ' ('+row.variant+')' : ''}</td><td>${row.barrel}</td><td>${row.iw}</td><td>${row.ew}</td><td>${row.weight !== null ? row.weight : '—'}</td><td>${fmtIDR(row.price)}</td>`;
+      let bendCell = '—';
+      if (D > 0 && bendFactor > 0){
+        const bend = cekBending(D, row.barrel, bendFactor);
+        bendCell = bend.ok ? '✅' : '❌';
+      }
+      tr.innerHTML = `<td>${row.flange}${row.variant ? ' ('+row.variant+')' : ''}</td><td>${row.barrel}</td><td>${row.iw}</td><td>${row.ew}</td><td>${row.weight !== null ? row.weight : '—'}</td><td>${fmtIDR(row.price)}</td><td style="text-align:center;">${bendCell}</td>`;
       tr.addEventListener('click', () => {
         pDrum.value = keyDrum(row);
         hitungSemua();
@@ -418,8 +522,19 @@
     });
   }
 
+  function pakaiRekomendasi(){
+    const rec = window.__rekomendasi;
+    if (!rec) return;
+    if (rec.tipe !== pTipe.value){
+      pTipe.value = rec.tipe;
+      refreshDrumOptions();
+    }
+    pDrum.value = keyDrum(rec.row);
+    hitungSemua();
+  }
+
   pTipe.addEventListener('change', () => { refreshDrumOptions(); hitungSemua(); });
-  [pDiameter, pDrum, pLayerManual].forEach(el => el.addEventListener('input', hitungSemua));
+  [pDiameter, pDrum, pLayerManual, pBendFactor, pTarget].forEach(el => el.addEventListener('input', hitungSemua));
 
   // ---------- Salin hasil ke clipboard ----------
   function salinHasil(){
@@ -427,8 +542,10 @@
     const tipe = pTipe.value;
     const row = cariDrum(tipe, pDrum.value);
     const layerManual = parseFloat(pLayerManual.value);
+    const bendFactor = parseFloat(pBendFactor.value) || 0;
     if (!row || !(D > 0)) return;
     const s = hitungSpek(D, row, layerManual);
+    const bend = cekBending(D, row.barrel, bendFactor);
 
     const teks = [
       'HASIL PANJANG KABEL DALAM DRUM',
@@ -438,6 +555,8 @@
       'Jumlah layer: ' + s.N,
       'Lilitan per layer: ' + s.T,
       'Sisa clearance aktual: ' + s.Cact.toFixed(1) + ' mm',
+      '',
+      'Bending radius (faktor ' + bendFactor + 'x OD): minimum barrel ' + bend.minBarrel.toFixed(1) + 'mm — ' + (bend.ok ? 'MEMENUHI ✅' : 'TIDAK MEMENUHI ❌, pilih drum lebih besar'),
       '',
       'PANJANG MAKSIMUM: ' + s.L.toLocaleString('id-ID') + ' meter',
     ].join('\n');
@@ -466,8 +585,10 @@
     const tipe = pTipe.value;
     const row = cariDrum(tipe, pDrum.value);
     const layerManual = parseFloat(pLayerManual.value);
+    const bendFactor = parseFloat(pBendFactor.value) || 0;
     if (!row || !(D > 0)) return;
     const s = hitungSpek(D, row, layerManual);
+    const bend = cekBending(D, row.barrel, bendFactor);
 
     let layerRows = '';
     let total = 0;
@@ -494,9 +615,13 @@
         <tr><td>Jumlah layer</td><td>${s.N}</td></tr>
         <tr><td>Lilitan per layer</td><td>${s.T}</td></tr>
         <tr><td>Sisa clearance aktual</td><td>${s.Cact.toFixed(1)} mm</td></tr>
+        <tr><td>Faktor bending radius</td><td>${bendFactor}× OD</td></tr>
+        <tr><td>Barrel minimum dibutuhkan</td><td>${bend.minBarrel.toFixed(1)} mm</td></tr>
+        <tr><td>Status bending radius</td><td>${bend.ok ? 'MEMENUHI' : 'TIDAK MEMENUHI — pilih drum lebih besar'}</td></tr>
       </table>
       <div class="print-result">
         <div class="big">Panjang Maksimum: ${s.L.toLocaleString('id-ID')} meter</div>
+        <div style="margin-top:8px; font-size:13px;">${bend.ok ? '✅ Barrel memenuhi syarat bending radius' : '❌ Barrel TIDAK memenuhi syarat bending radius — pilih drum dengan barrel ≥ ' + bend.minBarrel.toFixed(1) + 'mm'}</div>
       </div>
       <table style="margin-top:16px;">
         <tr><th>Layer</th><th>Dia. lilitan (mm)</th><th>Panjang/lilitan (m)</th><th>Panjang layer (m)</th><th>Total kumulatif (m)</th></tr>
@@ -522,7 +647,7 @@
 
   // ---------- Simpan / muat parameter (localStorage) ----------
   const STORAGE_KEY = 'drum_params_v1';
-  const FIELD_IDS = ['p_diameter','p_tipe','p_drum','p_layerManual'];
+  const FIELD_IDS = ['p_diameter','p_tipe','p_drum','p_layerManual','p_bendFactor','p_target'];
   function simpanParam(){
     const data = {};
     FIELD_IDS.forEach(id => {
