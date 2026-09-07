@@ -106,6 +106,7 @@
   tbody tr:nth-child(even){background:rgba(181,102,31,0.03);}
   tbody tr:hover{background:rgba(181,102,31,0.09); cursor:pointer;}
   tbody tr.picked{background:rgba(181,102,31,0.18);}
+  td.hero{color:var(--copper-bright); font-weight:600;}
 
   .btn-row{display:flex; gap:10px; margin-top:6px;}
   .print-btn{
@@ -294,7 +295,7 @@
   <!-- ===================== TABEL REFERENSI DRUM ===================== -->
   <div class="panel table-panel">
     <h2>Tabel Referensi Drum — <span id="tabelJudul">Haspel Biasa</span></h2>
-    <div class="hint">Semua ukuran tersedia untuk tipe drum yang dipilih. Klik baris untuk memilih. Kolom "Bending" menandai drum yang barrelnya cukup lebar untuk faktor bending radius di atas — ✅ boleh, ❌ terlalu sempit.</div>
+    <div class="hint">Semua ukuran tersedia untuk tipe drum yang dipilih. Klik baris untuk memilih. Kolom "Bending" menandai drum yang barrelnya cukup lebar untuk faktor bending radius di atas — ✅ boleh, ❌ terlalu sempit. Kolom "Panjang Maks" hanya terisi untuk drum yang lolos bending (❌ = "—", karena panjang segitu nggak valid dipakai kalau bending-nya gagal).</div>
     <div class="table-scroll">
     <table>
       <thead>
@@ -306,6 +307,7 @@
           <th>Berat (kg)</th>
           <th>Harga</th>
           <th>Bending</th>
+          <th>Panjang Maks (m)</th>
         </tr>
       </thead>
       <tbody id="tabelDrum"></tbody>
@@ -509,11 +511,19 @@
       const tr = document.createElement('tr');
       if (keyDrum(row) === pDrum.value) tr.classList.add('picked');
       let bendCell = '—';
+      let panjangCell = '—';
       if (D > 0 && bendFactor > 0){
         const bend = cekBending(D, row.barrel, bendFactor);
         bendCell = bend.ok ? '✅' : '❌';
+        if (bend.ok){
+          const s = hitungSpek(D, row, null);
+          panjangCell = s.L.toLocaleString('id-ID');
+        }
+      } else if (D > 0){
+        const s = hitungSpek(D, row, null);
+        panjangCell = s.L.toLocaleString('id-ID');
       }
-      tr.innerHTML = `<td>${row.flange}${row.variant ? ' ('+row.variant+')' : ''}</td><td>${row.barrel}</td><td>${row.iw}</td><td>${row.ew}</td><td>${row.weight !== null ? row.weight : '—'}</td><td>${fmtIDR(row.price)}</td><td style="text-align:center;">${bendCell}</td>`;
+      tr.innerHTML = `<td>${row.flange}${row.variant ? ' ('+row.variant+')' : ''}</td><td>${row.barrel}</td><td>${row.iw}</td><td>${row.ew}</td><td>${row.weight !== null ? row.weight : '—'}</td><td>${fmtIDR(row.price)}</td><td style="text-align:center;">${bendCell}</td><td class="${bendCell==='✅'?'hero':''}">${panjangCell}</td>`;
       tr.addEventListener('click', () => {
         pDrum.value = keyDrum(row);
         hitungSemua();
