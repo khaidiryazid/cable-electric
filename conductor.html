@@ -371,7 +371,7 @@
       const hargaSatuCore = hitungHarga(bahan, r.weight, 1);
       const tr = document.createElement('tr');
       if (String(r.size) === elUkuran.value) tr.classList.add('picked');
-      tr.innerHTML = `<td>${r.size}</td><td>${r.noWire}</td><td>${r.diaWire}</td><td>${r.diaCond}</td><td>${r.weight}</td><td>${r.csa}</td><td>${r.crStd}</td><td>${fmtIDR(hargaSatuCore)}</td>`;
+      tr.innerHTML = `<td>${r.size}</td><td>${r.noWire}</td><td>${r.diaWire}</td><td>${r.diaCond.toFixed(2)}</td><td>${r.weight}</td><td>${r.csa}</td><td>${r.crStd}</td><td>${fmtIDR(hargaSatuCore)}</td>`;
       tr.addEventListener('click', () => {
         elUkuran.value = r.size;
         hitungSemua();
@@ -397,7 +397,7 @@
     document.getElementById('out_harga').innerHTML = fmtIDR(harga) + ' <small>/ meter</small>';
     document.getElementById('out_noWire').textContent = row.noWire + ' pcs';
     document.getElementById('out_diaWire').textContent = row.diaWire + ' mm';
-    document.getElementById('out_diaCond').textContent = row.diaCond + ' mm';
+    document.getElementById('out_diaCond').textContent = row.diaCond.toFixed(2) + ' mm';
     document.getElementById('out_csa').textContent = row.csa + ' mm²';
     document.getElementById('out_crCalc').textContent = row.crCalc + ' Ω/km';
     document.getElementById('out_crStd').textContent = row.crStd + ' Ω/km';
@@ -422,40 +422,62 @@
   }
 
   function cetakHasil(){
-    const bahan = elBahan.value;
     const bentuk = elBentuk.value;
     const core = parseFloat(elCore.value) || 1;
-    const row = cariRow(bahan, bentuk, elUkuran.value);
-    if (!row) return;
+    const ukuran = elUkuran.value;
 
-    const harga = hitungHarga(bahan, row.weight, core);
-    const weightTotal = (row.weight * core / 1000).toFixed(3);
+    const rowCu = cariRow('cu', bentuk, ukuran);
+    const rowAl = cariRow('al', bentuk, ukuran);
+
+    function kolom(bahan, row){
+      if (!row) return null;
+      const harga = hitungHarga(bahan, row.weight, core);
+      const weightTotal = (row.weight * core / 1000).toFixed(3);
+      return {
+        noWire: row.noWire + ' pcs',
+        diaWire: row.diaWire + ' mm',
+        diaCond: row.diaCond.toFixed(2) + ' mm',
+        csa: row.csa + ' mm²',
+        crCalc: row.crCalc + ' Ω/km',
+        crStd: row.crStd + ' Ω/km',
+        weightCore: row.weight + ' kg/km',
+        weightTotal: weightTotal + ' kg/m',
+        hargaLogam: hargaLogamPerTon(bahan) + ' USD/ton',
+        harga: fmtIDR(harga) + ' / meter',
+      };
+    }
+
+    const cu = kolom('cu', rowCu);
+    const al = kolom('al', rowAl);
+    const na = '<span style="color:#999;">Tidak tersedia</span>';
+    const baris = (label, key) => `<tr><td>${label}</td><td>${cu ? cu[key] : na}</td><td>${al ? al[key] : na}</td></tr>`;
 
     document.getElementById('printArea').innerHTML = `
       <h2>Laporan Spesifikasi & Harga Konduktor</h2>
-      <div class="print-sub">Dibuat: ${fmtTanggal()} — ${BAHAN_LABEL[bahan]} / ${BENTUK_LABEL[bentuk]} / ${row.size} mm² / ${core} core</div>
+      <div class="print-sub">Dibuat: ${fmtTanggal()} — ${BENTUK_LABEL[bentuk]} / ${ukuran} mm² / ${core} core — Cu vs Al berdampingan</div>
       <table>
-        <tr><th>Parameter</th><th>Nilai</th></tr>
-        <tr><td>Bahan</td><td>${BAHAN_LABEL[bahan]}</td></tr>
-        <tr><td>Bentuk</td><td>${BENTUK_LABEL[bentuk]}</td></tr>
-        <tr><td>Ukuran nominal</td><td>${row.size} mm²</td></tr>
-        <tr><td>Jumlah core</td><td>${core}</td></tr>
-        <tr><td>Jumlah wire</td><td>${row.noWire} pcs</td></tr>
-        <tr><td>Diameter wire</td><td>${row.diaWire} mm</td></tr>
-        <tr><td>Diameter konduktor</td><td>${row.diaCond} mm</td></tr>
-        <tr><td>CSA aktual</td><td>${row.csa} mm²</td></tr>
-        <tr><td>Resistansi terhitung</td><td>${row.crCalc} Ω/km</td></tr>
-        <tr><td>Resistansi standar (R20)</td><td>${row.crStd} Ω/km</td></tr>
-        <tr><td>Berat per core</td><td>${row.weight} kg/km</td></tr>
-        <tr><td>Berat total kabel</td><td>${weightTotal} kg/m</td></tr>
-        <tr><td>Kurs</td><td>${elKurs.value}</td></tr>
-        <tr><td>Harga logam</td><td>${hargaLogamPerTon(bahan)} USD/ton</td></tr>
-        <tr><td>Margin</td><td>${elMargin.value}%</td></tr>
+        <tr><th>Parameter</th><th>Tembaga (Cu)</th><th>Aluminium (Al)</th></tr>
+        ${baris('Jumlah wire', 'noWire')}
+        ${baris('Diameter wire', 'diaWire')}
+        ${baris('Diameter konduktor', 'diaCond')}
+        ${baris('CSA aktual', 'csa')}
+        ${baris('Resistansi terhitung', 'crCalc')}
+        ${baris('Resistansi standar (R20)', 'crStd')}
+        ${baris('Berat per core', 'weightCore')}
+        ${baris('Berat total kabel', 'weightTotal')}
+        ${baris('Harga logam', 'hargaLogam')}
       </table>
-      <div class="print-result">
-        <div class="big">Harga: ${fmtIDR(harga)} / meter</div>
+      <div class="print-result" style="display:flex; gap:14px;">
+        <div style="flex:1;">
+          <div style="font-size:11px; color:#555; margin-bottom:4px;">HARGA TEMBAGA (Cu)</div>
+          <div class="big">${cu ? cu.harga : 'Tidak tersedia'}</div>
+        </div>
+        <div style="flex:1; border-left:1px solid #ccc; padding-left:14px;">
+          <div style="font-size:11px; color:#555; margin-bottom:4px;">HARGA ALUMINIUM (Al)</div>
+          <div class="big">${al ? al.harga : 'Tidak tersedia'}</div>
+        </div>
       </div>
-      <div class="print-footer">Dihasilkan otomatis oleh Database Konduktor & Kalkulator Harga. Harga berdasarkan input kurs/LME saat laporan dibuat — cek ulang untuk penawaran resmi.</div>
+      <div class="print-footer">Kurs: ${elKurs.value} — Margin: ${elMargin.value}%. Dihasilkan otomatis oleh Database Konduktor & Kalkulator Harga. Harga berdasarkan input kurs/LME saat laporan dibuat — cek ulang untuk penawaran resmi.</div>
     `;
     window.print();
   }
@@ -477,7 +499,7 @@
       '',
       'Jumlah wire: ' + row.noWire + ' pcs',
       'Diameter wire: ' + row.diaWire + ' mm',
-      'Diameter konduktor: ' + row.diaCond + ' mm',
+      'Diameter konduktor: ' + row.diaCond.toFixed(2) + ' mm',
       'CSA aktual: ' + row.csa + ' mm²',
       'Resistansi terhitung: ' + row.crCalc + ' Ω/km',
       'Resistansi standar (R20): ' + row.crStd + ' Ω/km',
