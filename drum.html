@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Panjang Kabel dalam Drum</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+    --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a; --red:#a8402f;
+    --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+    --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#e2a03f; --red:#c65b4a;
+    --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+  }
+  body, .panel, .field input, .field select, .print-btn, .copy-btn{transition:background-color 0.2s, color 0.2s, border-color 0.2s;}
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk', sans-serif; padding:32px 20px 60px;}
+  .wrap{max-width:1040px;margin:0 auto;}
+
+  header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:10px;}
+  header .htitle{display:flex; align-items:center; gap:14px;}
+  header h1{font-size:1.5rem; font-weight:600; margin:0; letter-spacing:0.01em; color:var(--paper);}
+  header .tag{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--copper); border:1px solid var(--copper); padding:3px 8px; border-radius:3px; letter-spacing:0.04em;}
+  header .htools{display:flex; align-items:center; gap:10px;}
+  .theme-toggle{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .theme-toggle:hover{border-color:var(--copper);}
+  .source-note{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--text-dim); margin:0 0 22px; line-height:1.6;}
+  .source-note b{color:var(--teal);}
+  .backlink{font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--copper); text-decoration:none; display:inline-block; margin-bottom:14px;}
+  .backlink:hover{text-decoration:underline;}
+
+  .param-notif{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:10px 14px; margin-bottom:20px; font-size:0.8rem; color:var(--text-dim);
+  }
+  .param-notif button{
+    background:none; border:1px solid var(--line); color:var(--copper); border-radius:4px;
+    padding:5px 10px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; cursor:pointer;
+  }
+  .param-notif button:hover{border-color:var(--copper);}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} }
+  @media (max-width:480px){ .row2, .grid3{grid-template-columns:1fr;} header h1{font-size:1.25rem;} }
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 22px 24px; margin-bottom:20px;}
+  .panel h2{font-size:0.78rem; font-weight:600; color:var(--text-dim); margin:0 0 4px; text-transform:uppercase; letter-spacing:0.08em;}
+  .panel h2 + .hint{margin-top:0; margin-bottom:16px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:0.82rem; margin-bottom:6px; color:var(--text);}
+  .field .unit{color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:0.75rem;}
+  .field input, .field select{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--paper); font-family:'IBM Plex Mono', monospace; font-size:0.95rem; padding:9px 10px; border-radius:4px; outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--copper);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .hint{font-size:0.72rem; color:var(--text-dim); margin-top:-10px; margin-bottom:16px; line-height:1.5;}
+
+  .result-main{text-align:center; padding:14px 0 20px; border-bottom:1px solid var(--line); margin-bottom:18px;}
+  .result-main .value{font-family:'IBM Plex Mono', monospace; font-size:2.3rem; font-weight:700; color:var(--copper-bright); line-height:1.1;}
+  .result-main .value small{font-size:1rem; color:var(--text-dim); font-weight:400;}
+  .result-main .label{font-size:0.8rem; color:var(--text-dim); margin-top:4px;}
+
+  .detail-list{font-family:'IBM Plex Mono', monospace; font-size:0.82rem; color:var(--text-dim); display:flex; flex-direction:column; gap:7px;}
+  .detail-list div{display:flex; justify-content:space-between;}
+  .detail-list span:last-child{color:var(--text); font-weight:600;}
+
+  .drum-diagram{background:#fffdf8; border:1px solid var(--line); border-radius:6px; padding:8px; margin-bottom:18px; max-width:420px;}
+  .drum-diagram svg{width:100%; height:auto; display:block;}
+  :root[data-theme="dark"] .drum-diagram{background:var(--panel-2);}
+
+  .table-panel{margin-top:0;}
+  .table-scroll{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:0.78rem;}
+  thead th{text-align:right; padding:9px 8px; color:var(--text-dim); border-bottom:2px solid var(--line); font-weight:600; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em;}
+  thead th:first-child, tbody td:first-child{text-align:left;}
+  tbody td{padding:8px 8px; border-bottom:1px solid var(--line); color:var(--text); text-align:right;}
+  tbody tr:nth-child(even){background:rgba(181,102,31,0.03);}
+  tbody tr:hover{background:rgba(181,102,31,0.09); cursor:pointer;}
+  tbody tr.picked{background:rgba(181,102,31,0.18);}
+
+  .btn-row{display:flex; gap:10px; margin-top:6px;}
+  .print-btn{
+    flex:1; width:100%;
+    background:var(--paper); color:#fff9ef;
+    border:none; border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+    transition:background 0.15s;
+  }
+  .print-btn:hover{background:var(--copper);}
+  .copy-btn{
+    flex:1; width:100%;
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line); border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+  }
+  .copy-btn:hover{border-color:var(--copper); color:var(--copper);}
+  .copy-btn.copied{background:var(--teal); color:#fff; border-color:var(--teal);}
+
+  footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.6;}
+  #printArea{display:none;}
+
+  @media print{
+    body{background:#fff; padding:0;}
+    .wrap > *{display:none !important;}
+    .wrap > #printArea{display:block !important; padding:0; color:#000;}
+    #printArea h2{font-family:'Space Grotesk', sans-serif; font-size:18px; margin:0 0 4px; color:#000;}
+    #printArea .print-sub{font-family:'IBM Plex Mono', monospace; font-size:10px; color:#555; margin-bottom:18px;}
+    #printArea table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:12px; margin-bottom:16px;}
+    #printArea th{text-align:left; background:#eee; padding:6px 8px; border:1px solid #ccc;}
+    #printArea td{padding:6px 8px; border:1px solid #ccc;}
+    #printArea .print-result{border:2px solid #000; padding:14px; margin-top:6px;}
+    #printArea .print-result .big{font-family:'IBM Plex Mono', monospace; font-size:22px; font-weight:700;}
+    #printArea .print-footer{margin-top:24px; font-size:10px; color:#555;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="backlink" href="index.html">← Semua kalkulator</a>
+  <header>
+    <div class="htitle">
+      <svg width="46" height="46" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="47" fill="var(--panel-2)" stroke="var(--line)" stroke-width="2"/>
+        <rect x="20" y="46" width="60" height="8" rx="2" fill="var(--copper)"/>
+        <circle cx="50" cy="50" r="30" fill="none" stroke="var(--copper-bright)" stroke-width="5"/>
+        <circle cx="50" cy="50" r="10" fill="var(--copper-bright)"/>
+      </svg>
+      <h1>Kalkulator Panjang Kabel dalam Drum</h1>
+    </div>
+    <div class="htools">
+      <span class="tag">DRUM-CALC</span>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+    </div>
+  </header>
+  <p class="source-note">Data drum &amp; formula: <b>tabel Excel yang kamu unggah</b>. Jumlah lilitan per layer dihitung dari <b>Internal Width</b> drum (dikoreksi dari file asli yang sempat memakai External Width).</p>
+
+  <div class="param-notif hidden" id="paramNotif">
+    <span>📥 Parameter terakhir kamu dimuat otomatis dari penyimpanan browser ini.</span>
+    <button onclick="resetParam()">Hapus &amp; mulai kosong</button>
+  </div>
+
+  <!-- ===================== PARAMETER ===================== -->
+  <div class="panel">
+    <h2>Parameter</h2>
+    <div class="hint">Diameter kabel otomatis diberi allowance 5% (pembulatan) sebelum dihitung, sama seperti file kamu.</div>
+
+    <div class="drum-diagram">
+      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram drum kabel">
+        <line x1="60" y1="30" x2="60" y2="170" stroke="var(--line)" stroke-width="14"/>
+        <line x1="260" y1="30" x2="260" y2="170" stroke="var(--line)" stroke-width="14"/>
+        <rect x="60" y="85" width="200" height="30" fill="var(--panel-2)" stroke="var(--text-dim)" stroke-width="1.5"/>
+        <rect x="70" y="70" width="180" height="60" fill="none" stroke="var(--copper-bright)" stroke-width="3" stroke-dasharray="4,3"/>
+
+        <line x1="60" y1="20" x2="260" y2="20" stroke="var(--copper)" stroke-width="1.2"/>
+        <text x="130" y="15" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">F — Dia. Flange</text>
+
+        <line x1="70" y1="150" x2="250" y2="150" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="120" y="165" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">IW — Internal Width</text>
+
+        <line x1="30" y1="85" x2="30" y2="115" stroke="var(--red)" stroke-width="1.2"/>
+        <text x="2" y="103" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text)">B</text>
+      </svg>
+    </div>
+
+    <div class="grid3">
+      <div class="field">
+        <label>Diameter kabel (D)<span class="unit"> (mm)</span></label>
+        <input type="number" id="p_diameter" step="0.1" min="0.1">
+      </div>
+      <div class="field">
+        <label>Tipe drum</label>
+        <select id="p_tipe">
+          <option value="b">B — Haspel Biasa</option>
+          <option value="t">T — Haspel Tembaga</option>
+          <option value="c">C — Haspel Custom</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Pilih ukuran drum</label>
+        <select id="p_drum"></select>
+      </div>
+    </div>
+    <div class="field" style="max-width:260px;">
+      <label>Jumlah layer manual <span class="unit">(opsional, kosongkan untuk otomatis)</span></label>
+      <input type="number" id="p_layerManual" step="1" min="1">
+    </div>
+  </div>
+
+  <!-- ===================== HASIL ===================== -->
+  <div class="grid">
+    <div class="panel" style="margin-bottom:0;">
+      <h2>Hasil Perhitungan</h2>
+      <div class="result-main">
+        <div class="value" id="out_panjang">— <small>m</small></div>
+        <div class="label">Panjang maksimum kabel dalam drum</div>
+      </div>
+      <div class="detail-list">
+        <div><span>Diameter efektif (D + 5%)</span><span id="out_deff">—</span></div>
+        <div><span>Clearance standar</span><span id="out_cstd">—</span></div>
+        <div><span>Jumlah layer (dipakai)</span><span id="out_n">—</span></div>
+        <div><span>Lilitan per layer</span><span id="out_t">—</span></div>
+        <div><span>Sisa clearance aktual</span><span id="out_cact">—</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copyBtn" onclick="salinHasil()">📋 Salin Hasil</button>
+        <button class="print-btn" onclick="cetakHasil()">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:0;">
+      <h2>Spesifikasi Drum Terpilih</h2>
+      <div class="detail-list">
+        <div><span>Tipe</span><span id="out_tipeLabel">—</span></div>
+        <div><span>Diameter flange (F)</span><span id="out_flange">—</span></div>
+        <div><span>Diameter barrel (B)</span><span id="out_barrel">—</span></div>
+        <div><span>Internal width (IW)</span><span id="out_iw">—</span></div>
+        <div><span>External width</span><span id="out_ew">—</span></div>
+        <div><span>Berat drum</span><span id="out_weight">—</span></div>
+        <div><span>Harga drum</span><span id="out_price">—</span></div>
+      </div>
+      <div class="hint" style="margin-top:14px; margin-bottom:0;">Klik baris di tabel referensi bawah untuk pilih cepat ukuran drum.</div>
+    </div>
+  </div>
+
+  <!-- ===================== RINCIAN PER LAYER ===================== -->
+  <div class="panel table-panel">
+    <h2>Rincian per Layer</h2>
+    <div class="hint">Diameter lilitan bertambah tiap layer (kabel menumpuk ke luar), makanya panjang per lilitan juga naik tiap layer.</div>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Layer</th>
+          <th>Diameter lilitan (mm)</th>
+          <th>Panjang per lilitan (m)</th>
+          <th>Panjang layer ini (m)</th>
+          <th>Total kumulatif (m)</th>
+        </tr>
+      </thead>
+      <tbody id="tabelLayer"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ===================== TABEL REFERENSI DRUM ===================== -->
+  <div class="panel table-panel">
+    <h2>Tabel Referensi Drum — <span id="tabelJudul">Haspel Biasa</span></h2>
+    <div class="hint">Semua ukuran tersedia untuk tipe drum yang dipilih. Klik baris untuk memilih.</div>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Flange (mm)</th>
+          <th>Barrel (mm)</th>
+          <th>Internal Width (mm)</th>
+          <th>External Width (mm)</th>
+          <th>Berat (kg)</th>
+          <th>Harga</th>
+        </tr>
+      </thead>
+      <tbody id="tabelDrum"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ===================== AREA CETAK ===================== -->
+  <div id="printArea"></div>
+
+  <footer>
+    Deff = ROUND(D×1.05, 0). Clearance standar C = 20mm (F&lt;790), 40mm (F&lt;1490), atau 50mm (lainnya).
+    N = INT((F−B−2×C)/(2×Deff)) — bisa ditimpa manual. T = INT((IW/Deff)−1).
+    C aktual = ((F−B)/2) − N×Deff. Panjang maksimum L = ROUNDDOWN(π×N×T×(B+N×Deff)/1000, 0) meter.
+  </footer>
+
+</div>
+
+<script>
+  const DATA = {"b": [{"flange": 800, "variant": null, "barrel": 300, "iw": 620, "ew": 740, "weight": 60, "price": 277000}, {"flange": 900, "variant": null, "barrel": 300, "iw": 620, "ew": 740, "weight": 65, "price": 305000}, {"flange": 1000, "variant": null, "barrel": 300, "iw": 620, "ew": 740, "weight": 80, "price": 337000}, {"flange": 1100, "variant": "L", "barrel": 300, "iw": 620, "ew": 740, "weight": 105, "price": 383000}, {"flange": 1200, "variant": null, "barrel": 360, "iw": 620, "ew": 740, "weight": 125, "price": 429000}, {"flange": 1300, "variant": null, "barrel": 360, "iw": 620, "ew": 740, "weight": 140, "price": 478000}, {"flange": 1320, "variant": null, "barrel": 360, "iw": 620, "ew": 740, "weight": 145, "price": 478000}, {"flange": 1400, "variant": null, "barrel": 500, "iw": 720, "ew": 840, "weight": 175, "price": 690000}, {"flange": 1500, "variant": "S", "barrel": 600, "iw": 620, "ew": 740, "weight": 200, "price": 698000}, {"flange": 1500, "variant": null, "barrel": 600, "iw": 850, "ew": 980, "weight": 210, "price": 698000}, {"flange": 1600, "variant": null, "barrel": 600, "iw": 850, "ew": 980, "weight": 220, "price": 998000}, {"flange": 1700, "variant": null, "barrel": 600, "iw": 850, "ew": 1000, "weight": 230, "price": 1120000}], "t": [{"flange": 1000, "variant": null, "barrel": 400, "iw": 620, "ew": 740, "weight": 80, "price": 337000}, {"flange": 1100, "variant": null, "barrel": 400, "iw": 620, "ew": 740, "weight": 108, "price": 383000}, {"flange": 1200, "variant": null, "barrel": 500, "iw": 620, "ew": 740, "weight": 130, "price": 429000}, {"flange": 1300, "variant": null, "barrel": 500, "iw": 620, "ew": 740, "weight": 150, "price": 478000}, {"flange": 1400, "variant": null, "barrel": 500, "iw": 700, "ew": 840, "weight": 180, "price": 690000}, {"flange": 1500, "variant": null, "barrel": 600, "iw": 850, "ew": 980, "weight": 210, "price": 698000}, {"flange": 1600, "variant": null, "barrel": 600, "iw": 850, "ew": 980, "weight": 220, "price": 998000}, {"flange": 1700, "variant": null, "barrel": 600, "iw": 850, "ew": 1000, "weight": 230, "price": 1120000}, {"flange": 1850, "variant": null, "barrel": 800, "iw": 850, "ew": 1050, "weight": 300, "price": 2146000}, {"flange": 2000, "variant": null, "barrel": 1000, "iw": 1100, "ew": 1300, "weight": 350, "price": 2419000}, {"flange": 2200, "variant": null, "barrel": 1000, "iw": 1100, "ew": 1300, "weight": 450, "price": 2841000}, {"flange": 2300, "variant": null, "barrel": 1300, "iw": 1300, "ew": 1500, "weight": 500, "price": 3081000}, {"flange": 2400, "variant": "S", "barrel": 1100, "iw": 1300, "ew": 1500, "weight": 600, "price": 3648000}, {"flange": 2400, "variant": "L", "barrel": 1100, "iw": 1500, "ew": 1700, "weight": 650, "price": 3648000}, {"flange": 2500, "variant": "S", "barrel": 1300, "iw": 1300, "ew": 1500, "weight": 750, "price": 3990000}, {"flange": 2500, "variant": "L", "barrel": 1300, "iw": 1300, "ew": 1700, "weight": 800, "price": 3990000}], "c": [{"flange": 500, "variant": null, "barrel": 300, "iw": 280, "ew": 400, "weight": 21, "price": 277000}, {"flange": 600, "variant": null, "barrel": 300, "iw": 300, "ew": 420, "weight": 28, "price": 277000}, {"flange": 700, "variant": null, "barrel": 300, "iw": 300, "ew": 420, "weight": 42, "price": 277000}, {"flange": 1300, "variant": null, "barrel": 800, "iw": 620, "ew": 740, "weight": null, "price": 478000}, {"flange": 1400, "variant": null, "barrel": 800, "iw": 700, "ew": 840, "weight": null, "price": 690000}, {"flange": 1500, "variant": null, "barrel": 800, "iw": 850, "ew": 980, "weight": null, "price": 698000}, {"flange": 1600, "variant": null, "barrel": 800, "iw": 850, "ew": 980, "weight": null, "price": 998000}, {"flange": 1700, "variant": null, "barrel": 1000, "iw": 850, "ew": 1000, "weight": null, "price": 1120000}, {"flange": 1850, "variant": null, "barrel": 1000, "iw": 850, "ew": 1050, "weight": null, "price": 2146000}]};
+  const TIPE_LABEL = {b:'Haspel Biasa', t:'Haspel Tembaga', c:'Haspel Custom'};
+
+  const pDiameter = document.getElementById('p_diameter');
+  const pTipe = document.getElementById('p_tipe');
+  const pDrum = document.getElementById('p_drum');
+  const pLayerManual = document.getElementById('p_layerManual');
+
+  function labelDrum(row){
+    return row.flange + ' mm' + (row.variant ? ' (' + row.variant + ')' : '');
+  }
+  function keyDrum(row){
+    return row.flange + '|' + (row.variant || '');
+  }
+
+  function refreshDrumOptions(){
+    const tipe = pTipe.value;
+    const rows = DATA[tipe] || [];
+    const currentKey = pDrum.value;
+    pDrum.innerHTML = '';
+    rows.forEach(row => {
+      const opt = document.createElement('option');
+      opt.value = keyDrum(row);
+      opt.textContent = labelDrum(row);
+      pDrum.appendChild(opt);
+    });
+    if (rows.find(r => keyDrum(r) === currentKey)){
+      pDrum.value = currentKey;
+    }
+  }
+
+  function cariDrum(tipe, key){
+    const rows = DATA[tipe] || [];
+    return rows.find(r => keyDrum(r) === key);
+  }
+
+  function fmtIDR(v){
+    if (v === null || v === undefined || isNaN(v)) return '—';
+    return 'Rp ' + Math.round(v).toLocaleString('id-ID');
+  }
+
+  function clearanceStandar(F){
+    if (F < 790) return 20;
+    if (F < 1490) return 40;
+    return 50;
+  }
+
+  function hitungSpek(D, row, layerManualInput){
+    const Deff = Math.round(D * 1.05);
+    const F = row.flange, B = row.barrel, IW = row.iw;
+    const Cstd = clearanceStandar(F);
+    const Nraw = (F - B - 2*Cstd) / (2*Deff);
+    const Nauto = Math.floor(Nraw);
+    const N = (layerManualInput && layerManualInput > 0) ? Math.floor(layerManualInput) : Nauto;
+    const Traw = (IW / Deff) - 1;
+    const T = Math.floor(Traw);
+    const Cact = ((F - B) / 2) - N*Deff;
+    const L = Math.floor(Math.PI * N * T * (B + N*Deff) / 1000);
+    return {Deff, Cstd, N, T, Cact, L, F, B, IW};
+  }
+
+  function hitungSemua(){
+    const D = parseFloat(pDiameter.value);
+    const tipe = pTipe.value;
+    const row = cariDrum(tipe, pDrum.value);
+    const layerManual = parseFloat(pLayerManual.value);
+
+    if (!row || !(D > 0)){
+      document.getElementById('out_panjang').innerHTML = '— <small>m</small>';
+      ['out_deff','out_cstd','out_n','out_t','out_cact'].forEach(id => document.getElementById(id).textContent = '—');
+      document.getElementById('tabelLayer').innerHTML = '';
+      renderTabelDrum();
+      return;
+    }
+
+    const s = hitungSpek(D, row, layerManual);
+
+    document.getElementById('out_panjang').innerHTML = s.L.toLocaleString('id-ID') + ' <small>m</small>';
+    document.getElementById('out_deff').textContent = s.Deff + ' mm';
+    document.getElementById('out_cstd').textContent = s.Cstd + ' mm';
+    document.getElementById('out_n').textContent = s.N + ' layer';
+    document.getElementById('out_t').textContent = s.T + ' lilitan';
+    document.getElementById('out_cact').textContent = s.Cact.toFixed(1) + ' mm';
+
+    document.getElementById('out_tipeLabel').textContent = TIPE_LABEL[tipe] + ' (' + tipe.toUpperCase() + ')';
+    document.getElementById('out_flange').textContent = row.flange + ' mm' + (row.variant ? ' ('+row.variant+')' : '');
+    document.getElementById('out_barrel').textContent = row.barrel + ' mm';
+    document.getElementById('out_iw').textContent = row.iw + ' mm';
+    document.getElementById('out_ew').textContent = row.ew + ' mm';
+    document.getElementById('out_weight').textContent = (row.weight !== null ? row.weight + ' kg' : '—');
+    document.getElementById('out_price').textContent = fmtIDR(row.price);
+
+    renderTabelLayer(s);
+    renderTabelDrum();
+  }
+
+  function renderTabelLayer(s){
+    const tbody = document.getElementById('tabelLayer');
+    tbody.innerHTML = '';
+    let total = 0;
+    for (let i = 1; i <= s.N; i++){
+      const diaLayer = s.B + (2*i - 1) * s.Deff;
+      const lPerTurn = Math.PI * diaLayer / 1000;
+      const lPerLayer = lPerTurn * s.T;
+      total += lPerLayer;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${i}</td><td>${diaLayer}</td><td>${lPerTurn.toFixed(3)}</td><td>${lPerLayer.toFixed(2)}</td><td>${total.toFixed(2)}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderTabelDrum(){
+    const tipe = pTipe.value;
+    const rows = DATA[tipe] || [];
+    document.getElementById('tabelJudul').textContent = TIPE_LABEL[tipe];
+    const tbody = document.getElementById('tabelDrum');
+    tbody.innerHTML = '';
+    rows.forEach(row => {
+      const tr = document.createElement('tr');
+      if (keyDrum(row) === pDrum.value) tr.classList.add('picked');
+      tr.innerHTML = `<td>${row.flange}${row.variant ? ' ('+row.variant+')' : ''}</td><td>${row.barrel}</td><td>${row.iw}</td><td>${row.ew}</td><td>${row.weight !== null ? row.weight : '—'}</td><td>${fmtIDR(row.price)}</td>`;
+      tr.addEventListener('click', () => {
+        pDrum.value = keyDrum(row);
+        hitungSemua();
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  pTipe.addEventListener('change', () => { refreshDrumOptions(); hitungSemua(); });
+  [pDiameter, pDrum, pLayerManual].forEach(el => el.addEventListener('input', hitungSemua));
+
+  // ---------- Salin hasil ke clipboard ----------
+  function salinHasil(){
+    const D = parseFloat(pDiameter.value);
+    const tipe = pTipe.value;
+    const row = cariDrum(tipe, pDrum.value);
+    const layerManual = parseFloat(pLayerManual.value);
+    if (!row || !(D > 0)) return;
+    const s = hitungSpek(D, row, layerManual);
+
+    const teks = [
+      'HASIL PANJANG KABEL DALAM DRUM',
+      'Diameter kabel: ' + D + ' mm (efektif: ' + s.Deff + ' mm)',
+      'Drum: ' + TIPE_LABEL[tipe] + ' — Flange ' + row.flange + 'mm' + (row.variant ? ' ('+row.variant+')' : '') + ', Barrel ' + row.barrel + 'mm, Internal Width ' + row.iw + 'mm',
+      '',
+      'Jumlah layer: ' + s.N,
+      'Lilitan per layer: ' + s.T,
+      'Sisa clearance aktual: ' + s.Cact.toFixed(1) + ' mm',
+      '',
+      'PANJANG MAKSIMUM: ' + s.L.toLocaleString('id-ID') + ' meter',
+    ].join('\n');
+
+    const btn = document.getElementById('copyBtn');
+    navigator.clipboard.writeText(teks).then(() => {
+      const asli = btn.textContent;
+      btn.textContent = '✓ Tersalin!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = asli; btn.classList.remove('copied'); }, 1800);
+    }).catch(() => {
+      alert('Gagal menyalin. Browser mungkin tidak mendukung clipboard otomatis.');
+    });
+  }
+
+  // ---------- Cetak / Unduh PDF ----------
+  function fmtTanggal(){
+    const d = new Date();
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function cetakHasil(){
+    const D = parseFloat(pDiameter.value);
+    const tipe = pTipe.value;
+    const row = cariDrum(tipe, pDrum.value);
+    const layerManual = parseFloat(pLayerManual.value);
+    if (!row || !(D > 0)) return;
+    const s = hitungSpek(D, row, layerManual);
+
+    let layerRows = '';
+    let total = 0;
+    for (let i = 1; i <= s.N; i++){
+      const diaLayer = s.B + (2*i - 1) * s.Deff;
+      const lPerTurn = Math.PI * diaLayer / 1000;
+      const lPerLayer = lPerTurn * s.T;
+      total += lPerLayer;
+      layerRows += `<tr><td>${i}</td><td>${diaLayer}</td><td>${lPerTurn.toFixed(3)}</td><td>${lPerLayer.toFixed(2)}</td><td>${total.toFixed(2)}</td></tr>`;
+    }
+
+    document.getElementById('printArea').innerHTML = `
+      <h2>Laporan Panjang Kabel dalam Drum</h2>
+      <div class="print-sub">Dibuat: ${fmtTanggal()} — Diameter kabel: ${D} mm — Drum: ${TIPE_LABEL[tipe]}, Flange ${row.flange}mm${row.variant ? ' ('+row.variant+')' : ''}</div>
+      <table>
+        <tr><th>Parameter</th><th>Nilai</th></tr>
+        <tr><td>Diameter kabel (D)</td><td>${D} mm</td></tr>
+        <tr><td>Diameter efektif (Deff)</td><td>${s.Deff} mm</td></tr>
+        <tr><td>Tipe drum</td><td>${TIPE_LABEL[tipe]}</td></tr>
+        <tr><td>Diameter flange (F)</td><td>${row.flange} mm</td></tr>
+        <tr><td>Diameter barrel (B)</td><td>${row.barrel} mm</td></tr>
+        <tr><td>Internal width (IW)</td><td>${row.iw} mm</td></tr>
+        <tr><td>Clearance standar</td><td>${s.Cstd} mm</td></tr>
+        <tr><td>Jumlah layer</td><td>${s.N}</td></tr>
+        <tr><td>Lilitan per layer</td><td>${s.T}</td></tr>
+        <tr><td>Sisa clearance aktual</td><td>${s.Cact.toFixed(1)} mm</td></tr>
+      </table>
+      <div class="print-result">
+        <div class="big">Panjang Maksimum: ${s.L.toLocaleString('id-ID')} meter</div>
+      </div>
+      <table style="margin-top:16px;">
+        <tr><th>Layer</th><th>Dia. lilitan (mm)</th><th>Panjang/lilitan (m)</th><th>Panjang layer (m)</th><th>Total kumulatif (m)</th></tr>
+        ${layerRows}
+      </table>
+      <div class="print-footer">Dihasilkan otomatis oleh Kalkulator Panjang Kabel dalam Drum. Verifikasi ke drum aktual untuk pengiriman/produksi.</div>
+    `;
+    window.print();
+  }
+
+  // ---------- Theme toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function terapkanTema(tema){
+    document.documentElement.setAttribute('data-theme', tema);
+    themeToggle.textContent = tema === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('cable_theme', tema);
+  }
+  themeToggle.addEventListener('click', () => {
+    const skrg = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    terapkanTema(skrg);
+  });
+  terapkanTema(localStorage.getItem('cable_theme') || 'light');
+
+  // ---------- Simpan / muat parameter (localStorage) ----------
+  const STORAGE_KEY = 'drum_params_v1';
+  const FIELD_IDS = ['p_diameter','p_tipe','p_drum','p_layerManual'];
+  function simpanParam(){
+    const data = {};
+    FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function muatParam(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      if (data.p_tipe !== undefined) pTipe.value = data.p_tipe;
+      refreshDrumOptions();
+      FIELD_IDS.forEach(id => {
+        if (id === 'p_tipe') return;
+        const el = document.getElementById(id);
+        if (el && data[id] !== undefined && data[id] !== '') el.value = data[id];
+      });
+      return true;
+    } catch(e){ return false; }
+  }
+  function resetParam(){
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', simpanParam);
+  });
+
+  // init
+  const adaTersimpan = muatParam();
+  if (!adaTersimpan){
+    refreshDrumOptions();
+  }
+  hitungSemua();
+  if (adaTersimpan){
+    const notif = document.getElementById('paramNotif');
+    if (notif) notif.classList.remove('hidden');
+  }
+</script>
+</body>
+</html>
