@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Database Konduktor & Kalkulator Harga</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+    --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a; --red:#a8402f;
+    --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+    --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#e2a03f; --red:#c65b4a;
+    --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+  }
+  body, .panel, .field input, .field select, .print-btn, .copy-btn{transition:background-color 0.2s, color 0.2s, border-color 0.2s;}
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk', sans-serif; padding:32px 20px 60px;}
+  .wrap{max-width:1040px;margin:0 auto;}
+
+  header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:10px;}
+  header .htitle{display:flex; align-items:center; gap:14px;}
+  header h1{font-size:1.5rem; font-weight:600; margin:0; letter-spacing:0.01em; color:var(--paper);}
+  header .tag{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--copper); border:1px solid var(--copper); padding:3px 8px; border-radius:3px; letter-spacing:0.04em;}
+  header .htools{display:flex; align-items:center; gap:10px;}
+  .theme-toggle{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .theme-toggle:hover{border-color:var(--copper);}
+  .source-note{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--text-dim); margin:0 0 22px; line-height:1.6;}
+  .source-note b{color:var(--teal);}
+  .backlink{font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--copper); text-decoration:none; display:inline-block; margin-bottom:14px;}
+  .backlink:hover{text-decoration:underline;}
+
+  .param-notif{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:10px 14px; margin-bottom:20px; font-size:0.8rem; color:var(--text-dim);
+  }
+  .param-notif button{
+    background:none; border:1px solid var(--line); color:var(--copper); border-radius:4px;
+    padding:5px 10px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; cursor:pointer;
+  }
+  .param-notif button:hover{border-color:var(--copper);}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} }
+  @media (max-width:480px){ .row2, .grid3{grid-template-columns:1fr;} header h1{font-size:1.25rem;} }
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 22px 24px; margin-bottom:20px;}
+  .panel h2{font-size:0.78rem; font-weight:600; color:var(--text-dim); margin:0 0 4px; text-transform:uppercase; letter-spacing:0.08em;}
+  .panel h2 + .hint{margin-top:0; margin-bottom:16px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:0.82rem; margin-bottom:6px; color:var(--text);}
+  .field .unit{color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:0.75rem;}
+  .field input, .field select{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--paper); font-family:'IBM Plex Mono', monospace; font-size:0.95rem; padding:9px 10px; border-radius:4px; outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--copper);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .hint{font-size:0.72rem; color:var(--text-dim); margin-top:-10px; margin-bottom:16px; line-height:1.5;}
+
+  .result-main{text-align:center; padding:14px 0 20px; border-bottom:1px solid var(--line); margin-bottom:18px;}
+  .result-main .value{font-family:'IBM Plex Mono', monospace; font-size:2.1rem; font-weight:700; color:var(--copper-bright); line-height:1.1;}
+  .result-main .value small{font-size:1rem; color:var(--text-dim); font-weight:400;}
+  .result-main .label{font-size:0.8rem; color:var(--text-dim); margin-top:4px;}
+
+  .detail-list{font-family:'IBM Plex Mono', monospace; font-size:0.82rem; color:var(--text-dim); display:flex; flex-direction:column; gap:7px;}
+  .detail-list div{display:flex; justify-content:space-between;}
+  .detail-list span:last-child{color:var(--text); font-weight:600;}
+
+  .table-panel{margin-top:0;}
+  .table-scroll{overflow-x:auto;}
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:0.78rem;}
+  thead th{text-align:right; padding:9px 8px; color:var(--text-dim); border-bottom:2px solid var(--line); font-weight:600; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em;}
+  thead th:first-child, tbody td:first-child{text-align:left;}
+  tbody td{padding:8px 8px; border-bottom:1px solid var(--line); color:var(--text); text-align:right;}
+  tbody tr:nth-child(even){background:rgba(181,102,31,0.03);}
+  tbody tr:hover{background:rgba(181,102,31,0.09); cursor:pointer;}
+  tbody tr.picked{background:rgba(181,102,31,0.18);}
+
+  .btn-row{display:flex; gap:10px; margin-top:6px;}
+  .print-btn{
+    flex:1; width:100%;
+    background:var(--paper); color:#fff9ef;
+    border:none; border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+    transition:background 0.15s;
+  }
+  .print-btn:hover{background:var(--copper);}
+  .copy-btn{
+    flex:1; width:100%;
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line); border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+  }
+  .copy-btn:hover{border-color:var(--copper); color:var(--copper);}
+  .copy-btn.copied{background:var(--teal); color:#fff; border-color:var(--teal);}
+
+  footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.6;}
+  #printArea{display:none;}
+
+  @media print{
+    body{background:#fff; padding:0;}
+    .wrap > *{display:none !important;}
+    .wrap > #printArea{display:block !important; padding:0; color:#000;}
+    #printArea h2{font-family:'Space Grotesk', sans-serif; font-size:18px; margin:0 0 4px; color:#000;}
+    #printArea .print-sub{font-family:'IBM Plex Mono', monospace; font-size:10px; color:#555; margin-bottom:18px;}
+    #printArea table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:12px; margin-bottom:16px;}
+    #printArea th{text-align:left; background:#eee; padding:6px 8px; border:1px solid #ccc;}
+    #printArea td{padding:6px 8px; border:1px solid #ccc;}
+    #printArea .print-result{border:2px solid #000; padding:14px; margin-top:6px;}
+    #printArea .print-result .big{font-family:'IBM Plex Mono', monospace; font-size:22px; font-weight:700;}
+    #printArea .print-footer{margin-top:24px; font-size:10px; color:#555;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="backlink" href="index.html">← Semua kalkulator</a>
+  <header>
+    <div class="htitle">
+      <svg width="46" height="46" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="47" fill="var(--panel-2)" stroke="var(--line)" stroke-width="2"/>
+        <circle cx="50" cy="50" r="30" fill="none" stroke="var(--copper-bright)" stroke-width="4"/>
+        <circle cx="50" cy="50" r="18" fill="var(--copper-bright)"/>
+        <circle cx="50" cy="20" r="6" fill="var(--copper)"/>
+        <circle cx="76" cy="65" r="6" fill="var(--copper)"/>
+        <circle cx="24" cy="65" r="6" fill="var(--copper)"/>
+      </svg>
+      <h1>Database Konduktor & Kalkulator Harga</h1>
+    </div>
+    <div class="htools">
+      <span class="tag">CONDUCTOR-DB</span>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+    </div>
+  </header>
+  <p class="source-note">Data spesifikasi &amp; formula harga: <b>tabel Excel yang kamu unggah</b> (9 tabel konduktor Cu/Al × RE/RM/SM/CM/F). Harga dihitung live dari kurs &amp; LME yang kamu isi — bukan angka tetap.</p>
+
+  <div class="param-notif hidden" id="paramNotif">
+    <span>📥 Parameter terakhir kamu dimuat otomatis dari penyimpanan browser ini.</span>
+    <button onclick="resetParam()">Hapus &amp; mulai kosong</button>
+  </div>
+
+  <!-- ===================== HARGA PASAR ===================== -->
+  <div class="panel">
+    <h2>Harga Pasar (Input Harian)</h2>
+    <div class="hint">Update sesuai kurs &amp; LME hari ini. Premium adalah biaya tambahan di luar harga logam murni (proses, duty, dll — sesuai kebiasaan perusahaan kamu).</div>
+    <div class="grid3">
+      <div class="field">
+        <label>Kurs <span class="unit">(IDR/USD)</span></label>
+        <input type="number" id="kurs" step="1">
+      </div>
+      <div class="field">
+        <label>LME Copper <span class="unit">(USD/ton)</span></label>
+        <input type="number" id="lmeCu" step="1">
+      </div>
+      <div class="field">
+        <label>Premium Copper <span class="unit">(USD/ton)</span></label>
+        <input type="number" id="premCu" step="1">
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="field">
+        <label>LME Aluminium <span class="unit">(USD/ton)</span></label>
+        <input type="number" id="lmeAl" step="1">
+      </div>
+      <div class="field">
+        <label>Premium Al 1 <span class="unit">(USD/ton)</span></label>
+        <input type="number" id="premAl1" step="1">
+      </div>
+      <div class="field">
+        <label>Premium Al 2 <span class="unit">(USD/ton)</span></label>
+        <input type="number" id="premAl2" step="1">
+      </div>
+    </div>
+    <div class="field" style="max-width:220px;">
+      <label>Margin <span class="unit">(%)</span></label>
+      <input type="number" id="margin" step="0.1">
+    </div>
+  </div>
+
+  <!-- ===================== PILIH KONDUKTOR & HASIL ===================== -->
+  <div class="grid">
+    <div class="panel" style="margin-bottom:0;">
+      <h2>Pilih Konduktor</h2>
+      <div class="row2">
+        <div class="field">
+          <label>Bahan</label>
+          <select id="bahan">
+            <option value="cu">Tembaga (Cu)</option>
+            <option value="al">Aluminium (Al)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Bentuk</label>
+          <select id="bentuk">
+            <option value="re">RE — Solid</option>
+            <option value="rm">RM — Stranded</option>
+            <option value="sm">SM — Sector</option>
+            <option value="cm">CM — Compact</option>
+            <option value="f">F — Flexible</option>
+          </select>
+        </div>
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Ukuran (CSA nominal)</label>
+          <select id="ukuran"></select>
+        </div>
+        <div class="field">
+          <label>Jumlah core <span class="unit">(inti kabel)</span></label>
+          <input type="number" id="core" step="1" min="1">
+        </div>
+      </div>
+      <div class="hint">Klik baris di tabel referensi kanan bawah untuk pilih cepat.</div>
+    </div>
+
+    <div class="panel" style="margin-bottom:0;">
+      <h2>Spesifikasi & Harga</h2>
+      <div class="result-main">
+        <div class="value" id="out_harga">— <small>/ meter</small></div>
+        <div class="label">Harga kabel (semua core, sudah termasuk margin)</div>
+      </div>
+      <div class="detail-list">
+        <div><span>Jumlah wire</span><span id="out_noWire">—</span></div>
+        <div><span>Diameter wire</span><span id="out_diaWire">—</span></div>
+        <div><span>Diameter konduktor</span><span id="out_diaCond">—</span></div>
+        <div><span>CSA aktual (dihitung)</span><span id="out_csa">—</span></div>
+        <div><span>Resistansi terhitung</span><span id="out_crCalc">—</span></div>
+        <div><span>Resistansi standar (R20)</span><span id="out_crStd">—</span></div>
+        <div><span>Berat per core</span><span id="out_weightCore">—</span></div>
+        <div><span>Berat total kabel</span><span id="out_weightTotal">—</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copyBtn" onclick="salinHasil()">📋 Salin Hasil</button>
+        <button class="print-btn" onclick="cetakHasil()">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TABEL REFERENSI ===================== -->
+  <div class="panel table-panel">
+    <h2>Tabel Referensi — <span id="tabelJudul">Cu / RE</span></h2>
+    <div class="hint">Semua ukuran tersedia untuk kombinasi bahan &amp; bentuk yang dipilih di atas. Klik baris untuk memilih.</div>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Ukuran (mm²)</th>
+          <th>No. Wire</th>
+          <th>Dia. Wire (mm)</th>
+          <th>Dia. Cond (mm)</th>
+          <th>Berat (kg/km)</th>
+          <th>CSA aktual (mm²)</th>
+          <th>CR STD (Ω/km)</th>
+          <th>Harga/m (1 core)</th>
+        </tr>
+      </thead>
+      <tbody id="tabelBody"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <!-- ===================== AREA CETAK ===================== -->
+  <div id="printArea"></div>
+
+  <footer>
+    Harga per meter = ROUNDUP( Berat(kg/km) × Harga logam(USD/ton) × Kurs / 1.000.000 × Jumlah core × (1+Margin%), ke atas ke ratusan terdekat ).
+    Harga logam Cu = LME Copper + Premium Copper. Harga logam Al = LME Aluminium + Premium Al 1 + Premium Al 2.
+    CSA aktual &amp; resistansi terhitung dihasilkan dari geometri wire (jumlah × luas penampang tiap wire); resistansi standar (CR STD) adalah nilai baku pembulatan yang lazim dipakai di datasheet — sama seperti tabel di kalkulator voltage drop.
+  </footer>
+
+</div>
+
+<script>
+  const DATA = {"cu": {"re": [{"size": 0.5, "noWire": 1, "diaWire": 0.78, "diaCond": 0.78, "weight": 4.3, "csa": 0.48, "crCalc": 36.637125, "crStd": 36}, {"size": 0.75, "noWire": 1, "diaWire": 0.95, "diaCond": 0.95, "weight": 6.38, "csa": 0.71, "crCalc": 24.768761, "crStd": 24.5}, {"size": 1, "noWire": 1, "diaWire": 1.13, "diaCond": 1.13, "weight": 9.03, "csa": 1, "crCalc": 17.58582, "crStd": 18.1}, {"size": 1.5, "noWire": 1, "diaWire": 1.35, "diaCond": 1.35, "weight": 12.89, "csa": 1.43, "crCalc": 12.297776, "crStd": 12.1}, {"size": 2.5, "noWire": 1, "diaWire": 1.72, "diaCond": 1.72, "weight": 20.93, "csa": 2.32, "crCalc": 7.580095, "crStd": 7.41}, {"size": 4, "noWire": 1, "diaWire": 2.19, "diaCond": 2.19, "weight": 33.92, "csa": 3.77, "crCalc": 4.664674, "crStd": 4.61}, {"size": 6, "noWire": 1, "diaWire": 2.67, "diaCond": 2.67, "weight": 50.42, "csa": 5.6, "crCalc": 3.140325, "crStd": 3.08}, {"size": 10, "noWire": 1, "diaWire": 3.47, "diaCond": 3.47, "weight": 85.17, "csa": 9.46, "crCalc": 1.858966, "crStd": 1.83}, {"size": 16, "noWire": 1, "diaWire": 4.38, "diaCond": 4.38, "weight": 135.69, "csa": 15.07, "crCalc": 1.166942, "crStd": 1.15}, {"size": 25, "noWire": 1, "diaWire": 5.5, "diaCond": 5.5, "weight": 213.96, "csa": 23.76, "crCalc": 0.740144, "crStd": 0.727}], "rm": [{"size": 0.5, "noWire": 7, "diaWire": 0.3, "diaCond": 0.8999999999999999, "weight": 4.46, "csa": 0.49, "crCalc": 35.889429, "crStd": 36}, {"size": 0.75, "noWire": 7, "diaWire": 0.36, "diaCond": 1.08, "weight": 6.42, "csa": 0.71, "crCalc": 24.768761, "crStd": 24.5}, {"size": 1, "noWire": 7, "diaWire": 0.42, "diaCond": 1.26, "weight": 8.73, "csa": 0.97, "crCalc": 18.129711, "crStd": 18.1}, {"size": 1.5, "noWire": 7, "diaWire": 0.51, "diaCond": 1.53, "weight": 12.88, "csa": 1.43, "crCalc": 12.297776, "crStd": 12.1}, {"size": 2.5, "noWire": 7, "diaWire": 0.65, "diaCond": 1.9500000000000002, "weight": 20.92, "csa": 2.32, "crCalc": 7.580095, "crStd": 7.41}, {"size": 4, "noWire": 7, "diaWire": 0.83, "diaCond": 2.4899999999999998, "weight": 34.11, "csa": 3.79, "crCalc": 4.640058, "crStd": 4.61}, {"size": 6, "noWire": 7, "diaWire": 1.02, "diaCond": 3.06, "weight": 51.51, "csa": 5.72, "crCalc": 3.074444, "crStd": 3.08}, {"size": 10, "noWire": 7, "diaWire": 1.32, "diaCond": 3.96, "weight": 86.27, "csa": 9.58, "crCalc": 1.835681, "crStd": 1.83}, {"size": 16, "noWire": 7, "diaWire": 1.66, "diaCond": 4.9799999999999995, "weight": 136.44, "csa": 15.15, "crCalc": 1.16078, "crStd": 1.15}, {"size": 25, "noWire": 7, "diaWire": 2.09, "diaCond": 6.27, "weight": 216.27, "csa": 24.01, "crCalc": 0.732437, "crStd": 0.727}, {"size": 35, "noWire": 7, "diaWire": 2.46, "diaCond": 7.38, "weight": 299.63, "csa": 33.27, "crCalc": 0.528579, "crStd": 0.524}, {"size": 50, "noWire": 19, "diaWire": 1.74, "diaCond": 8.7, "weight": 406.88, "csa": 45.18, "crCalc": 0.389239, "crStd": 0.387}, {"size": 70, "noWire": 19, "diaWire": 2.09, "diaCond": 10.45, "weight": 587.03, "csa": 65.18, "crCalc": 0.269804, "crStd": 0.268}, {"size": 95, "noWire": 19, "diaWire": 2.46, "diaCond": 12.3, "weight": 813.28, "csa": 90.31, "crCalc": 0.194727, "crStd": 0.193}, {"size": 120, "noWire": 37, "diaWire": 1.98, "diaCond": 13.86, "weight": 1026, "csa": 113.93, "crCalc": 0.154356, "crStd": 0.153}, {"size": 150, "noWire": 37, "diaWire": 2.2, "diaCond": 15.400000000000002, "weight": 1266.66, "csa": 140.65, "crCalc": 0.125032, "crStd": 0.124}, {"size": 185, "noWire": 37, "diaWire": 2.46, "diaCond": 17.22, "weight": 1583.75, "csa": 175.86, "crCalc": 0.099999, "crStd": 0.0991}, {"size": 240, "noWire": 61, "diaWire": 2.2, "diaCond": 19.8, "weight": 2088.28, "csa": 231.88, "crCalc": 0.07584, "crStd": 0.0754}, {"size": 300, "noWire": 61, "diaWire": 2.46, "diaCond": 22.14, "weight": 2611.04, "csa": 289.93, "crCalc": 0.060655, "crStd": 0.0601}, {"size": 400, "noWire": 61, "diaWire": 2.79, "diaCond": 25.11, "weight": 3358.55, "csa": 372.93, "crCalc": 0.047156, "crStd": 0.047}, {"size": 500, "noWire": 61, "diaWire": 3.16, "diaCond": 28.44, "weight": 4308.42, "csa": 478.4, "crCalc": 0.03676, "crStd": 0.0366}, {"size": 630, "noWire": 127, "diaWire": 2.49, "diaCond": 32.370000000000005, "weight": 5569.5, "csa": 618.43, "crCalc": 0.028436, "crStd": 0.0283}, {"size": 800, "noWire": 127, "diaWire": 2.81, "diaCond": 36.53, "weight": 7093.01, "csa": 787.6, "crCalc": 0.022328, "crStd": 0.0221}, {"size": 1000, "noWire": 127, "diaWire": 3.15, "diaCond": 40.949999999999996, "weight": 8913.31, "csa": 989.73, "crCalc": 0.017768, "crStd": 0.0176}], "sm": [{"size": 50, "noWire": 19, "diaWire": 1.83, "diaCond": 4, "weight": 406.44, "csa": 45.131, "crCalc": 0.389663, "crStd": 0.387}, {"size": 70, "noWire": 19, "diaWire": 2.19, "diaCond": 4.8, "weight": 586.91, "csa": 65.17, "crCalc": 0.269844, "crStd": 0.268}, {"size": 95, "noWire": 19, "diaWire": 2.59, "diaCond": 5.6, "weight": 814.99, "csa": 90.496, "crCalc": 0.194328, "crStd": 0.193}, {"size": 120, "noWire": 37, "diaWire": 2.08, "diaCond": 6.3, "weight": 1028.06, "csa": 114.155, "crCalc": 0.154053, "crStd": 0.153}, {"size": 150, "noWire": 37, "diaWire": 2.31, "diaCond": 7, "weight": 1268.49, "csa": 140.852, "crCalc": 0.124853, "crStd": 0.124}, {"size": 185, "noWire": 37, "diaWire": 2.59, "diaCond": 7.8, "weight": 1587.21, "csa": 176.243, "crCalc": 0.099782, "crStd": 0.0991}, {"size": 240, "noWire": 37, "diaWire": 2.96, "diaCond": 9, "weight": 2086.11, "csa": 231.64, "crCalc": 0.075919, "crStd": 0.0754}, {"size": 300, "noWire": 37, "diaWire": 3.32, "diaCond": 10, "weight": 2617.18, "csa": 290.61, "crCalc": 0.060514, "crStd": 0.0601}, {"size": 400, "noWire": 61, "diaWire": 2.92, "diaCond": 11.3, "weight": 3346.66, "csa": 371.61, "crCalc": 0.047323, "crStd": 0.047}, {"size": 500, "noWire": 61, "diaWire": 3.31, "diaCond": 12.9, "weight": 4297.62, "csa": 477.204, "crCalc": 0.036852, "crStd": 0.0366}], "cm": [{"size": 10, "noWire": 7, "diaWire": 1.38, "diaCond": 3.7, "weight": 85.95, "csa": 9.544, "crCalc": 1.842591, "crStd": 1.83}, {"size": 16, "noWire": 7, "diaWire": 1.75, "diaCond": 4.6, "weight": 136.78, "csa": 15.188, "crCalc": 1.157912, "crStd": 1.15}, {"size": 25, "noWire": 7, "diaWire": 2.19, "diaCond": 5.8, "weight": 216.36, "csa": 24.024, "crCalc": 0.732002, "crStd": 0.727}, {"size": 35, "noWire": 7, "diaWire": 2.59, "diaCond": 6.9, "weight": 300.18, "csa": 33.331, "crCalc": 0.527605, "crStd": 0.524}, {"size": 50, "noWire": 19, "diaWire": 1.83, "diaCond": 8, "weight": 406.44, "csa": 45.131, "crCalc": 0.389663, "crStd": 0.387}, {"size": 70, "noWire": 19, "diaWire": 2.19, "diaCond": 9.6, "weight": 586.91, "csa": 65.17, "crCalc": 0.269844, "crStd": 0.268}, {"size": 95, "noWire": 19, "diaWire": 2.59, "diaCond": 11.3, "weight": 814.99, "csa": 90.496, "crCalc": 0.194328, "crStd": 0.193}, {"size": 120, "noWire": 35, "diaWire": 2.14, "diaCond": 12.7, "weight": 1028.06, "csa": 114.155, "crCalc": 0.154053, "crStd": 0.153}, {"size": 150, "noWire": 35, "diaWire": 2.38, "diaCond": 14.1, "weight": 1268.49, "csa": 140.852, "crCalc": 0.124853, "crStd": 0.124}, {"size": 185, "noWire": 35, "diaWire": 2.66, "diaCond": 15.8, "weight": 1587.21, "csa": 176.243, "crCalc": 0.099782, "crStd": 0.0991}, {"size": 240, "noWire": 35, "diaWire": 3.05, "diaCond": 18.1, "weight": 2086.11, "csa": 231.64, "crCalc": 0.075919, "crStd": 0.0754}, {"size": 300, "noWire": 35, "diaWire": 3.41, "diaCond": 20.3, "weight": 2617.18, "csa": 290.61, "crCalc": 0.060514, "crStd": 0.0601}, {"size": 400, "noWire": 56, "diaWire": 3.05, "diaCond": 22.9, "weight": 3346.66, "csa": 371.61, "crCalc": 0.047323, "crStd": 0.047}, {"size": 500, "noWire": 56, "diaWire": 3.46, "diaCond": 26, "weight": 4297.62, "csa": 477.204, "crCalc": 0.036852, "crStd": 0.0366}, {"size": 630, "noWire": 56, "diaWire": 3.93, "diaCond": 29.5, "weight": 5558.05, "csa": 617.161, "crCalc": 0.028495, "crStd": 0.0283}, {"size": 800, "noWire": 56, "diaWire": 4.45, "diaCond": 33.4, "weight": 7117.32, "csa": 790.301, "crCalc": 0.022252, "crStd": 0.0221}, {"size": 1000, "noWire": 56, "diaWire": 4.99, "diaCond": 37.5, "weight": 8937.09, "csa": 992.366, "crCalc": 0.017721, "crStd": 0.0176}], "f": [{"size": 0.5, "noWire": 16, "diaWire": 0.19, "diaCond": 0.87, "weight": 4.09, "csa": 0.45, "crCalc": 39.0796, "crStd": 39}, {"size": 0.75, "noWire": 24, "diaWire": 0.19, "diaCond": 1.07, "weight": 6.13, "csa": 0.68, "crCalc": 25.8615, "crStd": 26}, {"size": 1, "noWire": 32, "diaWire": 0.19, "diaCond": 1.24, "weight": 8.17, "csa": 0.91, "crCalc": 19.325077, "crStd": 19.5}, {"size": 1.5, "noWire": 30, "diaWire": 0.24, "diaCond": 1.51, "weight": 12.22, "csa": 1.36, "crCalc": 12.93075, "crStd": 13.3}, {"size": 2.5, "noWire": 50, "diaWire": 0.24, "diaCond": 1.95, "weight": 20.37, "csa": 2.26, "crCalc": 7.781336, "crStd": 7.98}, {"size": 4, "noWire": 56, "diaWire": 0.29, "diaCond": 2.5, "weight": 33.31, "csa": 3.7, "crCalc": 4.752924, "crStd": 4.95}, {"size": 6, "noWire": 84, "diaWire": 0.29, "diaCond": 3.06, "weight": 49.97, "csa": 5.55, "crCalc": 3.168616, "crStd": 3.3}, {"size": 10, "noWire": 80, "diaWire": 0.38, "diaCond": 3.91, "weight": 81.71, "csa": 9.07, "crCalc": 1.9389, "crStd": 1.91}, {"size": 16, "noWire": 126, "diaWire": 0.38, "diaCond": 5.56, "weight": 128.69, "csa": 14.29, "crCalc": 1.230638, "crStd": 1.21}, {"size": 25, "noWire": 196, "diaWire": 0.38, "diaCond": 6.9, "weight": 200.19, "csa": 22.23, "crCalc": 0.791085, "crStd": 0.78}, {"size": 35, "noWire": 276, "diaWire": 0.38, "diaCond": 8.51, "weight": 281.9, "csa": 31.3, "crCalc": 0.561847, "crStd": 0.554}, {"size": 50, "noWire": 396, "diaWire": 0.38, "diaCond": 10.15, "weight": 404.46, "csa": 44.91, "crCalc": 0.391579, "crStd": 0.386}, {"size": 70, "noWire": 360, "diaWire": 0.48, "diaCond": 11.96, "weight": 586.68, "csa": 65.14, "crCalc": 0.26997, "crStd": 0.272}, {"size": 95, "noWire": 475, "diaWire": 0.48, "diaCond": 13.8, "weight": 774.09, "csa": 85.95, "crCalc": 0.204605, "crStd": 0.206}, {"size": 120, "noWire": 608, "diaWire": 0.48, "diaCond": 15.62, "weight": 990.83, "csa": 110.02, "crCalc": 0.159842, "crStd": 0.161}, {"size": 150, "noWire": 756, "diaWire": 0.48, "diaCond": 17.8, "weight": 1232.02, "csa": 136.8, "crCalc": 0.128551, "crStd": 0.129}, {"size": 185, "noWire": 925, "diaWire": 0.48, "diaCond": 19.3, "weight": 1507.43, "csa": 167.38, "crCalc": 0.105065, "crStd": 0.106}, {"size": 240, "noWire": 1221, "diaWire": 0.48, "diaCond": 22.2, "weight": 1989.81, "csa": 220.95, "crCalc": 0.079592, "crStd": 0.0801}, {"size": 300, "noWire": 1525, "diaWire": 0.48, "diaCond": 24.9, "weight": 2485.23, "csa": 275.96, "crCalc": 0.063726, "crStd": 0.0641}, {"size": 400, "noWire": 2013, "diaWire": 0.48, "diaCond": 28.5, "weight": 3280.5, "csa": 364.26, "crCalc": 0.048278, "crStd": 0.0486}, {"size": 500, "noWire": 2135, "diaWire": 0.52, "diaCond": 31.6, "weight": 4083.37, "csa": 453.41, "crCalc": 0.038786, "crStd": 0.0384}, {"size": 630, "noWire": 2135, "diaWire": 0.61, "diaCond": 36.6, "weight": 5619.16, "csa": 623.95, "crCalc": 0.028185, "crStd": 0.0287}]}, "al": {"re": [{"size": 10, "noWire": 1, "diaWire": 3.47, "diaCond": 3.47, "weight": 25.9, "csa": 9.46, "crCalc": 3.047493, "crStd": 3.08}, {"size": 16, "noWire": 1, "diaWire": 4.38, "diaCond": 4.38, "weight": 41.26, "csa": 15.07, "crCalc": 1.913025, "crStd": 1.91}, {"size": 25, "noWire": 1, "diaWire": 5.5, "diaCond": 5.5, "weight": 65.06, "csa": 23.76, "crCalc": 1.213354, "crStd": 1.2}], "rm": [{"size": 10, "noWire": 7, "diaWire": 1.3, "diaCond": 3.9000000000000004, "weight": 25.44, "csa": 9.29, "crCalc": 3.103259, "crStd": 3.08}, {"size": 16, "noWire": 7, "diaWire": 1.65, "diaCond": 4.949999999999999, "weight": 40.98, "csa": 14.97, "crCalc": 1.925804, "crStd": 1.91}, {"size": 25, "noWire": 7, "diaWire": 2.08, "diaCond": 6.24, "weight": 65.13, "csa": 23.79, "crCalc": 1.211823, "crStd": 1.2}, {"size": 35, "noWire": 7, "diaWire": 2.45, "diaCond": 7.3500000000000005, "weight": 90.36, "csa": 33, "crCalc": 0.873615, "crStd": 0.868}, {"size": 50, "noWire": 19, "diaWire": 1.73, "diaCond": 8.65, "weight": 122.29, "csa": 44.66, "crCalc": 0.645528, "crStd": 0.641}, {"size": 70, "noWire": 19, "diaWire": 2.08, "diaCond": 10.4, "weight": 176.78, "csa": 64.56, "crCalc": 0.44655, "crStd": 0.443}, {"size": 95, "noWire": 19, "diaWire": 2.45, "diaCond": 12.25, "weight": 245.27, "csa": 89.57, "crCalc": 0.321863, "crStd": 0.32}, {"size": 120, "noWire": 37, "diaWire": 1.97, "diaCond": 13.79, "weight": 308.81, "csa": 112.78, "crCalc": 0.255624, "crStd": 0.253}, {"size": 150, "noWire": 37, "diaWire": 2.19, "diaCond": 15.33, "weight": 381.63, "csa": 139.37, "crCalc": 0.206854, "crStd": 0.206}, {"size": 185, "noWire": 37, "diaWire": 2.45, "diaCond": 17.150000000000002, "weight": 477.63, "csa": 174.43, "crCalc": 0.165277, "crStd": 0.164}, {"size": 240, "noWire": 61, "diaWire": 2.19, "diaCond": 19.71, "weight": 629.18, "csa": 229.78, "crCalc": 0.125465, "crStd": 0.125}, {"size": 300, "noWire": 61, "diaWire": 2.44, "diaCond": 21.96, "weight": 781.03, "csa": 285.23, "crCalc": 0.101074, "crStd": 0.1}, {"size": 400, "noWire": 61, "diaWire": 2.77, "diaCond": 24.93, "weight": 1006.58, "csa": 367.6, "crCalc": 0.078426, "crStd": 0.0778}, {"size": 500, "noWire": 61, "diaWire": 3.14, "diaCond": 28.26, "weight": 1293.44, "csa": 472.37, "crCalc": 0.061031, "crStd": 0.0605}, {"size": 630, "noWire": 127, "diaWire": 2.47, "diaCond": 32.11, "weight": 1666.31, "csa": 608.54, "crCalc": 0.047375, "crStd": 0.0469}], "sm": [{"size": 50, "noWire": 19, "diaWire": 1.82, "diaCond": 3.9, "weight": 122.31, "csa": 44.668, "crCalc": 0.64541, "crStd": 0.641}, {"size": 70, "noWire": 19, "diaWire": 2.19, "diaCond": 4.7, "weight": 176.98, "csa": 64.633, "crCalc": 0.446048, "crStd": 0.443}, {"size": 95, "noWire": 19, "diaWire": 2.57, "diaCond": 5.6, "weight": 245, "csa": 89.476, "crCalc": 0.322202, "crStd": 0.32}, {"size": 120, "noWire": 37, "diaWire": 2.07, "diaCond": 6.3, "weight": 309.89, "csa": 113.171, "crCalc": 0.254741, "crStd": 0.253}, {"size": 150, "noWire": 37, "diaWire": 2.3, "diaCond": 6.9, "weight": 380.59, "csa": 138.992, "crCalc": 0.207417, "crStd": 0.206}, {"size": 185, "noWire": 37, "diaWire": 2.57, "diaCond": 7.8, "weight": 478.06, "csa": 174.587, "crCalc": 0.165128, "crStd": 0.164}, {"size": 240, "noWire": 37, "diaWire": 2.95, "diaCond": 8.9, "weight": 627.21, "csa": 229.058, "crCalc": 0.12586, "crStd": 0.125}, {"size": 300, "noWire": 37, "diaWire": 3.3, "diaCond": 10, "weight": 784.01, "csa": 286.323, "crCalc": 0.100688, "crStd": 0.1}, {"size": 400, "noWire": 61, "diaWire": 2.91, "diaCond": 11.3, "weight": 1007.73, "csa": 368.024, "crCalc": 0.078335, "crStd": 0.0778}, {"size": 500, "noWire": 61, "diaWire": 3.3, "diaCond": 12.8, "weight": 1295.89, "csa": 473.261, "crCalc": 0.060916, "crStd": 0.0605}], "cm": [{"size": 10, "noWire": 7, "diaWire": 1.37, "diaCond": 3.6, "weight": 25.46, "csa": 9.296, "crCalc": 3.101191, "crStd": 3.08}, {"size": 16, "noWire": 7, "diaWire": 1.73, "diaCond": 4.6, "weight": 41.05, "csa": 14.991, "crCalc": 1.923141, "crStd": 1.91}, {"size": 25, "noWire": 7, "diaWire": 2.19, "diaCond": 5.7, "weight": 65.33, "csa": 23.86, "crCalc": 1.208256, "crStd": 1.2}, {"size": 35, "noWire": 7, "diaWire": 2.57, "diaCond": 6.8, "weight": 90.32, "csa": 32.986, "crCalc": 0.873972, "crStd": 0.868}, {"size": 50, "noWire": 19, "diaWire": 1.82, "diaCond": 7.9, "weight": 122.31, "csa": 44.668, "crCalc": 0.64541, "crStd": 0.641}, {"size": 70, "noWire": 19, "diaWire": 2.19, "diaCond": 9.5, "weight": 176.98, "csa": 64.633, "crCalc": 0.446048, "crStd": 0.443}, {"size": 95, "noWire": 19, "diaWire": 2.57, "diaCond": 11.1, "weight": 245, "csa": 89.476, "crCalc": 0.322202, "crStd": 0.32}, {"size": 120, "noWire": 35, "diaWire": 2.13, "diaCond": 12.5, "weight": 309.89, "csa": 113.171, "crCalc": 0.254741, "crStd": 0.253}, {"size": 150, "noWire": 35, "diaWire": 2.36, "diaCond": 13.9, "weight": 380.59, "csa": 138.992, "crCalc": 0.207417, "crStd": 0.206}, {"size": 185, "noWire": 35, "diaWire": 2.65, "diaCond": 15.5, "weight": 478.06, "csa": 174.587, "crCalc": 0.165128, "crStd": 0.164}, {"size": 240, "noWire": 35, "diaWire": 3.03, "diaCond": 17.8, "weight": 627.21, "csa": 229.058, "crCalc": 0.12586, "crStd": 0.125}, {"size": 300, "noWire": 35, "diaWire": 3.39, "diaCond": 19.9, "weight": 784.01, "csa": 286.323, "crCalc": 0.100688, "crStd": 0.1}, {"size": 400, "noWire": 56, "diaWire": 3.04, "diaCond": 22.6, "weight": 1007.73, "csa": 368.024, "crCalc": 0.078335, "crStd": 0.0778}, {"size": 500, "noWire": 56, "diaWire": 3.44, "diaCond": 25.6, "weight": 1295.89, "csa": 473.261, "crCalc": 0.060916, "crStd": 0.0605}, {"size": 630, "noWire": 56, "diaWire": 3.91, "diaCond": 29.1, "weight": 1671.67, "csa": 610.496, "crCalc": 0.047223, "crStd": 0.0469}]}};
+
+  const BENTUK_LABEL = {re:'RE — Solid', rm:'RM — Stranded', sm:'SM — Sector', cm:'CM — Compact', f:'F — Flexible'};
+  const BAHAN_LABEL = {cu:'Cu', al:'Al'};
+
+  const elBahan = document.getElementById('bahan');
+  const elBentuk = document.getElementById('bentuk');
+  const elUkuran = document.getElementById('ukuran');
+  const elCore = document.getElementById('core');
+  const elKurs = document.getElementById('kurs');
+  const elLmeCu = document.getElementById('lmeCu');
+  const elPremCu = document.getElementById('premCu');
+  const elLmeAl = document.getElementById('lmeAl');
+  const elPremAl1 = document.getElementById('premAl1');
+  const elPremAl2 = document.getElementById('premAl2');
+  const elMargin = document.getElementById('margin');
+
+  function bentukTersedia(bahan){
+    return Object.keys(DATA[bahan]);
+  }
+
+  function refreshBentukOptions(){
+    const bahan = elBahan.value;
+    const tersedia = bentukTersedia(bahan);
+    Array.from(elBentuk.options).forEach(opt => {
+      opt.disabled = !tersedia.includes(opt.value);
+    });
+    if (!tersedia.includes(elBentuk.value)){
+      elBentuk.value = tersedia[0];
+    }
+  }
+
+  function refreshUkuranOptions(){
+    const bahan = elBahan.value;
+    const bentuk = elBentuk.value;
+    const rows = DATA[bahan][bentuk] || [];
+    const currentVal = elUkuran.value;
+    elUkuran.innerHTML = '';
+    rows.forEach(r => {
+      const opt = document.createElement('option');
+      opt.value = r.size;
+      opt.textContent = r.size + ' mm²';
+      elUkuran.appendChild(opt);
+    });
+    if (rows.find(r => String(r.size) === currentVal)){
+      elUkuran.value = currentVal;
+    }
+  }
+
+  function hargaLogamPerTon(bahan){
+    if (bahan === 'cu'){
+      return (parseFloat(elLmeCu.value)||0) + (parseFloat(elPremCu.value)||0);
+    }
+    return (parseFloat(elLmeAl.value)||0) + (parseFloat(elPremAl1.value)||0) + (parseFloat(elPremAl2.value)||0);
+  }
+
+  function roundUp100(x){ return Math.ceil(x/100)*100; }
+
+  function hitungHarga(bahan, weightKgKm, core){
+    const kurs = parseFloat(elKurs.value)||0;
+    const margin = (parseFloat(elMargin.value)||0)/100;
+    const hargaTon = hargaLogamPerTon(bahan);
+    const totalIdrPerKm = weightKgKm * hargaTon * kurs / 1000 * core;
+    const pricePerMeter = totalIdrPerKm/1000 * (1+margin);
+    return roundUp100(pricePerMeter);
+  }
+
+  function fmtIDR(v){
+    if (v === null || v === undefined || isNaN(v)) return '—';
+    return 'Rp ' + Math.round(v).toLocaleString('id-ID');
+  }
+
+  function cariRow(bahan, bentuk, size){
+    const rows = DATA[bahan][bentuk] || [];
+    return rows.find(r => String(r.size) === String(size));
+  }
+
+  function renderTabel(){
+    const bahan = elBahan.value;
+    const bentuk = elBentuk.value;
+    const rows = DATA[bahan][bentuk] || [];
+    document.getElementById('tabelJudul').textContent = BAHAN_LABEL[bahan] + ' / ' + BENTUK_LABEL[bentuk];
+    const tbody = document.getElementById('tabelBody');
+    tbody.innerHTML = '';
+    rows.forEach(r => {
+      const hargaSatuCore = hitungHarga(bahan, r.weight, 1);
+      const tr = document.createElement('tr');
+      if (String(r.size) === elUkuran.value) tr.classList.add('picked');
+      tr.innerHTML = `<td>${r.size}</td><td>${r.noWire}</td><td>${r.diaWire}</td><td>${r.diaCond}</td><td>${r.weight}</td><td>${r.csa}</td><td>${r.crStd}</td><td>${fmtIDR(hargaSatuCore)}</td>`;
+      tr.addEventListener('click', () => {
+        elUkuran.value = r.size;
+        hitungSemua();
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  function hitungSemua(){
+    const bahan = elBahan.value;
+    const bentuk = elBentuk.value;
+    const core = parseFloat(elCore.value) || 1;
+    const row = cariRow(bahan, bentuk, elUkuran.value);
+
+    if (!row){
+      document.getElementById('out_harga').innerHTML = '— <small>/ meter</small>';
+      return;
+    }
+
+    const harga = hitungHarga(bahan, row.weight, core);
+    const weightTotal = (row.weight * core / 1000).toFixed(3); // kg/m
+
+    document.getElementById('out_harga').innerHTML = fmtIDR(harga) + ' <small>/ meter</small>';
+    document.getElementById('out_noWire').textContent = row.noWire + ' pcs';
+    document.getElementById('out_diaWire').textContent = row.diaWire + ' mm';
+    document.getElementById('out_diaCond').textContent = row.diaCond + ' mm';
+    document.getElementById('out_csa').textContent = row.csa + ' mm²';
+    document.getElementById('out_crCalc').textContent = row.crCalc + ' Ω/km';
+    document.getElementById('out_crStd').textContent = row.crStd + ' Ω/km';
+    document.getElementById('out_weightCore').textContent = row.weight + ' kg/km';
+    document.getElementById('out_weightTotal').textContent = weightTotal + ' kg/m';
+
+    renderTabel();
+  }
+
+  elBahan.addEventListener('change', () => { refreshBentukOptions(); refreshUkuranOptions(); hitungSemua(); });
+  elBentuk.addEventListener('change', () => { refreshUkuranOptions(); hitungSemua(); });
+  [elUkuran, elCore, elKurs, elLmeCu, elPremCu, elLmeAl, elPremAl1, elPremAl2, elMargin].forEach(el => {
+    el.addEventListener('input', hitungSemua);
+  });
+
+  // ---------- Cetak / Unduh PDF ----------
+  function fmtTanggal(){
+    const d = new Date();
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function cetakHasil(){
+    const bahan = elBahan.value;
+    const bentuk = elBentuk.value;
+    const core = parseFloat(elCore.value) || 1;
+    const row = cariRow(bahan, bentuk, elUkuran.value);
+    if (!row) return;
+
+    const harga = hitungHarga(bahan, row.weight, core);
+    const weightTotal = (row.weight * core / 1000).toFixed(3);
+
+    document.getElementById('printArea').innerHTML = `
+      <h2>Laporan Spesifikasi & Harga Konduktor</h2>
+      <div class="print-sub">Dibuat: ${fmtTanggal()} — ${BAHAN_LABEL[bahan]} / ${BENTUK_LABEL[bentuk]} / ${row.size} mm² / ${core} core</div>
+      <table>
+        <tr><th>Parameter</th><th>Nilai</th></tr>
+        <tr><td>Bahan</td><td>${BAHAN_LABEL[bahan]}</td></tr>
+        <tr><td>Bentuk</td><td>${BENTUK_LABEL[bentuk]}</td></tr>
+        <tr><td>Ukuran nominal</td><td>${row.size} mm²</td></tr>
+        <tr><td>Jumlah core</td><td>${core}</td></tr>
+        <tr><td>Jumlah wire</td><td>${row.noWire} pcs</td></tr>
+        <tr><td>Diameter wire</td><td>${row.diaWire} mm</td></tr>
+        <tr><td>Diameter konduktor</td><td>${row.diaCond} mm</td></tr>
+        <tr><td>CSA aktual</td><td>${row.csa} mm²</td></tr>
+        <tr><td>Resistansi terhitung</td><td>${row.crCalc} Ω/km</td></tr>
+        <tr><td>Resistansi standar (R20)</td><td>${row.crStd} Ω/km</td></tr>
+        <tr><td>Berat per core</td><td>${row.weight} kg/km</td></tr>
+        <tr><td>Berat total kabel</td><td>${weightTotal} kg/m</td></tr>
+        <tr><td>Kurs</td><td>${elKurs.value}</td></tr>
+        <tr><td>Harga logam</td><td>${hargaLogamPerTon(bahan)} USD/ton</td></tr>
+        <tr><td>Margin</td><td>${elMargin.value}%</td></tr>
+      </table>
+      <div class="print-result">
+        <div class="big">Harga: ${fmtIDR(harga)} / meter</div>
+      </div>
+      <div class="print-footer">Dihasilkan otomatis oleh Database Konduktor & Kalkulator Harga. Harga berdasarkan input kurs/LME saat laporan dibuat — cek ulang untuk penawaran resmi.</div>
+    `;
+    window.print();
+  }
+
+  // ---------- Salin hasil ke clipboard ----------
+  function salinHasil(){
+    const bahan = elBahan.value;
+    const bentuk = elBentuk.value;
+    const core = parseFloat(elCore.value) || 1;
+    const row = cariRow(bahan, bentuk, elUkuran.value);
+    if (!row) return;
+
+    const harga = hitungHarga(bahan, row.weight, core);
+    const weightTotal = (row.weight * core / 1000).toFixed(3);
+
+    const teks = [
+      'SPESIFIKASI & HARGA KONDUKTOR',
+      BAHAN_LABEL[bahan] + ' / ' + BENTUK_LABEL[bentuk] + ' / ' + row.size + ' mm² / ' + core + ' core',
+      '',
+      'Jumlah wire: ' + row.noWire + ' pcs',
+      'Diameter wire: ' + row.diaWire + ' mm',
+      'Diameter konduktor: ' + row.diaCond + ' mm',
+      'CSA aktual: ' + row.csa + ' mm²',
+      'Resistansi terhitung: ' + row.crCalc + ' Ω/km',
+      'Resistansi standar (R20): ' + row.crStd + ' Ω/km',
+      'Berat per core: ' + row.weight + ' kg/km',
+      'Berat total kabel: ' + weightTotal + ' kg/m',
+      '',
+      'Kurs: ' + elKurs.value + ', Harga logam: ' + hargaLogamPerTon(bahan) + ' USD/ton, Margin: ' + elMargin.value + '%',
+      'Harga: ' + fmtIDR(harga) + ' / meter',
+    ].join('\n');
+
+    const btn = document.getElementById('copyBtn');
+    navigator.clipboard.writeText(teks).then(() => {
+      const asli = btn.textContent;
+      btn.textContent = '✓ Tersalin!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = asli; btn.classList.remove('copied'); }, 1800);
+    }).catch(() => {
+      alert('Gagal menyalin. Browser mungkin tidak mendukung clipboard otomatis.');
+    });
+  }
+
+  // ---------- Theme toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function terapkanTema(tema){
+    document.documentElement.setAttribute('data-theme', tema);
+    themeToggle.textContent = tema === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('cable_theme', tema);
+  }
+  themeToggle.addEventListener('click', () => {
+    const skrg = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    terapkanTema(skrg);
+  });
+  terapkanTema(localStorage.getItem('cable_theme') || 'light');
+
+  // ---------- Simpan / muat parameter (localStorage) ----------
+  const STORAGE_KEY = 'conductor_params_v1';
+  const FIELD_IDS = ['bahan','bentuk','ukuran','core','kurs','lmeCu','premCu','lmeAl','premAl1','premAl2','margin'];
+  function simpanParam(){
+    const data = {};
+    FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function muatParam(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      // bahan & bentuk dulu, supaya opsi ukuran ter-generate ulang sebelum ukuran di-set
+      if (data.bahan !== undefined) elBahan.value = data.bahan;
+      refreshBentukOptions();
+      if (data.bentuk !== undefined) elBentuk.value = data.bentuk;
+      refreshUkuranOptions();
+      FIELD_IDS.forEach(id => {
+        if (id === 'bahan' || id === 'bentuk') return;
+        const el = document.getElementById(id);
+        if (el && data[id] !== undefined && data[id] !== '') el.value = data[id];
+      });
+      return true;
+    } catch(e){ return false; }
+  }
+  function resetParam(){
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', simpanParam);
+  });
+
+  // init
+  const adaTersimpan = muatParam();
+  if (!adaTersimpan){
+    refreshBentukOptions();
+    refreshUkuranOptions();
+  }
+  hitungSemua();
+  if (adaTersimpan){
+    const notif = document.getElementById('paramNotif');
+    if (notif) notif.classList.remove('hidden');
+  }
+</script>
+</body>
+</html>

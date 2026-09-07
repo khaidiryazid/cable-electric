@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Voltage Drop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+    --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a; --red:#a8402f;
+    --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+    --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#e2a03f; --red:#c65b4a;
+    --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+  }
+  body, .panel, .field input, .field select, .print-btn, .copy-btn{transition:background-color 0.2s, color 0.2s, border-color 0.2s;}
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk', sans-serif; padding:32px 20px 60px;}
+  .wrap{max-width:980px;margin:0 auto;}
+
+  header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:10px;}
+  header .htitle{display:flex; align-items:center; gap:14px;}
+  header h1{font-size:1.5rem; font-weight:600; margin:0; letter-spacing:0.01em; color:var(--paper);}
+  header .tag{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--copper); border:1px solid var(--copper); padding:3px 8px; border-radius:3px; letter-spacing:0.04em;}
+  header .htools{display:flex; align-items:center; gap:10px;}
+  .theme-toggle{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .theme-toggle:hover{border-color:var(--copper);}
+  .source-note{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--text-dim); margin:0 0 22px; line-height:1.6;}
+  .source-note b{color:var(--teal);}
+
+  .backlink{font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--copper); text-decoration:none; display:inline-block; margin-bottom:14px;}
+  .backlink:hover{text-decoration:underline;}
+
+  .modeswitch{display:flex; gap:0; margin-bottom:22px; border:1px solid var(--line); border-radius:6px; overflow:hidden; width:fit-content;}
+  .modeswitch button{background:var(--panel); color:var(--text-dim); border:none; font-family:'Space Grotesk', sans-serif; font-size:0.85rem; font-weight:500; padding:10px 18px; cursor:pointer; transition:background 0.15s, color 0.15s;}
+  .modeswitch button.active{background:var(--copper); color:#1a1108;}
+  .modeswitch button:not(.active):hover{background:var(--panel-2); color:var(--text);}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} }
+  @media (max-width:480px){ .row2, .grid3{grid-template-columns:1fr;} header h1{font-size:1.25rem;} .live-readout{gap:14px;} }
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 22px 24px;}
+  .panel h2{font-size:0.78rem; font-weight:600; color:var(--text-dim); margin:0 0 4px; text-transform:uppercase; letter-spacing:0.08em;}
+  .panel h2 + .hint{margin-top:0; margin-bottom:16px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:0.82rem; margin-bottom:6px; color:var(--text);}
+  .field .unit{color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:0.75rem;}
+  .field input, .field select{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--paper); font-family:'IBM Plex Mono', monospace; font-size:0.95rem; padding:9px 10px; border-radius:4px; outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--copper);}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .hint{font-size:0.72rem; color:var(--text-dim); margin-top:-10px; margin-bottom:16px; line-height:1.5;}
+
+  .construction-panel{margin-bottom:22px;}
+  .construction-panel .grid3{margin-bottom:4px;}
+  .cable-diagram{
+    background:#fffdf8; border:1px solid var(--line); border-radius:6px;
+    padding:8px; margin-bottom:18px; max-width:480px;
+  }
+  .cable-diagram svg{width:100%; height:auto; display:block;}
+  .live-readout{
+    display:flex; gap:24px; flex-wrap:wrap; margin-top:14px; padding-top:14px; border-top:1px solid var(--line);
+    font-family:'IBM Plex Mono', monospace; font-size:0.8rem;
+  }
+  .live-readout div span:first-child{color:var(--text-dim); display:block; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px;}
+  .live-readout div span:last-child{color:var(--copper-bright); font-weight:600; font-size:0.95rem;}
+
+  .result-main{text-align:center; padding:10px 0 22px; border-bottom:1px solid var(--line); margin-bottom:20px;}
+  .result-main .value{font-family:'IBM Plex Mono', monospace; font-size:2.4rem; font-weight:600; color:var(--paper); line-height:1.1;}
+  .result-main .value small{font-size:1.1rem; color:var(--text-dim); font-weight:400;}
+  .result-main .label{font-size:0.8rem; color:var(--text-dim); margin-top:4px;}
+
+  .gauge{margin-bottom:22px;}
+  .gauge-track{height:10px; background:var(--panel-2); border-radius:5px; overflow:hidden; border:1px solid var(--line);}
+  .gauge-fill{height:100%; border-radius:5px; transition:width 0.25s ease, background 0.25s ease;}
+  .gauge-labels{display:flex; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--text-dim); margin-top:6px;}
+
+  .status{text-align:center; font-family:'IBM Plex Mono', monospace; font-size:0.85rem; font-weight:600; padding:9px; border-radius:4px; margin-bottom:22px; letter-spacing:0.02em;}
+  .status.ok{background:rgba(47,107,98,0.10); color:var(--teal); border:1px solid rgba(47,107,98,0.35);}
+  .status.warn{background:rgba(168,105,10,0.10); color:var(--amber); border:1px solid rgba(168,105,10,0.35);}
+  .status.bad{background:rgba(168,64,47,0.10); color:var(--red); border:1px solid rgba(168,64,47,0.35);}
+
+  .schema{display:flex; align-items:center; justify-content:space-between; font-family:'IBM Plex Mono', monospace; font-size:0.78rem; margin-bottom:6px;}
+  .schema .node{text-align:center; min-width:70px;}
+  .schema .node .v{font-size:1.05rem; color:var(--paper); font-weight:600;}
+  .schema .node .n{color:var(--text-dim); font-size:0.68rem; margin-top:2px;}
+  .schema .wire{flex:1; height:2px; background:linear-gradient(90deg, var(--copper), var(--copper-bright)); margin:0 10px; position:relative; top:-8px;}
+
+  .detail-list{font-family:'IBM Plex Mono', monospace; font-size:0.78rem; color:var(--text-dim); display:flex; flex-direction:column; gap:6px;}
+  .detail-list div{display:flex; justify-content:space-between;}
+  .detail-list span:last-child{color:var(--text);}
+
+  .reco{text-align:center; padding:16px; background:var(--panel-2); border:1px solid var(--copper); border-radius:6px; margin-bottom:20px;}
+  .reco .size{font-family:'IBM Plex Mono', monospace; font-size:2.2rem; font-weight:700; color:var(--copper-bright);}
+  .reco .size small{font-size:1rem; color:var(--text-dim); font-weight:400;}
+  .reco .note{font-size:0.78rem; color:var(--text-dim); margin-top:4px;}
+
+  .table-panel{margin-top:24px;}
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:0.76rem;}
+  thead th{text-align:right; padding:9px 8px; color:var(--text-dim); border-bottom:2px solid var(--line); font-weight:600; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em;}
+  thead th:first-child, tbody td:first-child{text-align:left;}
+  tbody td{padding:8px 8px; border-bottom:1px solid var(--line); color:var(--text); text-align:right;}
+  tbody tr:nth-child(even){background:rgba(181,102,31,0.03);}
+  tbody tr:hover{background:rgba(181,102,31,0.09); cursor:pointer;}
+  td.col-active{color:var(--copper-bright); font-weight:600;}
+
+  footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.6;}
+  .hidden{display:none;}
+
+  .btn-row{display:flex; gap:10px; margin-top:18px;}
+  .print-btn{
+    flex:1; width:100%;
+    background:var(--paper); color:#fff9ef;
+    border:none; border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+    transition:background 0.15s;
+  }
+  .print-btn:hover{background:var(--copper);}
+  .copy-btn{
+    flex:1; width:100%;
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line); border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+  }
+  .copy-btn:hover{border-color:var(--copper); color:var(--copper);}
+  .copy-btn.copied{background:var(--teal); color:#fff; border-color:var(--teal);}
+
+  #printArea{display:none;}
+
+  .param-notif{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:10px 14px; margin-bottom:20px; font-size:0.8rem; color:var(--text-dim);
+  }
+  .param-notif button{
+    background:none; border:1px solid var(--line); color:var(--copper); border-radius:4px;
+    padding:5px 10px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; cursor:pointer;
+  }
+  .param-notif button:hover{border-color:var(--copper);}
+
+  @media print{
+    body{background:#fff; padding:0;}
+    .wrap > *{display:none !important;}
+    .wrap > #printArea{display:block !important; padding:0; color:#000;}
+    #printArea h2{font-family:'Space Grotesk', sans-serif; font-size:18px; margin:0 0 4px; color:#000;}
+    #printArea .print-sub{font-family:'IBM Plex Mono', monospace; font-size:10px; color:#555; margin-bottom:18px;}
+    #printArea table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:12px; margin-bottom:16px;}
+    #printArea th{text-align:left; background:#eee; padding:6px 8px; border:1px solid #ccc;}
+    #printArea td{padding:6px 8px; border:1px solid #ccc;}
+    #printArea .print-result{border:2px solid #000; padding:14px; margin-top:6px;}
+    #printArea .print-result .big{font-family:'IBM Plex Mono', monospace; font-size:22px; font-weight:700;}
+    #printArea .print-footer{margin-top:24px; font-size:10px; color:#555;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="backlink" href="index.html">← Semua kalkulator</a>
+  <header>
+    <div class="htitle">
+      <svg width="46" height="46" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="47" fill="var(--panel-2)" stroke="var(--line)" stroke-width="2"/>
+        <circle cx="50" cy="50" r="37" fill="#fffdf8" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="9" fill="var(--copper-bright)" stroke="var(--bg)" stroke-width="1.5"/>
+        <circle cx="50" cy="32" r="9" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
+        <circle cx="65.6" cy="41" r="9" fill="var(--copper-bright)" stroke="var(--bg)" stroke-width="1.5"/>
+        <circle cx="65.6" cy="59" r="9" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
+        <circle cx="50" cy="68" r="9" fill="var(--copper-bright)" stroke="var(--bg)" stroke-width="1.5"/>
+        <circle cx="34.4" cy="59" r="9" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
+        <circle cx="34.4" cy="41" r="9" fill="var(--copper-bright)" stroke="var(--bg)" stroke-width="1.5"/>
+      </svg>
+      <h1>Kalkulator Voltage Drop</h1>
+    </div>
+    <div class="htools">
+      <span class="tag">CABLE-VD-CALC</span>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+    </div>
+  </header>
+  <p class="source-note">Resistansi dasar (R@20°C) &amp; struktur perhitungan: <b>tabel Excel yang kamu unggah</b>. R@70°C/90°C dan reaktansi (Xl) dihitung <b>live dari rumus</b> yang sama persis dengan file itu — bukan angka tetap.</p>
+
+  <div class="param-notif hidden" id="paramNotif">
+    <span>📥 Parameter terakhir kamu dimuat otomatis dari penyimpanan browser ini.</span>
+    <button onclick="resetParam()">Hapus &amp; mulai kosong</button>
+  </div>
+
+  <!-- ===================== PARAMETER KONSTRUKSI (GLOBAL) ===================== -->
+  <div class="panel construction-panel">
+    <h2>Parameter Konstruksi Kabel</h2>
+    <div class="hint">Ini yang menentukan hasil reaktansi (Xl) &amp; koreksi suhu resistansi — sama seperti sel input di bagian atas file Excel kamu.</div>
+
+    <div class="cable-diagram">
+      <svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram penampang kabel">
+        <circle cx="130" cy="100" r="86" fill="var(--panel-2)" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="130" cy="100" r="62" fill="#fffdf8" stroke="var(--line)" stroke-width="1.5"/>
+        <circle cx="130" cy="100" r="34" fill="var(--copper-bright)" stroke="var(--bg)" stroke-width="1"/>
+        <circle cx="130" cy="86" r="9" fill="var(--copper)" stroke="#fffdf8" stroke-width="1"/>
+        <circle cx="144" cy="95" r="9" fill="var(--copper)" stroke="#fffdf8" stroke-width="1"/>
+        <circle cx="144" cy="112" r="9" fill="var(--copper)" stroke="#fffdf8" stroke-width="1"/>
+        <circle cx="130" cy="121" r="9" fill="var(--copper)" stroke="#fffdf8" stroke-width="1"/>
+        <circle cx="116" cy="112" r="9" fill="var(--copper)" stroke="#fffdf8" stroke-width="1"/>
+        <circle cx="116" cy="95" r="9" fill="var(--copper)" stroke="#fffdf8" stroke-width="1"/>
+        <circle cx="130" cy="100" r="9" fill="var(--copper)" stroke="#fffdf8" stroke-width="1"/>
+
+        <!-- garis dimensi -->
+        <line x1="130" y1="100" x2="130" y2="66" stroke="var(--text-dim)" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="130" y1="100" x2="130" y2="14" stroke="var(--text-dim)" stroke-width="1" stroke-dasharray="3,2"/>
+
+        <line x1="200" y1="66" x2="330" y2="66" stroke="var(--copper)" stroke-width="1.2"/>
+        <circle cx="130" cy="66" r="2.5" fill="var(--copper)"/>
+        <text x="204" y="62" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">D konduktor</text>
+
+        <line x1="200" y1="14" x2="330" y2="14" stroke="var(--red)" stroke-width="1.2"/>
+        <circle cx="130" cy="14" r="2.5" fill="var(--red)"/>
+        <text x="204" y="10" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">D kabel keseluruhan</text>
+
+        <text x="204" y="90" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text-dim)">konduktor</text>
+        <text x="204" y="106" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text-dim)">lapisan isolasi</text>
+        <text x="204" y="122" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text-dim)">jaket luar kabel</text>
+      </svg>
+    </div>
+
+    <div class="grid3">
+      <div class="field">
+        <label>Bahan konduktor</label>
+        <select id="g_bahan">
+          <option value="cu">Tembaga (Cu)</option>
+          <option value="al">Aluminium (Al)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Diameter keseluruhan konduktor <span class="unit">(mm)</span></label>
+        <input type="number" id="g_dkonduktor" value="20.3" step="0.1">
+      </div>
+      <div class="field">
+        <label>Diameter keseluruhan kabel <span class="unit">(mm)</span></label>
+        <input type="number" id="g_dkabel" value="30.8" step="0.1">
+      </div>
+    </div>
+    <div class="hint" style="margin-top:-10px;">Frekuensi memakai nilai standar 50 Hz — tidak perlu diisi manual.</div>
+
+    <div class="live-readout">
+      <div><span>L untuk CSA &lt; 50 mm²</span><span id="g_outLSmall">— mH/km</span></div>
+      <div><span>L untuk CSA ≥ 50 mm²</span><span id="g_outLBig">— mH/km</span></div>
+      <div><span>Xl untuk CSA &lt; 50 mm²</span><span id="g_outXlSmall">— Ω/km</span></div>
+      <div><span>Xl untuk CSA ≥ 50 mm²</span><span id="g_outXlBig">— Ω/km</span></div>
+      <div><span>Koefisien suhu konduktor</span><span id="g_outCoeff">—</span></div>
+    </div>
+  </div>
+
+  <!-- ===================== PARAMETER UMUM (SHARED) ===================== -->
+  <div class="panel construction-panel">
+    <h2>Parameter Umum</h2>
+    <div class="hint">Dipakai bersama oleh kedua mode di bawah — isi sekali saja.</div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Sistem</label>
+        <select id="s_sistem">
+          <option value="tiga">3 Fasa</option>
+          <option value="satu">1 Fasa</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Isolasi kabel</label>
+        <select id="s_isolasi">
+          <option value="r70">PVC (70°C)</option>
+          <option value="r90">XLPE (90°C)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Tegangan nominal <span class="unit">(V)</span></label>
+        <input type="number" id="s_vnom" step="1">
+      </div>
+      <div class="field">
+        <label>Daya beban (P)</label>
+        <div class="row2" style="gap:6px;">
+          <input type="number" id="s_daya" step="1">
+          <select id="s_satuanDaya">
+            <option value="kva">kVA</option>
+            <option value="kw">kW</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="hint" style="margin-top:-10px;">Arus beban dihitung otomatis: <span id="s_arusInfo">—</span></div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Panjang kabel <span class="unit">(meter, satu jalur)</span></label>
+        <input type="number" id="s_panjang" step="1">
+      </div>
+      <div class="field">
+        <label>Faktor daya (cos φ)</label>
+        <input type="number" id="s_cosphi" step="0.01" min="0" max="1">
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Batas drop maksimum <span class="unit">(%)</span></label>
+      <input type="number" id="s_batas" step="0.1">
+    </div>
+  </div>
+
+  <!-- ===================== HASIL: VOLTAGE DROP & UKURAN MINIMUM SEJAJAR ===================== -->
+  <div class="grid">
+    <div class="panel">
+      <h2>Hitung Voltage Drop</h2>
+
+      <div class="field">
+        <label>Pilih ukuran kabel <span class="unit">(dari tabel — isi otomatis R & X)</span></label>
+        <select id="m_pilihUkuran"></select>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label>Resistansi kabel R <span class="unit">(Ω/km, otomatis — bisa ditimpa manual)</span></label>
+          <input type="number" id="m_rkabel" step="0.000001">
+        </div>
+        <div class="field">
+          <label>Reaktansi kabel X <span class="unit">(Ω/km, otomatis dari parameter konstruksi)</span></label>
+          <input type="number" id="m_xkabel" step="0.000001">
+        </div>
+      </div>
+      <div class="hint">Sistem, isolasi, tegangan, daya, panjang, cos φ, dan batas drop memakai Parameter Umum di atas.</div>
+
+      <div class="result-main">
+        <div class="value" id="m_vdVolt">0.00 <small>V</small></div>
+        <div class="label">Tegangan jatuh (voltage drop)</div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-track"><div class="gauge-fill" id="m_gaugeFill"></div></div>
+        <div class="gauge-labels"><span id="m_gaugePercent">0.00%</span><span id="m_gaugeLimit">batas 5.0%</span></div>
+      </div>
+      <div class="status ok" id="m_statusBox">—</div>
+      <div class="schema">
+        <div class="node"><div class="v" id="m_vSumber">380 V</div><div class="n">SUMBER</div></div>
+        <div class="wire"></div>
+        <div class="node"><div class="v" id="m_vBeban">—</div><div class="n">BEBAN</div></div>
+      </div>
+      <div class="detail-list" style="margin-top:16px;">
+        <div><span>Impedansi efektif kabel</span><span id="m_dZ">—</span></div>
+        <div><span>Faktor sistem</span><span id="m_dFaktor">—</span></div>
+        <div><span>Tegangan sisi beban</span><span id="m_dVterima">—</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copyBtnMaju" onclick="salinHasil('maju')">📋 Salin Hasil</button>
+        <button class="print-btn" onclick="cetakHasil('maju')">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Cari Ukuran Kabel Minimum</h2>
+      <div class="hint">Kalkulator mencoba tiap ukuran di tabel dari yang terkecil, memakai R &amp; X asli per ukuran, sampai memenuhi Batas Drop di Parameter Umum. Sistem, isolasi, tegangan, daya, panjang, cos φ, dan batas drop memakai Parameter Umum di atas — tidak perlu diisi ulang di sini.</div>
+
+      <div class="reco">
+        <div class="size" id="r_ukuran">— <small>mm²</small></div>
+        <div class="note" id="r_catatan">Isi Parameter Umum di atas</div>
+      </div>
+      <div class="gauge">
+        <div class="gauge-track"><div class="gauge-fill" id="r_gaugeFill"></div></div>
+        <div class="gauge-labels"><span id="r_gaugePercent">0.00%</span><span id="r_gaugeLimit">batas 5.0%</span></div>
+      </div>
+      <div class="status ok" id="r_statusBox">—</div>
+      <div class="detail-list" style="margin-top:16px;">
+        <div><span>R pada ukuran terpilih</span><span id="r_rPilih">—</span></div>
+        <div><span>X (reaktansi, dari parameter konstruksi)</span><span id="r_xPilih">—</span></div>
+        <div><span>Drop aktual pada ukuran ini</span><span id="r_vdAktual">—</span></div>
+        <div><span>Tegangan sisi beban</span><span id="r_vBebanR">—</span></div>
+      </div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copyBtnMundur" onclick="salinHasil('mundur')">📋 Salin Hasil</button>
+        <button class="print-btn" onclick="cetakHasil('mundur')">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== AREA CETAK (hanya tampil saat print) ===================== -->
+  <div id="printArea"></div>
+
+  <!-- ===================== TABEL REFERENSI ===================== -->
+  <div class="panel table-panel">
+    <h2>Tabel Referensi Konduktor Tembaga (live, dari parameter konstruksi di atas)</h2>
+    <div class="hint">R@20°C = data dasar dari file kamu (tidak berubah). R@70°C/90°C dikoreksi otomatis sesuai bahan konduktor. Xl dihitung dari parameter konstruksi &amp; ukuran kabel (sedikit berbeda antara CSA di bawah dan di atas 50mm², sesuai rumus di file kamu). Klik baris untuk isi otomatis ke "Hitung Voltage Drop".</div>
+    <table>
+      <thead>
+        <tr>
+          <th>CSA nominal (mm²)</th>
+          <th>R @20°C</th>
+          <th>R @70°C (PVC)</th>
+          <th>R @90°C (XLPE)</th>
+          <th>Xl (Ω/km)</th>
+        </tr>
+      </thead>
+      <tbody id="tabelBody"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    Rumus voltage drop: 3 fasa → Vd = √3 × I × L × (R·cosφ + X·sinφ) / 1000. 1 fasa → Vd = 2 × I × L × (R·cosφ + X·sinφ) / 1000.
+    Rumus reaktansi: Xl = 2π·f·L×10⁻³ mH/km, dengan L dihitung otomatis dari konstruksi kabel (diameter konduktor &amp; kabel keseluruhan) dan ambang ukuran di 50mm² — persis rumus di file Excel kamu. R@20°C adalah data dasar dari file (dua nilai: Cu &amp; Al); R pada suhu operasi dikoreksi pakai koefisien 0.00393/°C (Cu) atau 0.00403/°C (Al). Arus beban dihitung dari Daya (P): I = P×1000/(V×cosφ×faktor) untuk kW, atau I = P×1000/(V×faktor) untuk kVA.
+  </footer>
+
+</div>
+
+<script>
+  // Data dasar dari tabel yang diunggah user (sheet "datatec")
+  // csa nominal (mm²), R DC @20°C untuk tembaga (Cu) & aluminium (Al, null = tidak tersedia di ukuran ini)
+  const CABLE_DATA = [
+    {csa:0.5,   r20cu:36,     r20al:null},
+    {csa:0.75,  r20cu:24.5,   r20al:null},
+    {csa:1,     r20cu:18.1,   r20al:null},
+    {csa:1.5,   r20cu:12.1,   r20al:null},
+    {csa:2.5,   r20cu:7.41,   r20al:null},
+    {csa:4,     r20cu:4.61,   r20al:null},
+    {csa:6,     r20cu:3.08,   r20al:null},
+    {csa:10,    r20cu:1.83,   r20al:3.08},
+    {csa:16,    r20cu:1.15,   r20al:1.91},
+    {csa:25,    r20cu:0.727,  r20al:1.2},
+    {csa:35,    r20cu:0.524,  r20al:0.868},
+    {csa:50,    r20cu:0.387,  r20al:0.641},
+    {csa:70,    r20cu:0.268,  r20al:0.443},
+    {csa:95,    r20cu:0.193,  r20al:0.32},
+    {csa:120,   r20cu:0.153,  r20al:0.253},
+    {csa:150,   r20cu:0.124,  r20al:0.206},
+    {csa:185,   r20cu:0.0991, r20al:0.164},
+    {csa:240,   r20cu:0.0754, r20al:0.125},
+    {csa:300,   r20cu:0.0601, r20al:0.1},
+    {csa:400,   r20cu:0.047,  r20al:0.0778},
+    {csa:500,   r20cu:0.0366, r20al:0.0605},
+    {csa:630,   r20cu:0.0283, r20al:0.0469},
+    {csa:800,   r20cu:0.0221, r20al:0.0367},
+    {csa:1000,  r20cu:0.0176, r20al:0.0291},
+  ];
+
+  // ---------- Parameter konstruksi global ----------
+  const g = {
+    bahan: document.getElementById('g_bahan'),
+    dkonduktor: document.getElementById('g_dkonduktor'),
+    dkabel: document.getElementById('g_dkabel'),
+  };
+  const gOut = {
+    LSmall: document.getElementById('g_outLSmall'),
+    LBig: document.getElementById('g_outLBig'),
+    XlSmall: document.getElementById('g_outXlSmall'),
+    XlBig: document.getElementById('g_outXlBig'),
+    coeff: document.getElementById('g_outCoeff'),
+  };
+
+  const FREKUENSI = 50; // Hz, standar jaringan kabel
+  function wireForCsa(csa){ return csa >= 50 ? 19 : 7; } // standar konstruksi: 19 wire mulai 50 mm²
+
+  function coeffBahan(){ return g.bahan.value === 'al' ? 0.00403 : 0.00393; }
+
+  function termGeo(){
+    const dk = parseFloat(g.dkonduktor.value) || 0;
+    const dc = parseFloat(g.dkabel.value) || 0;
+    return 0.2 * Math.log((1.26*dc*2)/dk);
+  }
+  function LforWire(wire){
+    const termWire = wire < 19
+      ? 0.0939 * Math.pow(wire, -0.1829)
+      : 0.0669 * Math.pow(wire, -0.0647);
+    return termWire + termGeo();
+  }
+  function XlForCsa(csa){
+    return 2*Math.PI*FREKUENSI*LforWire(wireForCsa(csa))*1e-3;
+  }
+  function r20ForBahan(row){
+    return g.bahan.value === 'al' ? row.r20al : row.r20cu;
+  }
+  function rAtTemp(r20, temp){
+    if (r20 === null || r20 === undefined) return null;
+    return ((temp-20)*coeffBahan()+1)*r20;
+  }
+
+  function refreshConstructionReadout(){
+    gOut.LSmall.textContent = LforWire(wireForCsa(25)).toFixed(6) + ' mH/km';
+    gOut.LBig.textContent = LforWire(wireForCsa(50)).toFixed(6) + ' mH/km';
+    gOut.XlSmall.textContent = XlForCsa(25).toFixed(6) + ' Ω/km';
+    gOut.XlBig.textContent = XlForCsa(50).toFixed(6) + ' Ω/km';
+    gOut.coeff.textContent = coeffBahan().toFixed(5) + ' /°C';
+  }
+
+  // ---------- Tabel referensi ----------
+  const tabelBody = document.getElementById('tabelBody');
+  const pilihUkuran = document.getElementById('m_pilihUkuran');
+  const mIsolasi = document.getElementById('s_isolasi');
+
+  function renderTabel(){
+    const kolonAktif = mIsolasi.value; // 'r70' atau 'r90'
+    tabelBody.innerHTML = '';
+    pilihUkuran.innerHTML = '<option value="">— pilih manual —</option>';
+    CABLE_DATA.forEach(row => {
+      const r20 = r20ForBahan(row);
+      const Xl = XlForCsa(row.csa);
+      if (r20 === null){
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${row.csa}</td><td colspan="4" style="text-align:center; color:var(--text-dim);">tidak tersedia untuk bahan ini</td>`;
+        tabelBody.appendChild(tr);
+        return;
+      }
+      const r70 = rAtTemp(r20, 70);
+      const r90 = rAtTemp(r20, 90);
+      const rAktif = kolonAktif === 'r70' ? r70 : r90;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${row.csa}</td>
+        <td>${r20}</td>
+        <td class="${kolonAktif==='r70'?'col-active':''}">${r70.toFixed(4)}</td>
+        <td class="${kolonAktif==='r90'?'col-active':''}">${r90.toFixed(4)}</td>
+        <td>${Xl.toFixed(4)}</td>`;
+      tr.addEventListener('click', () => {
+        document.getElementById('m_rkabel').value = rAktif.toFixed(6);
+        document.getElementById('m_xkabel').value = Xl.toFixed(6);
+        pilihUkuran.value = row.csa;
+        hitungMaju();
+      });
+      tabelBody.appendChild(tr);
+
+      const opt = document.createElement('option');
+      opt.value = row.csa;
+      opt.textContent = row.csa + ' mm²  (R=' + rAktif.toFixed(4) + ')';
+      pilihUkuran.appendChild(opt);
+    });
+    refreshConstructionReadout();
+  }
+
+  function refreshPilihanAktif(){
+    // kalau user sedang pakai ukuran dari dropdown (bukan manual), refresh R & X sesuai parameter terbaru
+    if (!pilihUkuran.value) return;
+    const row = CABLE_DATA.find(x => x.csa == pilihUkuran.value);
+    if (!row) return;
+    const r20 = r20ForBahan(row);
+    if (r20 === null) return;
+    const kolonAktif = mIsolasi.value;
+    const rAktif = rAtTemp(r20, kolonAktif === 'r70' ? 70 : 90);
+    document.getElementById('m_rkabel').value = rAktif.toFixed(6);
+    document.getElementById('m_xkabel').value = XlForCsa(row.csa).toFixed(6);
+  }
+
+  Object.values(g).forEach(el => el.addEventListener('input', () => {
+    renderTabel();
+    refreshPilihanAktif();
+    hitungMaju();
+    hitungMundur();
+  }));
+  mIsolasi.addEventListener('change', () => { renderTabel(); refreshPilihanAktif(); hitungMaju(); });
+  pilihUkuran.addEventListener('change', () => {
+    if(!pilihUkuran.value) return;
+    const row = CABLE_DATA.find(x => x.csa == pilihUkuran.value);
+    const r20 = r20ForBahan(row);
+    if (r20 === null) return;
+    const kolonAktif = mIsolasi.value;
+    document.getElementById('m_rkabel').value = rAtTemp(r20, kolonAktif==='r70'?70:90).toFixed(6);
+    document.getElementById('m_xkabel').value = XlForCsa(row.csa).toFixed(6);
+    hitungMaju();
+  });
+
+  // ---------- MODE MAJU: hitung voltage drop ----------
+  const m = {
+    sistem: document.getElementById('s_sistem'), vnom: document.getElementById('s_vnom'),
+    daya: document.getElementById('s_daya'), satuanDaya: document.getElementById('s_satuanDaya'),
+    panjang: document.getElementById('s_panjang'),
+    rkabel: document.getElementById('m_rkabel'), xkabel: document.getElementById('m_xkabel'),
+    cosphi: document.getElementById('s_cosphi'), batas: document.getElementById('s_batas'),
+  };
+  const mo = {
+    vdVolt: document.getElementById('m_vdVolt'), gaugeFill: document.getElementById('m_gaugeFill'),
+    gaugePercent: document.getElementById('m_gaugePercent'), gaugeLimit: document.getElementById('m_gaugeLimit'),
+    statusBox: document.getElementById('m_statusBox'), vSumber: document.getElementById('m_vSumber'),
+    vBeban: document.getElementById('m_vBeban'), dZ: document.getElementById('m_dZ'),
+    dFaktor: document.getElementById('m_dFaktor'), dVterima: document.getElementById('m_dVterima'),
+    arusInfo: document.getElementById('s_arusInfo'),
+  };
+
+  function statusGauge(persen, batas){
+    let color, cls, text;
+    if (persen <= batas * 0.8) { color='linear-gradient(90deg,#2f6b62,#4f9b8e)'; cls='ok'; text='AMAN — drop tegangan dalam batas wajar'; }
+    else if (persen <= batas) { color='linear-gradient(90deg,#a8690a,#d9970f)'; cls='warn'; text='MENDEKATI BATAS — pertimbangkan kabel lebih besar'; }
+    else { color='linear-gradient(90deg,#a8402f,#cf5b46)'; cls='bad'; text='MELEBIHI BATAS — perbesar penampang kabel'; }
+    return {color, cls, text};
+  }
+
+  function hitungArus(P, satuan, Vnom, cosphi, faktorSistem){
+    if (!(P > 0) || !(Vnom > 0)) return 0;
+    if (satuan === 'kw'){
+      return (P*1000) / (Vnom * cosphi * faktorSistem);
+    }
+    return (P*1000) / (faktorSistem * Vnom); // kVA
+  }
+
+  function hitungMaju(){
+    const sistem = m.sistem.value;
+    const Vnom = parseFloat(m.vnom.value) || 0;
+    const P = parseFloat(m.daya.value) || 0;
+    const Lm = parseFloat(m.panjang.value) || 0;
+    const R = parseFloat(m.rkabel.value) || 0;
+    const X = parseFloat(m.xkabel.value) || 0;
+    const cosphi = Math.min(Math.max(parseFloat(m.cosphi.value) || 0, 0), 1);
+    const batas = parseFloat(m.batas.value) || 0;
+
+    const sinphi = Math.sqrt(Math.max(0, 1 - cosphi*cosphi));
+    const Lkm = Lm / 1000;
+    const faktor = sistem === 'tiga' ? Math.sqrt(3) : 2;
+    const I = hitungArus(P, m.satuanDaya.value, Vnom, cosphi, faktor);
+    mo.arusInfo.textContent = I.toFixed(2) + ' A';
+
+    const Vd = faktor * I * Lkm * (R * cosphi + X * sinphi);
+    const persen = Vnom > 0 ? (Vd / Vnom) * 100 : 0;
+    const Vterima = Vnom - Vd;
+    const Zeff = Math.sqrt(R*R + X*X);
+
+    mo.vdVolt.innerHTML = Vd.toFixed(2) + ' <small>V</small>';
+    mo.gaugePercent.textContent = persen.toFixed(2) + '%';
+    mo.gaugeLimit.textContent = 'batas ' + batas.toFixed(1) + '%';
+    const ratio = batas > 0 ? Math.min(persen / batas, 1.2) : 0;
+    mo.gaugeFill.style.width = Math.min(ratio*100, 100) + '%';
+
+    const s = statusGauge(persen, batas);
+    mo.gaugeFill.style.background = s.color;
+    mo.statusBox.className = 'status ' + s.cls;
+    mo.statusBox.textContent = s.text;
+
+    mo.vSumber.textContent = Vnom.toFixed(0) + ' V';
+    mo.vBeban.textContent = Vterima.toFixed(1) + ' V';
+    mo.dZ.textContent = Zeff.toFixed(4) + ' Ω/km';
+    mo.dFaktor.textContent = (sistem === 'tiga' ? '√3 (3 fasa)' : '2 (1 fasa)');
+    mo.dVterima.textContent = Vterima.toFixed(2) + ' V (' + (100-persen).toFixed(2) + '% dari nominal)';
+  }
+  Object.values(m).forEach(el => el.addEventListener('input', hitungMaju));
+
+  // ---------- MODE MUNDUR: cari ukuran minimum ----------
+  const r = {
+    sistem: document.getElementById('s_sistem'), vnom: document.getElementById('s_vnom'),
+    daya: document.getElementById('s_daya'), satuanDaya: document.getElementById('s_satuanDaya'),
+    panjang: document.getElementById('s_panjang'),
+    batas: document.getElementById('s_batas'), cosphi: document.getElementById('s_cosphi'),
+    isolasi: document.getElementById('s_isolasi'),
+  };
+  const ro = {
+    ukuran: document.getElementById('r_ukuran'), catatan: document.getElementById('r_catatan'),
+    gaugeFill: document.getElementById('r_gaugeFill'), gaugePercent: document.getElementById('r_gaugePercent'),
+    gaugeLimit: document.getElementById('r_gaugeLimit'), statusBox: document.getElementById('r_statusBox'),
+    rPilih: document.getElementById('r_rPilih'), xPilih: document.getElementById('r_xPilih'),
+    vdAktual: document.getElementById('r_vdAktual'), vBebanR: document.getElementById('r_vBebanR'),
+    arusInfo: document.getElementById('s_arusInfo'),
+  };
+
+  function hitungMundur(){
+    const sistem = r.sistem.value;
+    const Vnom = parseFloat(r.vnom.value) || 0;
+    const P = parseFloat(r.daya.value) || 0;
+    const Lm = parseFloat(r.panjang.value) || 0;
+    const batas = parseFloat(r.batas.value) || 0;
+    const cosphi = Math.min(Math.max(parseFloat(r.cosphi.value) || 0, 0), 1);
+    const kolonAktif = r.isolasi.value;
+
+    const sinphi = Math.sqrt(Math.max(0, 1 - cosphi*cosphi));
+    const Lkm = Lm / 1000;
+    const faktor = sistem === 'tiga' ? Math.sqrt(3) : 2;
+    const I = hitungArus(P, r.satuanDaya.value, Vnom, cosphi, faktor);
+    ro.arusInfo.textContent = I.toFixed(2) + ' A';
+
+    if (Vnom <= 0 || I <= 0 || Lm <= 0){
+      ro.ukuran.innerHTML = '— <small>mm²</small>';
+      ro.catatan.textContent = 'Lengkapi semua parameter di kiri.';
+      return;
+    }
+
+    const VdMax = Vnom * (batas/100);
+
+    let terpilih = null, Rterpilih = 0, Xterpilih = 0;
+    for (const row of CABLE_DATA){
+      const r20 = r20ForBahan(row);
+      if (r20 === null) continue;
+      const R = rAtTemp(r20, kolonAktif === 'r70' ? 70 : 90);
+      const X = XlForCsa(row.csa);
+      const Vd = faktor * I * Lkm * (R*cosphi + X*sinphi);
+      if (Vd <= VdMax){ terpilih = row; Rterpilih = R; Xterpilih = X; break; }
+    }
+
+    if (!terpilih){
+      ro.ukuran.innerHTML = '⚠ <small>&gt;1000 mm²</small>';
+      ro.catatan.textContent = 'Melebihi ukuran terbesar di tabel (1000 mm²) — pertimbangkan kabel paralel, perpendek kabel, atau naikkan batas drop.';
+      ro.statusBox.className = 'status bad';
+      ro.statusBox.textContent = 'TIDAK ADA UKURAN DI TABEL YANG MEMENUHI';
+      ro.gaugeFill.style.width = '100%';
+      ro.gaugeFill.style.background = 'linear-gradient(90deg,#a8402f,#cf5b46)';
+      ro.rPilih.textContent = '—'; ro.xPilih.textContent = '—'; ro.vdAktual.textContent = '—'; ro.vBebanR.textContent = '—';
+      return;
+    }
+
+    const VdAktual = faktor * I * Lkm * (Rterpilih*cosphi + Xterpilih*sinphi);
+    const persenAktual = (VdAktual/Vnom)*100;
+    const Vterima = Vnom - VdAktual;
+
+    ro.ukuran.innerHTML = terpilih.csa + ' <small>mm²</small>';
+    ro.catatan.textContent = 'Ukuran terkecil pada tabel yang memenuhi batas drop ' + batas.toFixed(1) + '%.';
+    ro.rPilih.textContent = Rterpilih.toFixed(4) + ' Ω/km';
+    ro.xPilih.textContent = Xterpilih.toFixed(4) + ' Ω/km';
+    ro.vdAktual.textContent = VdAktual.toFixed(2) + ' V (' + persenAktual.toFixed(2) + '%)';
+    ro.vBebanR.textContent = Vterima.toFixed(2) + ' V';
+
+    ro.gaugePercent.textContent = persenAktual.toFixed(2) + '%';
+    ro.gaugeLimit.textContent = 'batas ' + batas.toFixed(1) + '%';
+    const ratio = batas > 0 ? Math.min(persenAktual / batas, 1.2) : 0;
+    ro.gaugeFill.style.width = Math.min(ratio*100, 100) + '%';
+
+    const s = statusGauge(persenAktual, batas);
+    ro.gaugeFill.style.background = s.color;
+    ro.statusBox.className = 'status ' + s.cls;
+    ro.statusBox.textContent = 'UKURAN DIREKOMENDASIKAN VALID';
+  }
+  Object.values(r).forEach(el => el.addEventListener('input', hitungMundur));
+
+  // ---------- Cetak / Unduh PDF ----------
+  function fmtTanggal(){
+    const d = new Date();
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  function sistemLabel(v){ return v === 'tiga' ? '3 Fasa' : '1 Fasa'; }
+  function isolasiLabel(v){ return v === 'r70' ? 'PVC (70°C)' : 'XLPE (90°C)'; }
+  function satuanLabel(v){ return v === 'kw' ? 'kW' : 'kVA'; }
+
+  function cetakHasil(mode){
+    const printArea = document.getElementById('printArea');
+    const tgl = fmtTanggal();
+
+    if (mode === 'maju'){
+      const csaPilih = pilihUkuran.value ? (pilihUkuran.value + ' mm²') : 'input manual';
+      const Lmaju = (parseFloat(m.xkabel.value) || 0) * 1000 / (2*Math.PI*FREKUENSI);
+      printArea.innerHTML = `
+        <h2>Laporan Perhitungan Voltage Drop</h2>
+        <div class="print-sub">Dibuat: ${tgl} — Mode: Hitung Voltage Drop</div>
+        <table>
+          <tr><th>Parameter</th><th>Nilai</th></tr>
+          <tr><td>Sistem</td><td>${sistemLabel(m.sistem.value)}</td></tr>
+          <tr><td>Isolasi kabel</td><td>${isolasiLabel(mIsolasi.value)}</td></tr>
+          <tr><td>Tegangan nominal</td><td>${m.vnom.value} V</td></tr>
+          <tr><td>Daya beban</td><td>${m.daya.value} ${satuanLabel(m.satuanDaya.value)}</td></tr>
+          <tr><td>Arus beban (otomatis)</td><td>${mo.arusInfo.textContent}</td></tr>
+          <tr><td>Panjang kabel</td><td>${m.panjang.value} m</td></tr>
+          <tr><td>Ukuran kabel (CSA)</td><td>${csaPilih}</td></tr>
+          <tr><td>Resistansi R</td><td>${m.rkabel.value} Ω/km</td></tr>
+          <tr><td>Inductance L</td><td>${Lmaju.toFixed(6)} mH/km</td></tr>
+          <tr><td>Reaktansi X</td><td>${m.xkabel.value} Ω/km</td></tr>
+          <tr><td>Faktor daya (cos φ)</td><td>${m.cosphi.value}</td></tr>
+          <tr><td>Batas drop maksimum</td><td>${m.batas.value} %</td></tr>
+        </table>
+        <div class="print-result">
+          <div class="big">Voltage Drop: ${mo.vdVolt.textContent.replace(/\s+/g,' ').trim()}</div>
+          <div>Drop: ${mo.gaugePercent.textContent}</div>
+          <div>Tegangan sisi beban: ${mo.vBeban.textContent}</div>
+          <div><b>Status: ${mo.statusBox.textContent}</b></div>
+        </div>
+        <div class="print-footer">Dihasilkan otomatis oleh Kalkulator Voltage Drop. R &amp; X dari tabel referensi konduktor tembaga/aluminium — verifikasi ke datasheet kabel aktual untuk desain final/kritis.</div>
+      `;
+    } else {
+      const Xmundur = parseFloat((ro.xPilih.textContent||'0').replace(/[^\d.\-]/g,'')) || 0;
+      const Lmundur = Xmundur * 1000 / (2*Math.PI*FREKUENSI);
+      printArea.innerHTML = `
+        <h2>Laporan Rekomendasi Ukuran Kabel</h2>
+        <div class="print-sub">Dibuat: ${tgl} — Mode: Cari Ukuran Kabel Minimum</div>
+        <table>
+          <tr><th>Parameter</th><th>Nilai</th></tr>
+          <tr><td>Sistem</td><td>${sistemLabel(r.sistem.value)}</td></tr>
+          <tr><td>Isolasi kabel</td><td>${isolasiLabel(r.isolasi.value)}</td></tr>
+          <tr><td>Tegangan nominal</td><td>${r.vnom.value} V</td></tr>
+          <tr><td>Daya beban</td><td>${r.daya.value} ${satuanLabel(r.satuanDaya.value)}</td></tr>
+          <tr><td>Arus beban (otomatis)</td><td>${ro.arusInfo.textContent}</td></tr>
+          <tr><td>Panjang kabel</td><td>${r.panjang.value} m</td></tr>
+          <tr><td>Inductance L</td><td>${Lmundur.toFixed(6)} mH/km</td></tr>
+          <tr><td>Faktor daya (cos φ)</td><td>${r.cosphi.value}</td></tr>
+          <tr><td>Batas drop maksimum</td><td>${r.batas.value} %</td></tr>
+        </table>
+        <div class="print-result">
+          <div class="big">Ukuran Direkomendasikan: ${ro.ukuran.textContent.replace(/\s+/g,' ').trim()}</div>
+          <div>R: ${ro.rPilih.textContent} — X: ${ro.xPilih.textContent}</div>
+          <div>Drop aktual: ${ro.vdAktual.textContent}</div>
+          <div>Tegangan sisi beban: ${ro.vBebanR.textContent}</div>
+          <div><b>Status: ${ro.statusBox.textContent}</b></div>
+        </div>
+        <div class="print-footer">Dihasilkan otomatis oleh Kalkulator Voltage Drop. R &amp; X dari tabel referensi konduktor tembaga/aluminium — verifikasi ke datasheet kabel aktual untuk desain final/kritis.</div>
+      `;
+    }
+    window.print();
+  }
+
+  // ---------- Salin hasil ke clipboard ----------
+  function salinHasil(mode){
+    let teks;
+    if (mode === 'maju'){
+      const csaPilih = pilihUkuran.value ? (pilihUkuran.value + ' mm²') : 'input manual';
+      teks = [
+        'HASIL VOLTAGE DROP',
+        'Sistem: ' + sistemLabel(m.sistem.value),
+        'Isolasi: ' + isolasiLabel(mIsolasi.value),
+        'Tegangan nominal: ' + m.vnom.value + ' V',
+        'Daya beban: ' + m.daya.value + ' ' + satuanLabel(m.satuanDaya.value),
+        'Arus beban: ' + mo.arusInfo.textContent,
+        'Panjang kabel: ' + m.panjang.value + ' m',
+        'Ukuran kabel: ' + csaPilih,
+        'R: ' + m.rkabel.value + ' Ω/km, X: ' + m.xkabel.value + ' Ω/km',
+        'cos φ: ' + m.cosphi.value + ', Batas drop: ' + m.batas.value + '%',
+        '',
+        'Voltage Drop: ' + mo.vdVolt.textContent.replace(/\s+/g,' ').trim(),
+        'Drop: ' + mo.gaugePercent.textContent,
+        'Tegangan sisi beban: ' + mo.vBeban.textContent,
+        'Status: ' + mo.statusBox.textContent,
+      ].join('\n');
+    } else {
+      teks = [
+        'HASIL CARI UKURAN KABEL MINIMUM',
+        'Sistem: ' + sistemLabel(r.sistem.value),
+        'Isolasi: ' + isolasiLabel(r.isolasi.value),
+        'Tegangan nominal: ' + r.vnom.value + ' V',
+        'Daya beban: ' + r.daya.value + ' ' + satuanLabel(r.satuanDaya.value),
+        'Arus beban: ' + ro.arusInfo.textContent,
+        'Panjang kabel: ' + r.panjang.value + ' m',
+        'cos φ: ' + r.cosphi.value + ', Batas drop: ' + r.batas.value + '%',
+        '',
+        'Ukuran Direkomendasikan: ' + ro.ukuran.textContent.replace(/\s+/g,' ').trim(),
+        'R: ' + ro.rPilih.textContent + ', X: ' + ro.xPilih.textContent,
+        'Drop aktual: ' + ro.vdAktual.textContent,
+        'Tegangan sisi beban: ' + ro.vBebanR.textContent,
+        'Status: ' + ro.statusBox.textContent,
+      ].join('\n');
+    }
+
+    const btn = document.getElementById(mode === 'maju' ? 'copyBtnMaju' : 'copyBtnMundur');
+    navigator.clipboard.writeText(teks).then(() => {
+      const asli = btn.textContent;
+      btn.textContent = '✓ Tersalin!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = asli; btn.classList.remove('copied'); }, 1800);
+    }).catch(() => {
+      alert('Gagal menyalin. Browser mungkin tidak mendukung clipboard otomatis.');
+    });
+  }
+
+  // ---------- Theme toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function terapkanTema(tema){
+    document.documentElement.setAttribute('data-theme', tema);
+    themeToggle.textContent = tema === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('cable_theme', tema);
+  }
+  themeToggle.addEventListener('click', () => {
+    const skrg = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    terapkanTema(skrg);
+  });
+  terapkanTema(localStorage.getItem('cable_theme') || 'light');
+
+  // ---------- Simpan / muat parameter (localStorage) ----------
+  const STORAGE_KEY = 'vd_params_v1';
+  const FIELD_IDS = [
+    'g_bahan','g_dkonduktor','g_dkabel',
+    's_sistem','s_isolasi','s_vnom','s_daya','s_satuanDaya','s_panjang','s_cosphi','s_batas',
+    'm_pilihUkuran','m_rkabel','m_xkabel',
+  ];
+  function simpanParam(){
+    const data = {};
+    FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function muatParam(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && data[id] !== undefined && data[id] !== '') el.value = data[id];
+      });
+      return true;
+    } catch(e){ return false; }
+  }
+  function resetParam(){
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', simpanParam);
+  });
+
+  // init
+  const adaTersimpan = muatParam();
+  renderTabel();
+  hitungMaju();
+  hitungMundur();
+  if (adaTersimpan){
+    const notif = document.getElementById('paramNotif');
+    if (notif) notif.classList.remove('hidden');
+  }
+</script>
+</body>
+</html>

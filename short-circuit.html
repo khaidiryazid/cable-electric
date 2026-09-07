@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Short Circuit Withstand Current</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+  :root{
+    --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+    --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a; --red:#a8402f;
+    --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+  }
+  :root[data-theme="dark"]{
+    --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+    --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#e2a03f; --red:#c65b4a;
+    --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+  }
+  body, .panel, .field input, .field select, .print-btn, .copy-btn{transition:background-color 0.2s, color 0.2s, border-color 0.2s;}
+  *{box-sizing:border-box;}
+  body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk', sans-serif; padding:32px 20px 60px;}
+  .wrap{max-width:980px;margin:0 auto;}
+
+  header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:10px;}
+  header .htitle{display:flex; align-items:center; gap:14px;}
+  header h1{font-size:1.5rem; font-weight:600; margin:0; letter-spacing:0.01em; color:var(--paper);}
+  header .tag{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--copper); border:1px solid var(--copper); padding:3px 8px; border-radius:3px; letter-spacing:0.04em;}
+  header .htools{display:flex; align-items:center; gap:10px;}
+  .theme-toggle{
+    background:var(--panel-2); border:1px solid var(--line); color:var(--text);
+    width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1rem;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .theme-toggle:hover{border-color:var(--copper);}
+  .source-note{font-family:'IBM Plex Mono', monospace; font-size:0.72rem; color:var(--text-dim); margin:0 0 22px; line-height:1.6;}
+  .source-note b{color:var(--teal);}
+  .backlink{font-family:'IBM Plex Mono', monospace; font-size:0.75rem; color:var(--copper); text-decoration:none; display:inline-block; margin-bottom:14px;}
+  .backlink:hover{text-decoration:underline;}
+
+  .param-notif{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:10px 14px; margin-bottom:20px; font-size:0.8rem; color:var(--text-dim);
+  }
+  .param-notif button{
+    background:none; border:1px solid var(--line); color:var(--copper); border-radius:4px;
+    padding:5px 10px; font-family:'IBM Plex Mono', monospace; font-size:0.72rem; cursor:pointer;
+  }
+  .param-notif button:hover{border-color:var(--copper);}
+
+  .modeswitch{display:flex; gap:0; margin-bottom:22px; border:1px solid var(--line); border-radius:6px; overflow:hidden; width:fit-content;}
+  .modeswitch button{background:var(--panel); color:var(--text-dim); border:none; font-family:'Space Grotesk', sans-serif; font-size:0.85rem; font-weight:500; padding:10px 18px; cursor:pointer; transition:background 0.15s, color 0.15s;}
+  .modeswitch button.active{background:var(--copper); color:#1a1108;}
+  .modeswitch button:not(.active):hover{background:var(--panel-2); color:var(--text);}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+  @media (max-width:720px){ .grid{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} }
+  @media (max-width:480px){ .row2, .grid3{grid-template-columns:1fr;} header h1{font-size:1.25rem;} }
+
+  .panel{background:var(--panel); border:1px solid var(--line); border-radius:6px; padding:22px 22px 24px;}
+  .panel h2{font-size:0.78rem; font-weight:600; color:var(--text-dim); margin:0 0 4px; text-transform:uppercase; letter-spacing:0.08em;}
+  .panel h2 + .hint{margin-top:0; margin-bottom:16px;}
+
+  .field{margin-bottom:16px;}
+  .field label{display:block; font-size:0.82rem; margin-bottom:6px; color:var(--text);}
+  .field .unit{color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:0.75rem;}
+  .field input, .field select{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--paper); font-family:'IBM Plex Mono', monospace; font-size:0.95rem; padding:9px 10px; border-radius:4px; outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--copper);}
+  .field input:disabled{opacity:0.45; cursor:not-allowed;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+  .hint{font-size:0.72rem; color:var(--text-dim); margin-top:-10px; margin-bottom:16px; line-height:1.5;}
+
+  .combo-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px;}
+  .combo-grid-1col{grid-template-columns:1fr 1fr;}
+  @media (max-width:520px){ .combo-grid{grid-template-columns:1fr;} }
+  .combo-card{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:6px;
+    padding:14px 16px;
+  }
+  .combo-card .label{font-size:0.78rem; color:var(--paper); font-weight:600; margin-bottom:8px;}
+  .combo-card .mini-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family:'IBM Plex Mono', monospace; font-size:0.82rem; padding:4px 0;
+    border-top:1px solid var(--line);
+  }
+  .combo-card .mini-row:first-of-type{border-top:none;}
+  .combo-card .mini-row span:first-child{color:var(--text-dim);}
+  .combo-card .mini-row span:last-child{color:var(--copper-bright); font-weight:600; font-size:0.95rem;}
+
+  .table-scroll{overflow-x:auto;}
+
+  .table-panel{margin-top:24px;}
+  table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:0.78rem;}
+  thead th{text-align:center; padding:9px 8px; color:var(--text-dim); border-bottom:2px solid var(--line); font-weight:600; font-size:0.66rem; text-transform:uppercase; letter-spacing:0.04em;}
+  thead th:first-child, tbody td:first-child{text-align:left;}
+  thead tr:first-child th{border-bottom:1px solid var(--line);}
+  thead tr:first-child th:not(:first-child){border-left:1px solid var(--line);}
+  tbody td{padding:8px 8px; border-bottom:1px solid var(--line); color:var(--text); text-align:right;}
+  tbody tr:nth-child(even){background:rgba(181,102,31,0.03);}
+  td.hero{color:var(--copper-bright); font-weight:600;}
+
+  footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.6;}
+  .hidden{display:none;}
+
+  .btn-row{display:flex; gap:10px; margin-top:6px;}
+  .print-btn{
+    flex:1; width:100%;
+    background:var(--paper); color:#fff9ef;
+    border:none; border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+    transition:background 0.15s;
+  }
+  .print-btn:hover{background:var(--copper);}
+  .copy-btn{
+    flex:1; width:100%;
+    background:var(--panel-2); color:var(--text); border:1px solid var(--line); border-radius:5px;
+    font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    padding:11px; cursor:pointer; letter-spacing:0.01em;
+  }
+  .copy-btn:hover{border-color:var(--copper); color:var(--copper);}
+  .copy-btn.copied{background:var(--teal); color:#fff; border-color:var(--teal);}
+
+  #printArea{display:none;}
+
+  @media print{
+    body{background:#fff; padding:0;}
+    .wrap > *{display:none !important;}
+    .wrap > #printArea{display:block !important; padding:0; color:#000;}
+    #printArea h2{font-family:'Space Grotesk', sans-serif; font-size:18px; margin:0 0 4px; color:#000;}
+    #printArea .print-sub{font-family:'IBM Plex Mono', monospace; font-size:10px; color:#555; margin-bottom:18px;}
+    #printArea table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono', monospace; font-size:12px; margin-bottom:16px;}
+    #printArea th{text-align:left; background:#eee; padding:6px 8px; border:1px solid #ccc;}
+    #printArea td{padding:6px 8px; border:1px solid #ccc;}
+    #printArea .print-footer{margin-top:24px; font-size:10px; color:#555;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="backlink" href="index.html">← Semua kalkulator</a>
+  <header>
+    <div class="htitle">
+      <svg width="46" height="46" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="47" fill="var(--panel-2)" stroke="var(--line)" stroke-width="2"/>
+        <path d="M50 15 L62 45 L50 40 L58 85 L38 50 L50 55 Z" fill="var(--copper-bright)" stroke="var(--bg)" stroke-width="1.5"/>
+      </svg>
+      <h1>Kalkulator Short Circuit Withstand Current</h1>
+    </div>
+    <div class="htools">
+      <span class="tag">SCC-CALC</span>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+    </div>
+  </header>
+  <p class="source-note">Formula &amp; data dasar: <b>tabel Excel yang kamu unggah</b> — nilai <b>SCC</b> dan <b>MKN</b> berasal dari dua pabrikan berbeda, ditampilkan terpisah agar tidak tertukar.</p>
+
+  <div class="param-notif hidden" id="paramNotif">
+    <span>📥 Parameter terakhir kamu dimuat otomatis dari penyimpanan browser ini.</span>
+    <button onclick="resetParam()">Hapus &amp; mulai kosong</button>
+  </div>
+
+  <!-- ===================== PARAMETER ===================== -->
+  <div class="panel" style="margin-bottom:22px;">
+    <h2>Parameter</h2>
+    <div class="hint">Pilih ukuran kabel, tegangan sistem (mempengaruhi ambang suhu akhir PVC ≤3kV/&gt;3kV pada metode SCC), dan waktu gangguan. Hasil ditampilkan sekaligus untuk ketiga pendekatan: SCC Adiabatic, SCC Non-Adiabatic, dan MKN.</div>
+
+    <div class="grid3">
+      <div class="field">
+        <label>Ukuran kabel (CSA)</label>
+        <select id="p_csa"></select>
+      </div>
+      <div class="field">
+        <label>Tegangan sistem <span class="unit">(kV, khusus metode SCC)</span></label>
+        <input type="number" id="p_kv" step="0.1" min="0">
+      </div>
+      <div class="field">
+        <label>Waktu gangguan (t) <span class="unit">(detik)</span></label>
+        <input type="number" id="p_t" step="0.1" min="0.01">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== HASIL CUSTOM ===================== -->
+  <div class="grid" style="margin-bottom:22px;">
+    <div class="panel">
+      <h2>SCC — pada waktu di atas</h2>
+      <div class="hint">Adiabatic + koreksi Non-Adiabatic (IEC 60949).</div>
+      <div class="combo-grid combo-grid-1col">
+        <div class="combo-card">
+          <div class="label">Cu / XLPE</div>
+          <div class="mini-row"><span>Adiabatic</span><span id="out_cuxlpe_ad">—</span></div>
+          <div class="mini-row"><span>Non-Adiabatic</span><span id="out_cuxlpe_nonad">—</span></div>
+        </div>
+        <div class="combo-card">
+          <div class="label">Cu / PVC</div>
+          <div class="mini-row"><span>Adiabatic</span><span id="out_cupvc_ad">—</span></div>
+          <div class="mini-row"><span>Non-Adiabatic</span><span id="out_cupvc_nonad">—</span></div>
+        </div>
+        <div class="combo-card">
+          <div class="label">Al / XLPE</div>
+          <div class="mini-row"><span>Adiabatic</span><span id="out_alxlpe_ad">—</span></div>
+          <div class="mini-row"><span>Non-Adiabatic</span><span id="out_alxlpe_nonad">—</span></div>
+        </div>
+        <div class="combo-card">
+          <div class="label">Al / PVC</div>
+          <div class="mini-row"><span>Adiabatic</span><span id="out_alpvc_ad">—</span></div>
+          <div class="mini-row"><span>Non-Adiabatic</span><span id="out_alpvc_nonad">—</span></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copyBtnScc" onclick="salinHasil('scc')">📋 Salin</button>
+        <button class="print-btn" onclick="cetakHasil('scc')">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>MKN — pada waktu di atas</h2>
+      <div class="hint">Formula sederhana, tanpa koreksi non-adiabatic.</div>
+      <div class="combo-grid combo-grid-1col">
+        <div class="combo-card">
+          <div class="label">Cu / XLPE</div>
+          <div class="mini-row"><span>MKN</span><span id="out_cuxlpe_mkn">—</span></div>
+        </div>
+        <div class="combo-card">
+          <div class="label">Cu / PVC</div>
+          <div class="mini-row"><span>MKN</span><span id="out_cupvc_mkn">—</span></div>
+        </div>
+        <div class="combo-card">
+          <div class="label">Al / XLPE</div>
+          <div class="mini-row"><span>MKN</span><span id="out_alxlpe_mkn">—</span></div>
+        </div>
+        <div class="combo-card">
+          <div class="label">Al / PVC</div>
+          <div class="mini-row"><span>MKN</span><span id="out_alpvc_mkn">—</span></div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="copy-btn" id="copyBtnMkn" onclick="salinHasil('mkn')">📋 Salin</button>
+        <button class="print-btn" onclick="cetakHasil('mkn')">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TABEL STANDAR ===================== -->
+  <div class="grid">
+    <div class="panel table-panel" style="margin-top:0;">
+      <h2>Tabel Standar SCC — Yang Biasa Diminta Customer</h2>
+      <div class="hint">Rentang waktu 0.1 – 1 detik.</div>
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom;">t (s)</th>
+            <th colspan="2">Cu/XLPE</th><th colspan="2">Cu/PVC</th>
+            <th colspan="2">Al/XLPE</th><th colspan="2">Al/PVC</th>
+          </tr>
+          <tr>
+            <th>Adiab.</th><th>Non-Ad.</th>
+            <th>Adiab.</th><th>Non-Ad.</th>
+            <th>Adiab.</th><th>Non-Ad.</th>
+            <th>Adiab.</th><th>Non-Ad.</th>
+          </tr>
+        </thead>
+        <tbody id="tabelSccStandar"></tbody>
+      </table>
+      </div>
+    </div>
+
+    <div class="panel table-panel" style="margin-top:0;">
+      <h2>Tabel Standar MKN — Yang Biasa Diminta Customer</h2>
+      <div class="hint">Rentang waktu 0.1 – 1 detik.</div>
+      <div class="table-scroll">
+      <table>
+        <thead>
+          <tr>
+            <th>t (s)</th>
+            <th>Cu/XLPE</th><th>Cu/PVC</th><th>Al/XLPE</th><th>Al/PVC</th>
+          </tr>
+        </thead>
+        <tbody id="tabelMknStandar"></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== AREA CETAK ===================== -->
+  <div id="printArea"></div>
+
+  <footer>
+    <b>Metode SCC</b>: I(kA) = e × S × K × 0.001 × √(ln((θf+b)/(θi+b)) / t), dengan koreksi non-adiabatic e = √(1 + 0.7·A·√(t/S) + 0.49·B·(t/S)), A = C1·√(si/ri)/sc, B = C2·(si/ri)/sc.
+    <b>Metode MKN</b>: I(kA) = K × (ρ/(R20/1.003)×1.01) / 1000 / √t. R20 = resistansi DC konduktor @20°C sesuai ukuran kabel (sama seperti tabel di kalkulator voltage drop).
+    Konstanta K, b, θ (suhu awal/akhir insulasi), C1, C2, si, ri, sc diambil dari file Excel yang kamu unggah.
+  </footer>
+
+</div>
+
+<script>
+  // ---------- Data dasar R20 (Ω/km @20°C) — konsisten dengan kalkulator voltage drop ----------
+  const R20 = [
+    {csa:0.5,   cu:36,     al:null},
+    {csa:0.75,  cu:24.5,   al:null},
+    {csa:1,     cu:18.1,   al:null},
+    {csa:1.5,   cu:12.1,   al:null},
+    {csa:2.5,   cu:7.41,   al:null},
+    {csa:4,     cu:4.61,   al:null},
+    {csa:6,     cu:3.08,   al:null},
+    {csa:10,    cu:1.83,   al:3.08},
+    {csa:16,    cu:1.15,   al:1.91},
+    {csa:25,    cu:0.727,  al:1.2},
+    {csa:35,    cu:0.524,  al:0.868},
+    {csa:50,    cu:0.387,  al:0.641},
+    {csa:70,    cu:0.268,  al:0.443},
+    {csa:95,    cu:0.193,  al:0.32},
+    {csa:120,   cu:0.153,  al:0.253},
+    {csa:150,   cu:0.124,  al:0.206},
+    {csa:185,   cu:0.0991, al:0.164},
+    {csa:240,   cu:0.0754, al:0.125},
+    {csa:300,   cu:0.0601, al:0.1},
+    {csa:400,   cu:0.047,  al:0.0778},
+    {csa:500,   cu:0.0366, al:0.0605},
+    {csa:630,   cu:0.0283, al:0.0469},
+    {csa:800,   cu:0.0221, al:0.0367},
+    {csa:1000,  cu:0.0176, al:0.0291},
+  ];
+
+  // ---------- Konstanta metode SCC (dari file Excel) ----------
+  const K_SCC  = {cu:226, al:148};
+  const B_SCC  = {cu:234.5, al:228};
+  const SC_SCC = {cu:3450000, al:2500000};
+  const SI_SCC = {xlpe:2400000, pvc:1700000};
+  const RI_SCC = {xlpe:3.5, pvcLow:5, pvcHigh:6};
+  const THETA_I = {xlpe:90, pvc:70};
+  const THETA_F = {xlpe:250, pvcLow:160, pvcHigh:140};
+  const C1 = 2464, C2 = 1.22;
+
+  // ---------- Konstanta metode MKN ----------
+  const K_MKN = {cuxlpe:142, cupvc:115, alxlpe:96, alpvc:76};
+  const RESISTIVITY = {cu:17.241, al:28.264};
+
+  const COMBOS = [
+    {key:'cuxlpe', material:'cu', insulation:'xlpe', label:'Cu / XLPE'},
+    {key:'cupvc',  material:'cu', insulation:'pvc',  label:'Cu / PVC'},
+    {key:'alxlpe', material:'al', insulation:'xlpe', label:'Al / XLPE'},
+    {key:'alpvc',  material:'al', insulation:'pvc',  label:'Al / PVC'},
+  ];
+  const T_STANDAR = [0.1, 0.2, 0.3, 0.5, 1];
+
+  function r20For(material, csa){
+    const row = R20.find(r => r.csa === csa);
+    if (!row) return null;
+    return material === 'cu' ? row.cu : row.al;
+  }
+
+  function hitungSCC(combo, csa, kv, t){
+    const {material, insulation} = combo;
+    const K = K_SCC[material];
+    const b = B_SCC[material];
+    const sc = SC_SCC[material];
+    const si = SI_SCC[insulation];
+    const thetaI = THETA_I[insulation];
+    let ri, thetaF;
+    if (insulation === 'xlpe'){
+      ri = RI_SCC.xlpe;
+      thetaF = THETA_F.xlpe;
+    } else {
+      const low = kv <= 3;
+      ri = low ? RI_SCC.pvcLow : RI_SCC.pvcHigh;
+      thetaF = low ? THETA_F.pvcLow : THETA_F.pvcHigh;
+    }
+    if (!(csa > 0) || !(t > 0)) return {adiabatic:null, nonAdiabatic:null};
+
+    const Iad = csa * K * 0.001 * Math.sqrt(Math.log((thetaF + b) / (thetaI + b)) / t);
+    const A = C1 * Math.sqrt(si / ri) / sc;
+    const B = C2 * (si / ri) / sc;
+    const e = Math.sqrt(1 + 0.7*A*Math.sqrt(t/csa) + 0.49*B*(t/csa));
+    return {adiabatic: Iad, nonAdiabatic: e * Iad};
+  }
+
+  function hitungMKN(combo, csa, t){
+    const {material} = combo;
+    const K = K_MKN[combo.key];
+    const rho = RESISTIVITY[material];
+    const r20 = r20For(material, csa);
+    if (r20 === null || !(csa > 0) || !(t > 0)) return null;
+    return K * (rho / (r20/1.003) * 1.01) / 1000 / Math.sqrt(t);
+  }
+
+  function hitungSemuaKombo(combo, csa, kv, t){
+    const scc = hitungSCC(combo, csa, kv, t);
+    const mkn = hitungMKN(combo, csa, t);
+    return {adiabatic: scc.adiabatic, nonAdiabatic: scc.nonAdiabatic, mkn};
+  }
+
+  // ---------- UI ----------
+  const pCsa = document.getElementById('p_csa');
+  const pKv = document.getElementById('p_kv');
+  const pT = document.getElementById('p_t');
+
+  R20.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.csa;
+    opt.textContent = r.csa + ' mm²';
+    if (r.csa === 70) opt.selected = true;
+    pCsa.appendChild(opt);
+  });
+
+  function fmtKA(v){
+    if (v === null || v === undefined || isNaN(v)) return '—';
+    return v.toFixed(2);
+  }
+
+  function hitungSemua(){
+    const csa = parseFloat(pCsa.value);
+    const kv = parseFloat(pKv.value) || 0;
+    const t = parseFloat(pT.value) || 0;
+
+    COMBOS.forEach(combo => {
+      const r = hitungSemuaKombo(combo, csa, kv, t);
+      document.getElementById('out_' + combo.key + '_ad').textContent = fmtKA(r.adiabatic) + ' kA';
+      document.getElementById('out_' + combo.key + '_nonad').textContent = fmtKA(r.nonAdiabatic) + ' kA';
+      document.getElementById('out_' + combo.key + '_mkn').textContent = fmtKA(r.mkn) + ' kA';
+    });
+
+    const tbodyScc = document.getElementById('tabelSccStandar');
+    const tbodyMkn = document.getElementById('tabelMknStandar');
+    tbodyScc.innerHTML = '';
+    tbodyMkn.innerHTML = '';
+    T_STANDAR.forEach(tt => {
+      const hero = (tt === t) ? ' class="hero"' : '';
+      let htmlScc = `<td>${tt}</td>`;
+      let htmlMkn = `<td>${tt}</td>`;
+      COMBOS.forEach(combo => {
+        const r = hitungSemuaKombo(combo, csa, kv, tt);
+        htmlScc += `<td${hero}>${fmtKA(r.adiabatic)}</td><td${hero}>${fmtKA(r.nonAdiabatic)}</td>`;
+        htmlMkn += `<td${hero}>${fmtKA(r.mkn)}</td>`;
+      });
+      const trScc = document.createElement('tr'); trScc.innerHTML = htmlScc; tbodyScc.appendChild(trScc);
+      const trMkn = document.createElement('tr'); trMkn.innerHTML = htmlMkn; tbodyMkn.appendChild(trMkn);
+    });
+  }
+
+  [pCsa, pKv, pT].forEach(el => el.addEventListener('input', hitungSemua));
+
+  // ---------- Cetak / Unduh PDF ----------
+  function fmtTanggal(){
+    const d = new Date();
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function cetakHasil(pabrikan){
+    const csa = parseFloat(pCsa.value);
+    const kv = parseFloat(pKv.value) || 0;
+    const t = parseFloat(pT.value) || 0;
+
+    let html;
+    if (pabrikan === 'scc'){
+      let tableRows = '';
+      T_STANDAR.forEach(tt => {
+        let cells = `<td>${tt}</td>`;
+        COMBOS.forEach(combo => {
+          const r = hitungSemuaKombo(combo, csa, kv, tt);
+          cells += `<td>${fmtKA(r.adiabatic)}</td><td>${fmtKA(r.nonAdiabatic)}</td>`;
+        });
+        tableRows += `<tr>${cells}</tr>`;
+      });
+      html = `
+        <h2>Laporan Short Circuit Withstand Current — SCC</h2>
+        <div class="print-sub">Dibuat: ${fmtTanggal()} — Ukuran kabel: ${csa} mm² — Tegangan sistem: ${kv} kV — Adiabatic + koreksi Non-Adiabatic (IEC 60949)</div>
+        <table>
+          <tr>
+            <th rowspan="2">t (detik)</th>
+            <th colspan="2">Cu/XLPE (kA)</th><th colspan="2">Cu/PVC (kA)</th>
+            <th colspan="2">Al/XLPE (kA)</th><th colspan="2">Al/PVC (kA)</th>
+          </tr>
+          <tr>
+            <th>Adiab.</th><th>Non-Adiab.</th>
+            <th>Adiab.</th><th>Non-Adiab.</th>
+            <th>Adiab.</th><th>Non-Adiab.</th>
+            <th>Adiab.</th><th>Non-Adiab.</th>
+          </tr>
+          ${tableRows}
+        </table>
+        <div class="print-footer">Dihasilkan otomatis oleh Kalkulator Short Circuit Withstand Current (SCC). Verifikasi ke datasheet kabel aktual untuk desain final/kritis.</div>
+      `;
+    } else {
+      let tableRows = '';
+      T_STANDAR.forEach(tt => {
+        let cells = `<td>${tt}</td>`;
+        COMBOS.forEach(combo => {
+          const r = hitungSemuaKombo(combo, csa, kv, tt);
+          cells += `<td>${fmtKA(r.mkn)}</td>`;
+        });
+        tableRows += `<tr>${cells}</tr>`;
+      });
+      html = `
+        <h2>Laporan Short Circuit Withstand Current — MKN</h2>
+        <div class="print-sub">Dibuat: ${fmtTanggal()} — Ukuran kabel: ${csa} mm² — Formula sederhana, tanpa koreksi non-adiabatic</div>
+        <table>
+          <tr><th>t (detik)</th><th>Cu/XLPE (kA)</th><th>Cu/PVC (kA)</th><th>Al/XLPE (kA)</th><th>Al/PVC (kA)</th></tr>
+          ${tableRows}
+        </table>
+        <div class="print-footer">Dihasilkan otomatis oleh Kalkulator Short Circuit Withstand Current (MKN). Verifikasi ke datasheet kabel aktual untuk desain final/kritis.</div>
+      `;
+    }
+
+    document.getElementById('printArea').innerHTML = html;
+    window.print();
+  }
+
+  // ---------- Salin hasil ke clipboard ----------
+  function salinHasil(pabrikan){
+    const csa = parseFloat(pCsa.value);
+    const kv = parseFloat(pKv.value) || 0;
+    const t = parseFloat(pT.value) || 0;
+    let baris = [];
+
+    if (pabrikan === 'scc'){
+      baris.push('HASIL SHORT CIRCUIT — SCC (Adiabatic + Non-Adiabatic)');
+      baris.push('Ukuran kabel: ' + csa + ' mm², Tegangan sistem: ' + kv + ' kV, t = ' + t + ' detik');
+      baris.push('');
+      COMBOS.forEach(combo => {
+        const r = hitungSemuaKombo(combo, csa, kv, t);
+        baris.push(combo.label + ' — Adiabatic: ' + fmtKA(r.adiabatic) + ' kA, Non-Adiabatic: ' + fmtKA(r.nonAdiabatic) + ' kA');
+      });
+    } else {
+      baris.push('HASIL SHORT CIRCUIT — MKN');
+      baris.push('Ukuran kabel: ' + csa + ' mm², t = ' + t + ' detik');
+      baris.push('');
+      COMBOS.forEach(combo => {
+        const r = hitungSemuaKombo(combo, csa, kv, t);
+        baris.push(combo.label + ' — MKN: ' + fmtKA(r.mkn) + ' kA');
+      });
+    }
+
+    const teks = baris.join('\n');
+    const btn = document.getElementById(pabrikan === 'scc' ? 'copyBtnScc' : 'copyBtnMkn');
+    navigator.clipboard.writeText(teks).then(() => {
+      const asli = btn.textContent;
+      btn.textContent = '✓ Tersalin!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = asli; btn.classList.remove('copied'); }, 1800);
+    }).catch(() => {
+      alert('Gagal menyalin. Browser mungkin tidak mendukung clipboard otomatis.');
+    });
+  }
+
+  // ---------- Theme toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function terapkanTema(tema){
+    document.documentElement.setAttribute('data-theme', tema);
+    themeToggle.textContent = tema === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('cable_theme', tema);
+  }
+  themeToggle.addEventListener('click', () => {
+    const skrg = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    terapkanTema(skrg);
+  });
+  terapkanTema(localStorage.getItem('cable_theme') || 'light');
+
+  // ---------- Simpan / muat parameter (localStorage) ----------
+  const STORAGE_KEY = 'scc_params_v1';
+  const FIELD_IDS = ['p_csa','p_kv','p_t'];
+  function simpanParam(){
+    const data = {};
+    FIELD_IDS.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) data[id] = el.value;
+    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function muatParam(){
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    try {
+      const data = JSON.parse(raw);
+      FIELD_IDS.forEach(id => {
+        const el = document.getElementById(id);
+        if (el && data[id] !== undefined && data[id] !== '') el.value = data[id];
+      });
+      return true;
+    } catch(e){ return false; }
+  }
+  function resetParam(){
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }
+  FIELD_IDS.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', simpanParam);
+  });
+
+  const adaTersimpan = muatParam();
+  hitungSemua();
+  if (adaTersimpan){
+    const notif = document.getElementById('paramNotif');
+    if (notif) notif.classList.remove('hidden');
+  }
+</script>
+</body>
+</html>
