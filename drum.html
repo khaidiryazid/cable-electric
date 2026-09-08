@@ -96,6 +96,7 @@
   .drum-diagram{background:#fffdf8; border:1px solid var(--line); border-radius:6px; padding:8px; margin-bottom:18px; max-width:420px;}
   .drum-diagram svg{width:100%; height:auto; display:block;}
   :root[data-theme="dark"] .drum-diagram{background:var(--panel-2);}
+  .drum-legend{display:flex; gap:16px; flex-wrap:wrap; justify-content:center; margin-top:6px; font-size:0.72rem; color:var(--text-dim); font-family:'IBM Plex Mono', monospace;}
 
   .table-panel{margin-top:0;}
   .table-scroll{overflow-x:auto;}
@@ -177,21 +178,40 @@
     <div class="hint">Diameter kabel otomatis diberi allowance 5% (pembulatan) sebelum dihitung, sama seperti file kamu.</div>
 
     <div class="drum-diagram">
-      <svg viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram drum kabel">
-        <line x1="60" y1="30" x2="60" y2="170" stroke="var(--line)" stroke-width="14"/>
-        <line x1="260" y1="30" x2="260" y2="170" stroke="var(--line)" stroke-width="14"/>
-        <rect x="60" y="85" width="200" height="30" fill="var(--panel-2)" stroke="var(--text-dim)" stroke-width="1.5"/>
-        <rect x="70" y="70" width="180" height="60" fill="none" stroke="var(--copper-bright)" stroke-width="3" stroke-dasharray="4,3"/>
+      <svg viewBox="0 0 340 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram drum kabel tampak samping">
+        <!-- flange kiri & kanan (piringan drum, dilihat dari samping) -->
+        <rect x="60" y="20" width="16" height="180" rx="6" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
+        <rect x="264" y="20" width="16" height="180" rx="6" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
 
-        <line x1="60" y1="20" x2="260" y2="20" stroke="var(--copper)" stroke-width="1.2"/>
-        <text x="130" y="15" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">F — Dia. Flange</text>
+        <!-- barrel (poros tengah tempat kabel mulai dililit) -->
+        <rect x="76" y="90" width="188" height="40" fill="var(--panel-2)" stroke="var(--text-dim)" stroke-width="1.5"/>
 
-        <line x1="70" y1="150" x2="250" y2="150" stroke="var(--teal)" stroke-width="1.2"/>
-        <text x="120" y="165" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">IW — Internal Width</text>
+        <!-- zona lilitan kabel -->
+        <rect x="76" y="65" width="188" height="90" rx="4" fill="none" stroke="var(--copper-bright)" stroke-width="3" stroke-dasharray="4,3"/>
 
-        <line x1="30" y1="85" x2="30" y2="115" stroke="var(--red)" stroke-width="1.2"/>
-        <text x="2" y="103" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text)">B</text>
+        <!-- dimensi F: diameter flange, vertikal -->
+        <line x1="34" y1="20" x2="34" y2="200" stroke="var(--copper)" stroke-width="1.2"/>
+        <line x1="27" y1="20" x2="41" y2="20" stroke="var(--copper)" stroke-width="1.2"/>
+        <line x1="27" y1="200" x2="41" y2="200" stroke="var(--copper)" stroke-width="1.2"/>
+        <text x="14" y="114" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--copper)">F</text>
+
+        <!-- dimensi B: diameter barrel, vertikal -->
+        <line x1="306" y1="90" x2="306" y2="130" stroke="var(--red)" stroke-width="1.2"/>
+        <line x1="299" y1="90" x2="313" y2="90" stroke="var(--red)" stroke-width="1.2"/>
+        <line x1="299" y1="130" x2="313" y2="130" stroke="var(--red)" stroke-width="1.2"/>
+        <text x="316" y="114" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--red)">B</text>
+
+        <!-- dimensi IW: internal width, horizontal -->
+        <line x1="76" y1="220" x2="264" y2="220" stroke="var(--teal)" stroke-width="1.2"/>
+        <line x1="76" y1="213" x2="76" y2="227" stroke="var(--teal)" stroke-width="1.2"/>
+        <line x1="264" y1="213" x2="264" y2="227" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="150" y="242" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--teal)">IW</text>
       </svg>
+      <div class="drum-legend">
+        <span><b style="color:var(--copper);">F</b> = Diameter flange</span>
+        <span><b style="color:var(--red);">B</b> = Diameter barrel</span>
+        <span><b style="color:var(--teal);">IW</b> = Internal width</span>
+      </div>
     </div>
 
     <div class="grid3">
@@ -600,16 +620,6 @@
     const s = hitungSpek(D, row, layerManual);
     const bend = cekBending(D, row.barrel, bendFactor);
 
-    let layerRows = '';
-    let total = 0;
-    for (let i = 1; i <= s.N; i++){
-      const diaLayer = s.B + (2*i - 1) * s.Deff;
-      const lPerTurn = Math.PI * diaLayer / 1000;
-      const lPerLayer = lPerTurn * s.T;
-      total += lPerLayer;
-      layerRows += `<tr><td>${i}</td><td>${diaLayer}</td><td>${lPerTurn.toFixed(3)}</td><td>${lPerLayer.toFixed(2)}</td><td>${total.toFixed(2)}</td></tr>`;
-    }
-
     document.getElementById('printArea').innerHTML = `
       <h2>Laporan Panjang Kabel dalam Drum</h2>
       <div class="print-sub">Dibuat: ${fmtTanggal()} — Diameter kabel: ${D} mm — Drum: ${TIPE_LABEL[tipe]}, Flange ${row.flange}mm${row.variant ? ' ('+row.variant+')' : ''}</div>
@@ -633,10 +643,6 @@
         <div class="big">Panjang Maksimum: ${s.L.toLocaleString('id-ID')} meter</div>
         <div style="margin-top:8px; font-size:13px;">${bend.ok ? '✅ Barrel memenuhi syarat bending radius' : '❌ Barrel TIDAK memenuhi syarat bending radius — pilih drum dengan barrel ≥ ' + bend.minBarrel.toFixed(1) + 'mm'}</div>
       </div>
-      <table style="margin-top:16px;">
-        <tr><th>Layer</th><th>Dia. lilitan (mm)</th><th>Panjang/lilitan (m)</th><th>Panjang layer (m)</th><th>Total kumulatif (m)</th></tr>
-        ${layerRows}
-      </table>
       <div class="print-footer">Dihasilkan otomatis oleh Kalkulator Panjang Kabel dalam Drum. Verifikasi ke drum aktual untuk pengiriman/produksi.</div>
     `;
     window.print();
