@@ -178,39 +178,120 @@
     <div class="hint">Diameter kabel otomatis diberi allowance 5% (pembulatan) sebelum dihitung, sama seperti file kamu.</div>
 
     <div class="drum-diagram">
-      <svg viewBox="0 0 340 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram drum kabel tampak samping">
-        <!-- flange kiri & kanan (piringan drum, dilihat dari samping) -->
-        <rect x="60" y="20" width="16" height="180" rx="6" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
-        <rect x="264" y="20" width="16" height="180" rx="6" fill="var(--copper)" stroke="var(--bg)" stroke-width="1.5"/>
+      <svg viewBox="0 0 460 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Skema Diagram Penampang Drum Kabel">
+        <!-- Piringan Flange Kiri & Kanan -->
+        <rect x="70" y="30" width="16" height="230" fill="none" stroke="#e04040" stroke-width="2.5"></rect>
+        <rect x="74" y="30" width="8" height="230" fill="none" stroke="#e04040" stroke-width="1"></rect>
+        <rect x="374" y="30" width="16" height="230" fill="none" stroke="#e04040" stroke-width="2.5"></rect>
+        <rect x="378" y="30" width="8" height="230" fill="none" stroke="#e04040" stroke-width="1"></rect>
 
-        <!-- barrel (poros tengah tempat kabel mulai dililit) -->
-        <rect x="76" y="90" width="188" height="40" fill="var(--panel-2)" stroke="var(--text-dim)" stroke-width="1.5"/>
+        <!-- Poros / Barrel di Tengah -->
+        <rect x="90" y="125" width="284" height="40" fill="none" stroke="#e04040" stroke-width="2.5"></rect>
 
-        <!-- zona lilitan kabel -->
-        <rect x="76" y="65" width="188" height="90" rx="4" fill="none" stroke="var(--copper-bright)" stroke-width="3" stroke-dasharray="4,3"/>
+        <!-- Tumpukan Kabel Atas (Layer & Lilitan Bulat Merah) -->
+        <!-- Layer 1 (Bawah) -->
+        <g fill="none" stroke="#e04040" stroke-width="2">
+          <circle cx="103" cy="115" r="9"></circle><circle cx="121" cy="115" r="9"></circle><circle cx="139" cy="115" r="9"></circle><circle cx="157" cy="115" r="9"></circle><circle cx="175" cy="115" r="9"></circle><circle cx="193" cy="115" r="9"></circle><circle cx="211" cy="115" r="9"></circle><circle cx="229" cy="115" r="9"></circle><circle cx="247" cy="115" r="9"></circle><circle cx="265" cy="115" r="9"></circle><circle cx="283" cy="115" r="9"></circle><circle cx="301" cy="115" r="9"></circle><circle cx="319" cy="115" r="9"></circle><circle cx="337" cy="115" r="9"></circle><circle cx="355" cy="115" r="9"></circle>
+          <!-- Layer 2 -->
+          <circle cx="112" cy="98" r="9"></circle><circle cx="130" cy="98" r="9"></circle><circle cx="148" cy="98" r="9"></circle><circle cx="166" cy="98" r="9"></circle><circle cx="184" cy="98" r="9"></circle><circle cx="202" cy="98" r="9"></circle><circle cx="220" cy="98" r="9"></circle><circle cx="238" cy="98" r="9"></circle><circle cx="256" cy="98" r="9"></circle><circle cx="274" cy="98" r="9"></circle><circle cx="292" cy="98" r="9"></circle><circle cx="310" cy="98" r="9"></circle><circle cx="328" cy="98" r="9"></circle><circle cx="346" cy="98" r="9"></circle>
+          <!-- Layer 3 -->
+          <circle cx="103" cy="81" r="9"></circle><circle cx="121" cy="81" r="9"></circle><circle cx="139" cy="81" r="9"></circle><circle cx="157" cy="81" r="9"></circle><circle cx="175" cy="81" r="9"></circle><circle cx="193" cy="81" r="9"></circle><circle cx="211" cy="81" r="9"></circle><circle cx="229" cy="81" r="9"></circle><circle cx="247" cy="81" r="9"></circle><circle cx="265" cy="81" r="9"></circle><circle cx="283" cy="81" r="9"></circle><circle cx="301" cy="81" r="9"></circle><circle cx="319" cy="81" r="9"></circle><circle cx="337" cy="81" r="9"></circle>
+          <!-- Layer 4 (Atas, tidak penuh / ada sisa clearance C) -->
+          <circle cx="112" cy="64" r="9"></circle><circle cx="130" cy="64" r="9"></circle><circle cx="148" cy="64" r="9"></circle><circle cx="166" cy="64" r="9"></circle><circle cx="184" cy="64" r="9"></circle><circle cx="202" cy="64" r="9"></circle><circle cx="220" cy="64" r="9"></circle><circle cx="238" cy="64" r="9"></circle><circle cx="256" cy="64" r="9"></circle><circle cx="274" cy="64" r="9"></circle><circle cx="292" cy="64" r="9"></circle>
+        </g>
 
-        <!-- dimensi F: diameter flange, vertikal -->
-        <line x1="34" y1="20" x2="34" y2="200" stroke="var(--copper)" stroke-width="1.2"/>
-        <line x1="27" y1="20" x2="41" y2="20" stroke="var(--copper)" stroke-width="1.2"/>
-        <line x1="27" y1="200" x2="41" y2="200" stroke="var(--copper)" stroke-width="1.2"/>
-        <text x="14" y="114" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--copper)">F</text>
+        <!-- Tumpukan Kabel Bawah -->
+        <g fill="none" stroke="#e04040" stroke-width="2">
+          <!-- Layer 1 Bawah -->
+          <circle cx="103" cy="175" r="9"></circle><circle cx="121" cy="175" r="9"></circle><circle cx="139" cy="175" r="9"></circle><circle cx="157" cy="175" r="9"></circle><circle cx="175" cy="175" r="9"></circle><circle cx="193" cy="175" r="9"></circle><circle cx="211" cy="175" r="9"></circle><circle cx="229" cy="175" r="9"></circle><circle cx="247" cy="175" r="9"></circle><circle cx="265" cy="175" r="9"></circle><circle cx="283" cy="175" r="9"></circle><circle cx="301" cy="175" r="9"></circle><circle cx="319" cy="175" r="9"></circle><circle cx="337" cy="175" r="9"></circle><circle cx="355" cy="175" r="9"></circle>
+          <!-- Layer 2 Bawah -->
+          <circle cx="112" cy="192" r="9"></circle><circle cx="130" cy="192" r="9"></circle><circle cx="148" cy="192" r="9"></circle><circle cx="166" cy="192" r="9"></circle><circle cx="184" cy="192" r="9"></circle><circle cx="202" cy="192" r="9"></circle><circle cx="220" cy="192" r="9"></circle><circle cx="238" cy="192" r="9"></circle><circle cx="256" cy="192" r="9"></circle><circle cx="274" cy="192" r="9"></circle><circle cx="292" cy="192" r="9"></circle><circle cx="310" cy="192" r="9"></circle><circle cx="328" cy="192" r="9"></circle><circle cx="346" cy="192" r="9"></circle>
+          <!-- Layer 3 Bawah -->
+          <circle cx="103" cy="209" r="9"></circle><circle cx="121" cy="209" r="9"></circle><circle cx="139" cy="209" r="9"></circle><circle cx="157" cy="209" r="9"></circle><circle cx="175" cy="209" r="9"></circle><circle cx="193" cy="209" r="9"></circle><circle cx="211" cy="209" r="9"></circle><circle cx="229" cy="209" r="9"></circle><circle cx="247" cy="209" r="9"></circle><circle cx="265" cy="209" r="9"></circle><circle cx="283" cy="209" r="9"></circle><circle cx="301" cy="209" r="9"></circle><circle cx="319" cy="209" r="9"></circle><circle cx="337" cy="209" r="9"></circle>
+          <!-- Layer 4 Bawah -->
+          <circle cx="112" cy="226" r="9"></circle><circle cx="130" cy="226" r="9"></circle><circle cx="148" cy="226" r="9"></circle><circle cx="166" cy="226" r="9"></circle><circle cx="184" cy="226" r="9"></circle><circle cx="202" cy="226" r="9"></circle><circle cx="220" cy="226" r="9"></circle><circle cx="238" cy="226" r="9"></circle><circle cx="256" cy="226" r="9"></circle><circle cx="274" cy="226" r="9"></circle><circle cx="292" cy="226" r="9"></circle>
+        </g>
 
-        <!-- dimensi B: diameter barrel, vertikal -->
-        <line x1="306" y1="90" x2="306" y2="130" stroke="var(--red)" stroke-width="1.2"/>
-        <line x1="299" y1="90" x2="313" y2="90" stroke="var(--red)" stroke-width="1.2"/>
-        <line x1="299" y1="130" x2="313" y2="130" stroke="var(--red)" stroke-width="1.2"/>
-        <text x="316" y="114" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--red)">B</text>
+        <!-- Garis & Label N (Tumpukan Layer di kiri) -->
+        <g stroke="#e04040" stroke-width="1.2">
+          <line x1="50" y1="64" x2="68" y2="64"></line>
+          <line x1="40" y1="81" x2="68" y2="81"></line>
+          <line x1="50" y1="98" x2="68" y2="98"></line>
+          <line x1="40" y1="115" x2="68" y2="115"></line>
+          <line x1="45" y1="64" x2="45" y2="115"></line>
+          <line x1="45" y1="64" x2="40" y2="64"></line>
+          <line x1="45" y1="115" x2="40" y2="115"></line>
+        </g>
+        <text x="25" y="93" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold" text-anchor="middle">N</text>
 
-        <!-- dimensi IW: internal width, horizontal -->
-        <line x1="76" y1="220" x2="264" y2="220" stroke="var(--teal)" stroke-width="1.2"/>
-        <line x1="76" y1="213" x2="76" y2="227" stroke="var(--teal)" stroke-width="1.2"/>
-        <line x1="264" y1="213" x2="264" y2="227" stroke="var(--teal)" stroke-width="1.2"/>
-        <text x="150" y="242" font-family="IBM Plex Mono, monospace" font-size="13" font-weight="600" fill="var(--teal)">IW</text>
+        <!-- Garis & Label C (Clearance di kanan atas) -->
+        <g stroke="#e04040" stroke-width="1.2">
+          <line x1="292" y1="45" x2="330" y2="45"></line>
+          <line x1="330" y1="45" x2="330" y2="55"></line>
+          <line x1="330" y1="55" x2="374" y2="55"></line>
+          <line x1="292" y1="40" x2="292" y2="50"></line>
+          <line x1="374" y1="50" x2="374" y2="60"></line>
+        </g>
+        <text x="345" y="40" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold">C</text>
+
+        <!-- Garis & Label D (Diameter Kabel di bawah) -->
+        <g stroke="#e04040" stroke-width="1.2">
+          <line x1="285" y1="245" x2="285" y2="260"></line>
+          <line x1="303" y1="245" x2="303" y2="260"></line>
+          <line x1="285" y1="255" x2="303" y2="255"></line>
+        </g>
+        <text x="294" y="274" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold" text-anchor="middle">D</text>
+
+        <!-- Garis & Label T (Jumlah Lilitan di tengah barrel) -->
+        <g stroke="#e04040" stroke-width="1.2">
+          <line x1="150" y1="140" x2="314" y2="140"></line>
+          <line x1="150" y1="135" x2="150" y2="145"></line>
+          <line x1="170" y1="135" x2="170" y2="145"></line>
+          <line x1="190" y1="135" x2="190" y2="145"></line>
+          <line x1="210" y1="135" x2="210" y2="145"></line>
+          <line x1="230" y1="135" x2="230" y2="145"></line>
+          <line x1="250" y1="135" x2="250" y2="145"></line>
+          <line x1="270" y1="135" x2="270" y2="145"></line>
+          <line x1="290" y1="135" x2="290" y2="145"></line>
+          <line x1="314" y1="135" x2="314" y2="145"></line>
+        </g>
+        <text x="232" y="132" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold" text-anchor="middle">T</text>
+
+        <!-- Garis Panah Hubung di atas Barrel (menghubungkan barrel ke lilitan) -->
+        <g stroke="#e04040" stroke-width="1">
+          <line x1="120" y1="125" x2="120" y2="105"></line><polygon points="120,105 117,112 123,112" fill="#e04040"></polygon>
+          <line x1="150" y1="125" x2="150" y2="105"></line><polygon points="150,105 147,112 153,112" fill="#e04040"></polygon>
+          <line x1="180" y1="125" x2="180" y2="105"></line><polygon points="180,105 177,112 183,112" fill="#e04040"></polygon>
+          <line x1="210" y1="125" x2="210" y2="105"></line><polygon points="210,105 207,112 213,112" fill="#e04040"></polygon>
+          <line x1="240" y1="125" x2="240" y2="105"></line><polygon points="240,105 237,112 243,112" fill="#e04040"></polygon>
+          <line x1="270" y1="125" x2="270" y2="105"></line><polygon points="270,105 267,112 273,112" fill="#e04040"></polygon>
+          <line x1="300" y1="125" x2="300" y2="105"></line><polygon points="300,105 297,112 303,112" fill="#e04040"></polygon>
+          <line x1="330" y1="125" x2="330" y2="105"></line><polygon points="330,105 327,112 333,112" fill="#e04040"></polygon>
+        </g>
+
+        <!-- Garis & Label B (Diameter Barrel di kanan) -->
+        <g stroke="#e04040" stroke-width="1.2">
+          <line x1="400" y1="125" x2="400" y2="165"></line>
+          <line x1="395" y1="125" x2="405" y2="125"></line>
+          <line x1="395" y1="165" x2="405" y2="165"></line>
+        </g>
+        <text x="418" y="149" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold">B</text>
+
+        <!-- Garis & Label IW (Internal Width di bawah) -->
+        <g stroke="#e04040" stroke-width="1.2">
+          <line x1="86" y1="280" x2="378" y2="280"></line>
+          <line x1="86" y1="272" x2="86" y2="288"></line>
+          <line x1="378" y1="272" x2="378" y2="288"></line>
+        </g>
+        <text x="232" y="295" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold" text-anchor="middle">IW</text>
       </svg>
       <div class="drum-legend">
-        <span><b style="color:var(--copper);">F</b> = Diameter flange</span>
-        <span><b style="color:var(--red);">B</b> = Diameter barrel</span>
-        <span><b style="color:var(--teal);">IW</b> = Internal width</span>
+        <span><b>B</b> = Barrel</span>
+        <span><b>C</b> = Clearance</span>
+        <span><b>T</b> = Lilitan</span>
+        <span><b>D</b> = Diameter</span>
+        <span><b>N</b> = Layer</span>
+        <span><b>IW</b> = Internal Width</span>
       </div>
     </div>
 
