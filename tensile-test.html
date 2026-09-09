@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uji Tarik & Elongasi Kabel — Cable Electric</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+  --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a;
+  --red:#a8402f; --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+}
+[data-theme="dark"]{
+  --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+  --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#c98a2c;
+  --red:#c9584a; --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:'Space Grotesk',sans-serif; padding:24px 16px 60px;
+  transition:background .2s,color .2s;
+}
+.wrap{max-width:1080px; margin:0 auto;}
+a.back{display:inline-block; margin-bottom:16px; color:var(--copper); text-decoration:none; font-size:14px; font-weight:500;}
+a.back:hover{text-decoration:underline;}
+header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;}
+h1{font-size:24px; margin:0 0 4px; color:var(--paper);}
+.sub{color:var(--text-dim); font-size:14px; margin:0 0 20px;}
+.ref{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:24px;}
+
+button.icon-btn{
+  border:1px solid var(--line); background:var(--panel); color:var(--text);
+  border-radius:8px; padding:8px 10px; cursor:pointer; font-size:16px; line-height:1;
+}
+button.icon-btn:hover{border-color:var(--copper);}
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px;}
+.panel h2{font-size:15px; margin:0 0 14px; color:var(--paper); display:flex; align-items:center; gap:8px;}
+.panel h2 .n{
+  background:var(--copper); color:#fff; width:22px; height:22px; border-radius:6px;
+  display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;
+}
+.panel .desc{font-size:12.5px; color:var(--text-dim); margin:-6px 0 14px; line-height:1.6;}
+
+.scrollx{overflow-x:auto;}
+table{width:100%; border-collapse:collapse; font-size:12.5px;}
+table th{
+  text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.03em;
+  color:var(--text-dim); padding:7px 8px; border-bottom:1px solid var(--line); white-space:nowrap;
+}
+table td{padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:middle; white-space:nowrap;}
+table.ref-table td, table.ref-table th{white-space:normal;}
+
+.logtable input[type=text], .logtable input[type=number], .logtable select{
+  width:78px; border:1px solid var(--line); background:var(--bg); color:var(--text);
+  border-radius:6px; padding:6px 7px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+}
+.logtable input.wide{width:120px; font-family:'Space Grotesk',sans-serif;}
+.logtable select{width:100px; font-family:'Space Grotesk',sans-serif;}
+.logtable td.calc{font-family:'IBM Plex Mono',monospace; color:var(--teal); font-weight:600;}
+.logtable td.del button{border:none; background:transparent; color:var(--red); cursor:pointer; font-size:15px;}
+
+.badge{display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; font-family:'IBM Plex Mono',monospace;}
+.badge.pass{background:rgba(47,107,98,.15); color:var(--teal);}
+.badge.fail{background:rgba(168,64,47,.15); color:var(--red);}
+.badge.na{background:var(--panel-2); color:var(--text-dim);}
+
+.addrow{
+  border:1px dashed var(--line); background:transparent; color:var(--copper);
+  border-radius:8px; padding:8px 12px; cursor:pointer; font-size:13px; font-weight:500;
+  width:100%; margin-top:10px;
+}
+.addrow:hover{border-color:var(--copper); background:var(--panel-2);}
+
+.example{background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px;}
+.example:last-child{margin-bottom:0;}
+.example h3{margin:0 0 10px; font-size:14px; color:var(--paper);}
+.example .steps div{
+  display:grid; grid-template-columns:150px 1fr; gap:10px; padding:5px 0;
+  border-bottom:1px solid var(--line); font-size:12.5px;
+}
+.example .steps div:last-child{border-bottom:none;}
+.example .steps b{color:var(--text-dim); font-weight:500;}
+.example .steps span{color:var(--text);}
+.example .verdict{
+  margin-top:10px; padding:8px 10px; border-radius:8px; background:var(--panel);
+  font-size:12.5px; font-family:'IBM Plex Mono',monospace;
+}
+
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;}
+.toolbar button{
+  flex:1; min-width:160px; border:none; border-radius:10px; padding:12px 16px;
+  font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; cursor:pointer;
+}
+.btn-print{background:var(--copper); color:#fff;}
+.btn-print:hover{background:var(--copper-bright);}
+.btn-copy{background:var(--panel); color:var(--text); border:1px solid var(--line) !important;}
+.btn-copy:hover{border-color:var(--copper) !important;}
+
+.banner{
+  background:var(--panel-2); border:1px solid var(--line); border-radius:10px;
+  padding:8px 12px; font-size:12px; color:var(--text-dim); display:flex;
+  justify-content:space-between; align-items:center; margin-bottom:16px;
+}
+.banner button{border:none; background:transparent; color:var(--red); cursor:pointer; font-size:12px; text-decoration:underline;}
+
+#printArea{display:none;}
+@media print{
+  body{background:#fff; padding:0;}
+  .wrap > *{display:none !important;}
+  .wrap > #printArea{display:block !important;}
+  #printArea{font-family:'Space Grotesk',sans-serif; color:#2b2118; padding:20px;}
+  #printArea h1{font-size:20px; margin-bottom:2px;}
+  #printArea table{width:100%; border-collapse:collapse; margin:10px 0; font-size:11px;}
+  #printArea table th, #printArea table td{border:1px solid #ccc; padding:5px 7px; text-align:left;}
+}
+
+@media (max-width:640px){
+  header{flex-direction:column;}
+  .example .steps div{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Semua kalkulator</a>
+
+  <header>
+    <div>
+      <h1>Uji Tarik & Elongasi Kabel</h1>
+      <p class="sub">Hitung luas penampang, elongasi, dan kuat tarik — lengkap dengan acuan standar &amp; contoh perhitungan</p>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Ganti tema">🌙</button>
+  </header>
+  <p class="ref">REF: IEC 60811-501 & ASTM E8 / B49 — Tensile strength &amp; elongation at break</p>
+
+  <div class="banner" id="restoreBanner" style="display:none;">
+    <span>Log pengujian terakhir dimuat otomatis</span>
+    <button id="resetBtn">Reset ke default</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">1</span> Acuan standar material</h2>
+    <p class="desc">Dipakai otomatis untuk menentukan PASS/FAIL tiap baris pengujian di bawah, berdasarkan nama material yang diketik (cocok persis, tidak case-sensitive). Material bertanda <span class="badge na" style="padding:1px 6px;">H</span> berasal dari referensi pabrik lain (Helukabel) — cuma ada data Kuat Tarik (pakai batas minimum dari range), belum ada data Elongasi Min / Kecepatan.</p>
+    <div class="scrollx">
+      <table class="ref-table">
+        <thead><tr><th>Material</th><th>Elongasi Min (%)</th><th>Kuat Tarik Range (N/mm²)</th><th>Kuat Tarik Min (N/mm²)</th><th>Std Kecepatan (mm/min)</th></tr></thead>
+        <tbody id="refBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span> Log pengujian & kalkulator</h2>
+    <p class="desc">Pilih tipe spesimen: <b>Dumb-bell</b> pakai Width×Thickness, <b>Tubular</b> pakai Diameter luar & Thickness, <b>Wire</b> pakai Diameter saja. Kolom yang tidak relevan boleh dikosongkan.</p>
+    <div class="scrollx">
+      <table class="logtable">
+        <thead>
+          <tr>
+            <th>Test ID</th><th>Material</th><th>Tipe</th>
+            <th>L0 (mm)</th><th>L_break (mm)</th><th>F Maks (N)</th>
+            <th>D (mm)</th><th>δ/T (mm)</th><th>W (mm)</th>
+            <th>A (mm²)</th><th>Elongasi (%)</th><th>Kuat Tarik (N/mm²)</th>
+            <th>Std Elong Min</th><th>Status</th><th>Std Tarik Min</th><th>Status</th><th>Kecepatan</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+    <button class="addrow" id="addRow">+ Tambah baris pengujian</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span> Contoh perhitungan</h2>
+    <button class="addrow" id="toggleExamples">Lihat contoh perhitungan</button>
+    <div id="examples" style="display:none; margin-top:14px;"></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-print" id="printBtn">🖨 Cetak / Unduh PDF</button>
+    <button class="btn-copy" id="copyBtn">📋 Salin hasil</button>
+  </div>
+
+  <div id="printArea"></div>
+</div>
+
+<datalist id="materialList"></datalist>
+
+<script>
+const STORAGE_KEY = 'cable_tensile_params';
+const THEME_KEY = 'cable_theme';
+
+const REF_BASE = [
+  {material:'HDPE', elongMin:300, tensileRange:'15 - 30', tensileMin:15, speed:50, src:'std'},
+  {material:'MDPE / LDPE', elongMin:200, tensileRange:'10 - 20', tensileMin:10, speed:50, src:'std'},
+  {material:'PVC', elongMin:150, tensileRange:'10 - 25', tensileMin:10, speed:250, src:'std'},
+  {material:'Copper', elongMin:20, tensileRange:'200 - 400', tensileMin:200, speed:10, src:'std'},
+  {material:'Aluminum', elongMin:10, tensileRange:'60 - 150', tensileMin:60, speed:10, src:'std'},
+  {material:'Steel Grade A', elongMin:4, tensileRange:'400 - 600', tensileMin:400, speed:10, src:'std'},
+  {material:'Yarn / Benang', elongMin:2, tensileRange:'50 - 150', tensileMin:50, speed:250, src:'std'},
+  {material:'XLPE', elongMin:200, tensileRange:'12.5', tensileMin:12.5, speed:250, src:'std'},
+];
+
+// Referensi kuat tarik sheath dari pabrik lain (Helukabel) — dimasukkan ke tabel acuan
+// untuk material yang belum ada di REF_BASE, batas Kuat Tarik Min diambil dari nilai
+// minimum range-nya. Elongasi Min & Kecepatan tidak tersedia dari sumber ini.
+const REF_HELUKABEL = [
+  {material:'PVC', tensileRange:'10 - 25'},
+  {material:'PP', tensileRange:'20 - 35'},
+  {material:'PUR', tensileRange:'30 - 45'},
+  {material:'TPE-E', tensileRange:'30'},
+  {material:'TPE-O', tensileRange:'20'},
+  {material:'Silicone, EPR', tensileRange:'5 - 10'},
+  {material:'CR', tensileRange:'10 - 20'},
+  {material:'FEP', tensileRange:'15 - 25'},
+  {material:'XLPE / Cross-linked', tensileRange:'8 - 13'},
+];
+
+function parseRangeMin(rangeStr){
+  const parts = String(rangeStr).split('-').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+  return parts.length ? Math.min(...parts) : 0;
+}
+
+const REF = [...REF_BASE];
+REF_HELUKABEL.forEach(h => {
+  const exists = REF_BASE.some(r => r.material.toLowerCase() === h.material.toLowerCase());
+  if(!exists){
+    REF.push({
+      material: h.material,
+      elongMin: null,
+      tensileRange: h.tensileRange,
+      tensileMin: parseRangeMin(h.tensileRange),
+      speed: null,
+      src: 'helukabel'
+    });
+  }
+});
+
+const defaultRows = [
+  {id:0, testId:'T-001', material:'HDPE', type:'Tubular', l0:20, lb:84, f:110, d:5.2, t:0.8, w:0},
+  {id:1, testId:'T-002', material:'Copper', type:'Wire', l0:250, lb:310, f:850, d:1.78, t:0, w:0},
+];
+
+let rows = [];
+let rowId = 0;
+
+function fmt(n, d=2){
+  if(!isFinite(n)) return '-';
+  return n.toLocaleString('id-ID', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+(function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, cur);
+    applyTheme(cur);
+  });
+})();
+
+function renderRefTables(){
+  document.getElementById('refBody').innerHTML = REF.map(r => `
+    <tr>
+      <td>${r.material}${r.src==='helukabel' ? ' <span class="badge na" style="padding:1px 6px;">H</span>' : ''}</td>
+      <td>${r.elongMin !== null ? r.elongMin+'%' : '-'}</td>
+      <td>${r.tensileRange}</td>
+      <td>${r.tensileMin}</td>
+      <td>${r.speed !== null ? r.speed : '-'}</td>
+    </tr>
+  `).join('');
+  const dl = document.getElementById('materialList');
+  const names = [...new Set(REF.map(r=>r.material))];
+  dl.innerHTML = names.map(n => `<option value="${n}">`).join('');
+}
+
+function findRef(materialName){
+  const name = (materialName || '').trim().toLowerCase();
+  return REF.find(r => r.material.toLowerCase() === name);
+}
+
+function calcArea(row){
+  const d = row.d || 0, t = row.t || 0, w = row.w || 0;
+  if(row.type === 'Dumb-bell') return w * t;
+  if(row.type === 'Tubular') return Math.PI * (d - t) * t;
+  if(row.type === 'Wire') return Math.PI * (d*d) / 4;
+  return 0;
+}
+
+function computeRow(row){
+  const A = calcArea(row);
+  const elong = row.l0 > 0 ? ((row.lb - row.l0) / row.l0) * 100 : 0;
+  const tensile = A > 0 ? row.f / A : 0;
+  const ref = findRef(row.material);
+  let statusElong = 'na', statusTensile = 'na';
+  if(ref){
+    if(ref.elongMin !== null && ref.elongMin !== undefined){
+      statusElong = elong >= ref.elongMin ? 'pass' : 'fail';
+    }
+    if(ref.tensileMin !== null && ref.tensileMin !== undefined){
+      statusTensile = tensile >= ref.tensileMin ? 'pass' : 'fail';
+    }
+  }
+  return {A, elong, tensile, ref, statusElong, statusTensile};
+}
+
+function badge(status, text){
+  if(status === 'na') return `<span class="badge na">-</span>`;
+  return `<span class="badge ${status}">${text}</span>`;
+}
+
+function renderLog(){
+  const body = document.getElementById('logBody');
+  body.innerHTML = '';
+  rows.forEach(row => {
+    const c = computeRow(row);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input type="text" class="wide" value="${row.testId}" data-id="${row.id}" data-f="testId"></td>
+      <td><input type="text" class="wide" list="materialList" value="${row.material}" data-id="${row.id}" data-f="material"></td>
+      <td>
+        <select data-id="${row.id}" data-f="type">
+          <option value="Dumb-bell" ${row.type==='Dumb-bell'?'selected':''}>Dumb-bell</option>
+          <option value="Tubular" ${row.type==='Tubular'?'selected':''}>Tubular</option>
+          <option value="Wire" ${row.type==='Wire'?'selected':''}>Wire</option>
+        </select>
+      </td>
+      <td><input type="number" step="0.1" value="${row.l0}" data-id="${row.id}" data-f="l0"></td>
+      <td><input type="number" step="0.1" value="${row.lb}" data-id="${row.id}" data-f="lb"></td>
+      <td><input type="number" step="0.1" value="${row.f}" data-id="${row.id}" data-f="f"></td>
+      <td><input type="number" step="0.01" value="${row.d}" data-id="${row.id}" data-f="d"></td>
+      <td><input type="number" step="0.01" value="${row.t}" data-id="${row.id}" data-f="t"></td>
+      <td><input type="number" step="0.01" value="${row.w}" data-id="${row.id}" data-f="w"></td>
+      <td class="calc">${fmt(c.A,2)}</td>
+      <td class="calc">${fmt(c.elong,1)}</td>
+      <td class="calc">${fmt(c.tensile,2)}</td>
+      <td>${c.ref && c.ref.elongMin !== null ? c.ref.elongMin+'%' : '-'}</td>
+      <td>${badge(c.statusElong, c.statusElong==='pass'?'PASS':'FAIL')}</td>
+      <td>${c.ref ? c.ref.tensileMin : '-'}</td>
+      <td>${badge(c.statusTensile, c.statusTensile==='pass'?'PASS':'FAIL')}</td>
+      <td>${c.ref && c.ref.speed !== null ? c.ref.speed : '-'}</td>
+      <td class="del"><button data-del="${row.id}" title="Hapus baris">✕</button></td>
+    `;
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('input, select').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const id = +e.target.dataset.id, f = e.target.dataset.f;
+      const row = rows.find(x => x.id === id);
+      if(!row) return;
+      row[f] = (f === 'testId' || f === 'material' || f === 'type') ? e.target.value : (parseFloat(e.target.value) || 0);
+      renderLog();
+      buildPrintArea();
+      saveState();
+    });
+  });
+  body.querySelectorAll('button[data-del]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      const id = +e.target.dataset.del;
+      rows = rows.filter(x => x.id !== id);
+      renderLog();
+      buildPrintArea();
+      saveState();
+    });
+  });
+}
+
+function renderExamples(){
+  const el = document.getElementById('examples');
+  el.innerHTML = `
+    <div class="example">
+      <h3>Contoh 1 — Material Non-Logam (HDPE Tubular) [ID: T-003]</h3>
+      <div class="steps">
+        <div><b>Panjang Awal (L0)</b><span>20 mm — jarak marker awal pada spesimen silinder kosong (tubular sheath)</span></div>
+        <div><b>Panjang Akhir (L_break)</b><span>84 mm — jarak marker sesaat sebelum spesimen putus ditarik mesin UTM</span></div>
+        <div><b>Gaya Tarik Maks (F)</b><span>110 N — beban tertinggi terekam load cell UTM</span></div>
+        <div><b>Diameter Luar (D)</b><span>5.2 mm — diukur dengan mikrometer/optical</span></div>
+        <div><b>Ketebalan Dinding (δ)</b><span>0.8 mm — diukur di 3 titik, ambil nilai minimum</span></div>
+        <div><b>Luas Penampang (A)</b><span>π × (D − δ) × δ = π × (5.2 − 0.8) × 0.8 = 11.06 mm²</span></div>
+        <div><b>Elongasi</b><span>(84 − 20) / 20 × 100% = 320.0%</span></div>
+        <div><b>Kuat Tarik</b><span>110 N / 11.06 mm² = 9.95 N/mm²</span></div>
+      </div>
+      <div class="verdict">Elongasi lolos (320% ≥ 300%), tetapi Kuat Tarik gagal (9.95 &lt; 15 N/mm²)</div>
+    </div>
+    <div class="example">
+      <h3>Contoh 2 — Material Logam (Copper Wire) [ID: T-002]</h3>
+      <div class="steps">
+        <div><b>Panjang Awal (L0)</b><span>250 mm — panjang acuan awal kawat tembaga kupas, standar ASTM E8</span></div>
+        <div><b>Panjang Akhir (L_break)</b><span>310 mm — jarak marker sesaat sebelum kawat putus</span></div>
+        <div><b>Gaya Tarik Maks (F)</b><span>850 N — beban tarikan maksimal terekam load cell UTM</span></div>
+        <div><b>Diameter Kawat (D)</b><span>1.78 mm — diukur presisi dengan mikrometer</span></div>
+        <div><b>Ketebalan Dinding (δ)</b><span>Tidak berlaku untuk spesimen tipe Wire</span></div>
+        <div><b>Luas Penampang (A)</b><span>π × D² / 4 = π × 1.78² / 4 = 2.49 mm²</span></div>
+        <div><b>Elongasi</b><span>(310 − 250) / 250 × 100% = 24.0%</span></div>
+        <div><b>Kuat Tarik</b><span>850 N / 2.49 mm² = 341.58 N/mm²</span></div>
+      </div>
+      <div class="verdict">Kedua parameter lolos uji! Elongasi 24.0% ≥ 20% dan Kuat Tarik 341.58 ≥ 200 N/mm².</div>
+    </div>
+  `;
+}
+
+function buildPrintArea(){
+  const pa = document.getElementById('printArea');
+  const logRows = rows.map(row => {
+    const c = computeRow(row);
+    return `<tr>
+      <td>${row.testId}</td><td>${row.material}</td><td>${row.type}</td>
+      <td>${fmt(row.l0,1)}</td><td>${fmt(row.lb,1)}</td><td>${fmt(row.f,1)}</td>
+      <td>${fmt(c.A,2)}</td><td>${fmt(c.elong,1)}%</td><td>${fmt(c.tensile,2)}</td>
+      <td>${c.statusElong==='na'?'-':c.statusElong.toUpperCase()}</td>
+      <td>${c.statusTensile==='na'?'-':c.statusTensile.toUpperCase()}</td>
+    </tr>`;
+  }).join('');
+
+  pa.innerHTML = `
+    <h1>Uji Tarik & Elongasi Kabel</h1>
+    <p>REF: IEC 60811-501 & ASTM E8 / B49</p>
+    <table>
+      <thead><tr><th>Test ID</th><th>Material</th><th>Tipe</th><th>L0 (mm)</th><th>L_break (mm)</th><th>F (N)</th><th>A (mm²)</th><th>Elongasi</th><th>Kuat Tarik</th><th>Status Elong</th><th>Status Tarik</th></tr></thead>
+      <tbody>${logRows}</tbody>
+    </table>
+    <p style="margin-top:16px; font-size:11px; color:#888;">Dibuat via cable-electric.netlify.app — ${new Date().toLocaleString('id-ID')}</p>
+  `;
+}
+
+function saveState(){
+  const state = {
+    rows: rows.map(({testId,material,type,l0,lb,f,d,t,w}) => ({testId,material,type,l0,lb,f,d,t,w}))
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return false;
+  try{
+    const state = JSON.parse(raw);
+    rows = [];
+    rowId = 0;
+    (state.rows || []).forEach(r => rows.push({id: rowId++, ...r}));
+    if(rows.length === 0) defaultRows.forEach(r => rows.push({...r, id: rowId++}));
+    return true;
+  }catch(e){ return false; }
+}
+
+function init(){
+  renderRefTables();
+  renderExamples();
+
+  const restored = loadState();
+  if(restored){
+    document.getElementById('restoreBanner').style.display = 'flex';
+  } else {
+    defaultRows.forEach(r => rows.push({...r, id: rowId++}));
+  }
+  renderLog();
+  buildPrintArea();
+
+  document.getElementById('addRow').addEventListener('click', () => {
+    rows.push({id: rowId++, testId:'T-'+String(rows.length+1).padStart(3,'0'), material:'', type:'Dumb-bell', l0:20, lb:0, f:0, d:0, t:0, w:0});
+    renderLog();
+    buildPrintArea();
+    saveState();
+  });
+
+  document.getElementById('toggleExamples').addEventListener('click', () => {
+    const el = document.getElementById('examples');
+    const btn = document.getElementById('toggleExamples');
+    const showing = el.style.display !== 'none';
+    el.style.display = showing ? 'none' : 'block';
+    btn.textContent = showing ? 'Lihat contoh perhitungan' : 'Sembunyikan contoh perhitungan';
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    rows = []; rowId = 0;
+    defaultRows.forEach(r => rows.push({...r, id: rowId++}));
+    document.getElementById('restoreBanner').style.display = 'none';
+    renderLog();
+    buildPrintArea();
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    buildPrintArea();
+    window.print();
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    let text = `UJI TARIK & ELONGASI KABEL (IEC 60811-501 / ASTM E8)\n\n`;
+    rows.forEach(row => {
+      const c = computeRow(row);
+      text += `${row.testId} | ${row.material} (${row.type}): A=${fmt(c.A,2)}mm² | Elongasi=${fmt(c.elong,1)}% (${c.statusElong==='na'?'-':c.statusElong.toUpperCase()}) | Kuat Tarik=${fmt(c.tensile,2)}N/mm² (${c.statusTensile==='na'?'-':c.statusTensile.toUpperCase()})\n`;
+    });
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Tersalin';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  });
+}
+
+init();
+</script>
+</body>
+</html>
