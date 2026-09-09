@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Short Circuit Screen — Cable Electric</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+  --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a;
+  --red:#a8402f; --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+}
+[data-theme="dark"]{
+  --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+  --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#c98a2c;
+  --red:#c9584a; --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif; padding:24px 16px 60px; transition:background .2s,color .2s;}
+.wrap{max-width:900px; margin:0 auto;}
+a.back{display:inline-block; margin-bottom:16px; color:var(--copper); text-decoration:none; font-size:14px; font-weight:500;}
+a.back:hover{text-decoration:underline;}
+header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;}
+h1{font-size:24px; margin:0 0 4px; color:var(--paper);}
+.sub{color:var(--text-dim); font-size:14px; margin:0 0 20px;}
+.ref{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:24px;}
+
+button.icon-btn{border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; padding:8px 10px; cursor:pointer; font-size:16px; line-height:1;}
+button.icon-btn:hover{border-color:var(--copper);}
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px;}
+.panel h2{font-size:15px; margin:0 0 14px; color:var(--paper); display:flex; align-items:center; gap:8px;}
+.panel h2 .n{background:var(--copper); color:#fff; width:22px; height:22px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;}
+.panel .desc{font-size:12.5px; color:var(--text-dim); margin:-6px 0 14px; line-height:1.6;}
+
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:4px;}
+.field input, .field select{width:100%; border:1px solid var(--line); background:var(--bg); color:var(--text); border-radius:8px; padding:9px 10px; font-family:'IBM Plex Mono',monospace; font-size:14px;}
+.field select{font-family:'Space Grotesk',sans-serif;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.row3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+.row4{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+
+.typebtns{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:16px;}
+.typebtns button{
+  border:1px solid var(--line); background:var(--panel-2); color:var(--text);
+  border-radius:10px; padding:10px 6px; cursor:pointer; font-family:'Space Grotesk',sans-serif;
+  font-size:12.5px; font-weight:600; text-align:center;
+}
+.typebtns button.active{border-color:var(--copper); background:var(--copper); color:#fff;}
+
+dl.res{margin:0;}
+dl.res div{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;}
+dl.res div:last-child{border-bottom:none;}
+dl.res dt{color:var(--text-dim);}
+dl.res dd{margin:0; font-family:'IBM Plex Mono',monospace; color:var(--text); text-align:right;}
+dl.res div.hl dt{color:var(--paper); font-weight:600;}
+dl.res div.hl dd{color:var(--copper-bright); font-weight:700; font-size:16px;}
+
+.badge{display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; font-family:'IBM Plex Mono',monospace;}
+.badge.pass{background:rgba(47,107,98,.15); color:var(--teal);}
+.badge.fail{background:rgba(168,64,47,.15); color:var(--red);}
+
+.subhead{font-size:12.5px; font-weight:600; color:var(--paper); margin:14px 0 6px; text-transform:uppercase; letter-spacing:.03em;}
+.subhead:first-child{margin-top:0;}
+
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;}
+.toolbar button{flex:1; min-width:160px; border:none; border-radius:10px; padding:12px 16px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; cursor:pointer;}
+.btn-print{background:var(--copper); color:#fff;}
+.btn-print:hover{background:var(--copper-bright);}
+.btn-copy{background:var(--panel); color:var(--text); border:1px solid var(--line) !important;}
+.btn-copy:hover{border-color:var(--copper) !important;}
+
+.banner{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:12px; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+.banner button{border:none; background:transparent; color:var(--red); cursor:pointer; font-size:12px; text-decoration:underline;}
+
+.hide{display:none !important;}
+
+#printArea{display:none;}
+@media print{
+  body{background:#fff; padding:0;}
+  .wrap > *{display:none !important;}
+  .wrap > #printArea{display:block !important;}
+  #printArea{font-family:'Space Grotesk',sans-serif; color:#2b2118; padding:20px;}
+  #printArea h1{font-size:20px; margin-bottom:2px;}
+  #printArea table{width:100%; border-collapse:collapse; margin:10px 0; font-size:12px;}
+  #printArea table th, #printArea table td{border:1px solid #ccc; padding:6px 8px; text-align:left;}
+}
+
+@media (max-width:640px){
+  .row2, .row3, .row4{grid-template-columns:1fr 1fr;}
+  .typebtns{grid-template-columns:1fr 1fr;}
+  header{flex-direction:column;}
+}
+@media (max-width:420px){
+  .row2, .row3, .row4{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Semua kalkulator</a>
+
+  <header>
+    <div>
+      <h1>Short Circuit Screen</h1>
+      <p class="sub">Hitung Short Circuit Current (SCC) screen kabel — adiabatic & non-adiabatic</p>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Ganti tema">🌙</button>
+  </header>
+  <p class="ref">REF: IEC 60949 — Calculation of thermally permissible short-circuit currents (screen/sheath/armour)</p>
+
+  <div class="banner" id="restoreBanner" style="display:none;">
+    <span>Parameter terakhir dimuat otomatis</span>
+    <button id="resetBtn">Reset ke default</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">1</span> Tipe screen</h2>
+    <div class="typebtns" id="typeBtns">
+      <button data-type="W">Copper Wire</button>
+      <button data-type="T">Copper Tape</button>
+      <button data-type="Al">Aluminium Tape</button>
+      <button data-type="L">Lead Sheath</button>
+    </div>
+    <p class="desc" style="margin-bottom:0;">Hanya hasil untuk tipe yang dipilih yang ditampilkan &amp; ikut dicetak.</p>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span> Data umum</h2>
+    <div class="row3">
+      <div class="field"><label>Rate Voltage (kV)</label><input type="number" id="rateVoltage" value="1" step="0.1"></div>
+      <div class="field"><label>Duration (sec)</label><input type="number" id="duration" value="1" step="0.1"></div>
+      <div class="field"><label>Core (pcs)</label><input type="number" id="core" value="1" step="1"></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>CSA Conductor (mm²)</label><input type="number" id="csaCond" value="185" step="1"></div>
+      <div class="field"><label>CSA Screen — target (mm²)</label><input type="number" id="csaScreen" value="25" step="0.1"></div>
+      <div class="field"><label>Dia. Before Screen (mm)</label><input type="number" id="diaBefore" value="31.8" step="0.1"></div>
+    </div>
+    <div class="row3">
+      <div class="field">
+        <label>With ISC?</label>
+        <select id="withISC"><option value="Y">Y (Ya)</option><option value="N">N (Tidak)</option></select>
+      </div>
+      <div class="field">
+        <label>Bedding</label>
+        <select id="bedding"><option value="PVC">PVC</option><option value="PE">PE</option></select>
+      </div>
+      <div class="field" id="wireExtraCsaCondNote" style="display:flex; align-items:flex-end;">
+        <p class="desc" style="margin:0;">CSA Cond. menentukan faktor pengurang pada hitung jumlah wire (≥240mm² pakai 2, selain itu pakai Thick×Width tape pembantu).</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="panelTypeFields">
+    <h2><span class="n">3</span> Data screen</h2>
+    <div id="fieldsWire" class="row3 hide">
+      <div class="field"><label>Dia. Wire Screen (mm)</label><input type="number" id="diaWire" value="0.87" step="0.01"></div>
+      <div class="field"><label>Thick. Of Tape pembantu (mm)</label><input type="number" id="thickTapeW" value="0.1" step="0.01"></div>
+      <div class="field"><label>Width. Of Tape pembantu (mm)</label><input type="number" id="widthTapeW" value="20" step="0.1"></div>
+    </div>
+    <div id="fieldsTape" class="row2 hide">
+      <div class="field"><label>No. Of Tape (pcs)</label><input type="number" id="noTape" value="1" step="1"></div>
+      <div class="field"><label>Thick. Of Tape (mm)</label><input type="number" id="thickTape" value="0.1" step="0.01"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">4</span> Hasil perhitungan — <span id="resultTypeLabel"></span></h2>
+
+    <div class="subhead">Adiabatic</div>
+    <dl class="res" id="resAdiabatic"></dl>
+
+    <div id="wireQcBlock" class="hide">
+      <div class="subhead">Cek Fisik Jumlah Wire</div>
+      <dl class="res" id="resWireQc"></dl>
+    </div>
+
+    <div class="subhead">Non-Adiabatic</div>
+    <dl class="res" id="resNonAdiabatic"></dl>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-print" id="printBtn">🖨 Cetak / Unduh PDF</button>
+    <button class="btn-copy" id="copyBtn">📋 Salin hasil</button>
+  </div>
+
+  <div id="printArea"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'cable_sccscreen_params';
+const THEME_KEY = 'cable_theme';
+
+const MATERIALS = {
+  W:  {label:'Copper Wire Screen', K:226, beta:234.5, s1:3450000},
+  T:  {label:'Copper Tape Screen', K:226, beta:234.5, s1:3450000},
+  Al: {label:'Aluminium Tape',     K:148, beta:228,   s1:2500000},
+  L:  {label:'Lead Sheath',        K:41,  beta:230,   s1:1450000},
+};
+
+let currentType = 'T';
+
+function fmt(n, d=3){
+  if(!isFinite(n)) return '-';
+  return n.toLocaleString('id-ID', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+(function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, cur);
+    applyTheme(cur);
+  });
+})();
+
+function getInputs(){
+  return {
+    rateVoltage: parseFloat(document.getElementById('rateVoltage').value) || 0,
+    duration: parseFloat(document.getElementById('duration').value) || 1,
+    core: parseFloat(document.getElementById('core').value) || 1,
+    csaCond: parseFloat(document.getElementById('csaCond').value) || 0,
+    csaScreen: parseFloat(document.getElementById('csaScreen').value) || 0,
+    diaBefore: parseFloat(document.getElementById('diaBefore').value) || 0,
+    withISC: document.getElementById('withISC').value,
+    bedding: document.getElementById('bedding').value,
+    diaWire: parseFloat(document.getElementById('diaWire').value) || 0,
+    thickTapeW: parseFloat(document.getElementById('thickTapeW').value) || 0,
+    widthTapeW: parseFloat(document.getElementById('widthTapeW').value) || 0,
+    noTape: parseFloat(document.getElementById('noTape').value) || 0,
+    thickTape: parseFloat(document.getElementById('thickTape').value) || 0,
+  };
+}
+
+function constantK(K0, beta, t1, t2){
+  return K0 * Math.sqrt(Math.log((t2 + beta) / (t1 + beta)));
+}
+
+function calcAdiabaticCSA(type, inp){
+  if(type === 'W') return inp.csaScreen;
+  return inp.noTape * (inp.diaBefore + inp.thickTape) * Math.PI * inp.thickTape * inp.core;
+}
+
+function calcWireQc(inp){
+  const sub = inp.csaCond >= 240 ? 2 : (inp.thickTapeW * inp.widthTapeW);
+  const nRaw = Math.round((inp.csaScreen - sub) / ((inp.diaWire**2) * (Math.PI/4)));
+  const csaCalc = (inp.diaWire**2) * (Math.PI/4) * nRaw;
+  const actualWire = (inp.csaScreen === 35) ? nRaw : ((csaCalc < inp.csaScreen ? 1 : 0) + nRaw);
+  const actualCSA = Math.round(((inp.diaWire**2) * (Math.PI/4) * actualWire) * 100)/100 + (inp.thickTapeW * inp.widthTapeW);
+  const gapPerWire = inp.diaWire * actualWire;
+  const circumference = (inp.diaBefore + inp.diaWire) * Math.PI;
+  const spacingGap = actualWire > 0 ? (circumference - gapPerWire) / actualWire : Infinity;
+  const qcPass = spacingGap < 3.8;
+  return {nRaw, csaCalc, actualWire, actualCSA, gapPerWire, circumference, spacingGap, qcPass};
+}
+
+function calcNonAdiabatic(type, inp, thicknessRelevant, sccAdiabatic){
+  const m = MATERIALS[type];
+  const s2 = inp.withISC === 'N' ? 1700000 : 2400000;
+  const r2 = inp.withISC === 'N' ? (inp.rateVoltage <= 3 ? 5 : 6) : 2.5;
+  const s3 = inp.bedding === 'PVC' ? 1700000 : 2400000;
+  const r3 = inp.bedding === 'PVC' ? (inp.rateVoltage <= 3 ? 5 : 6) : 2.5;
+  const M = (Math.sqrt(s2/r2) + Math.sqrt(s3/r3)) * 0.7 / (2 * m.s1 * thicknessRelevant * 0.001);
+  const x = M * Math.sqrt(inp.duration);
+  const e = 1 + 0.61*x - 0.069*(x**2) + 0.0043*(x**3);
+  const sccNonAdiabatic = e * sccAdiabatic;
+  return {s1:m.s1, s2, r2, s3, r3, M, e, sccNonAdiabatic};
+}
+
+function computeAll(type){
+  const inp = getInputs();
+  const m = MATERIALS[type];
+  const t1 = 80, t2 = 250;
+  const K = constantK(m.K, m.beta, t1, t2);
+  const csaUsed = calcAdiabaticCSA(type, inp);
+  const sccAdiabatic = (K/1000) * csaUsed / Math.sqrt(inp.duration);
+
+  const thicknessRelevant = type === 'W' ? inp.diaWire : inp.thickTape;
+  const nonAdi = calcNonAdiabatic(type, inp, thicknessRelevant, sccAdiabatic);
+
+  let wireQc = null;
+  if(type === 'W') wireQc = calcWireQc(inp);
+
+  return {inp, m, t1, t2, K, csaUsed, sccAdiabatic, nonAdi, wireQc};
+}
+
+function renderTypeFields(){
+  document.getElementById('fieldsWire').classList.toggle('hide', currentType !== 'W');
+  document.getElementById('fieldsTape').classList.toggle('hide', currentType === 'W');
+  document.querySelectorAll('#typeBtns button').forEach(b => {
+    b.classList.toggle('active', b.dataset.type === currentType);
+  });
+}
+
+function renderResults(){
+  const type = currentType;
+  const r = computeAll(type);
+  document.getElementById('resultTypeLabel').textContent = r.m.label;
+
+  document.getElementById('resAdiabatic').innerHTML = `
+    <div><dt>Initial / Final Temp.</dt><dd>${r.t1}°C → ${r.t2}°C</dd></div>
+    <div><dt>K / Beta</dt><dd>${r.m.K} / ${r.m.beta}</dd></div>
+    <div><dt>Constant K</dt><dd>${fmt(r.K,4)}</dd></div>
+    <div><dt>CSA dipakai</dt><dd>${fmt(r.csaUsed,3)} mm²</dd></div>
+    <div class="hl"><dt>SCC Adiabatic</dt><dd>${fmt(r.sccAdiabatic,3)} kA</dd></div>
+  `;
+
+  const qcBlock = document.getElementById('wireQcBlock');
+  if(type === 'W'){
+    qcBlock.classList.remove('hide');
+    const q = r.wireQc;
+    document.getElementById('resWireQc').innerHTML = `
+      <div><dt>Jumlah Wire (hitung)</dt><dd>${q.nRaw} pcs</dd></div>
+      <div><dt>Jumlah Wire (aktual)</dt><dd>${q.actualWire} pcs</dd></div>
+      <div><dt>CSA Aktual</dt><dd>${fmt(q.actualCSA,2)} mm²</dd></div>
+      <div><dt>Gap per Wire</dt><dd>${fmt(q.gapPerWire,2)} mm</dd></div>
+      <div><dt>Keliling Sebelum Screen</dt><dd>${fmt(q.circumference,2)} mm</dd></div>
+      <div class="hl"><dt>Spacing Gap</dt><dd>${fmt(q.spacingGap,3)} mm ${q.qcPass ? '<span class="badge pass">OK</span>' : '<span class="badge fail">???</span>'}</dd></div>
+    `;
+  } else {
+    qcBlock.classList.add('hide');
+  }
+
+  document.getElementById('resNonAdiabatic').innerHTML = `
+    <div><dt>s1 / s2 / s3</dt><dd>${fmt(r.nonAdi.s1,0)} / ${fmt(r.nonAdi.s2,0)} / ${fmt(r.nonAdi.s3,0)}</dd></div>
+    <div><dt>r2 / r3</dt><dd>${fmt(r.nonAdi.r2,1)} / ${fmt(r.nonAdi.r3,1)}</dd></div>
+    <div><dt>M</dt><dd>${fmt(r.nonAdi.M,5)}</dd></div>
+    <div><dt>Faktor e</dt><dd>${fmt(r.nonAdi.e,4)}</dd></div>
+    <div class="hl"><dt>SCC Non-Adiabatic</dt><dd>${fmt(r.nonAdi.sccNonAdiabatic,3)} kA</dd></div>
+  `;
+
+  buildPrintArea(r);
+}
+
+function buildPrintArea(r){
+  const pa = document.getElementById('printArea');
+  let wireQcHtml = '';
+  if(currentType === 'W'){
+    const q = r.wireQc;
+    wireQcHtml = `
+      <h3>Cek Fisik Jumlah Wire</h3>
+      <table>
+        <tr><th>Jumlah Wire (hitung)</th><td>${q.nRaw} pcs</td></tr>
+        <tr><th>Jumlah Wire (aktual)</th><td>${q.actualWire} pcs</td></tr>
+        <tr><th>CSA Aktual</th><td>${fmt(q.actualCSA,2)} mm²</td></tr>
+        <tr><th>Gap per Wire</th><td>${fmt(q.gapPerWire,2)} mm</td></tr>
+        <tr><th>Spacing Gap</th><td>${fmt(q.spacingGap,3)} mm — ${q.qcPass ? 'OK' : '???'}</td></tr>
+      </table>
+    `;
+  }
+  pa.innerHTML = `
+    <h1>Short Circuit Screen — ${r.m.label}</h1>
+    <p>REF: IEC 60949 — Rate Voltage ${fmt(r.inp.rateVoltage,1)} kV, Duration ${fmt(r.inp.duration,1)} sec, Core ${r.inp.core}</p>
+    <h3>Adiabatic</h3>
+    <table>
+      <tr><th>Initial / Final Temp.</th><td>${r.t1}°C → ${r.t2}°C</td></tr>
+      <tr><th>K / Beta</th><td>${r.m.K} / ${r.m.beta}</td></tr>
+      <tr><th>Constant K</th><td>${fmt(r.K,4)}</td></tr>
+      <tr><th>CSA dipakai</th><td>${fmt(r.csaUsed,3)} mm²</td></tr>
+      <tr><th>SCC Adiabatic</th><td>${fmt(r.sccAdiabatic,3)} kA</td></tr>
+    </table>
+    ${wireQcHtml}
+    <h3>Non-Adiabatic</h3>
+    <table>
+      <tr><th>s1 / s2 / s3</th><td>${fmt(r.nonAdi.s1,0)} / ${fmt(r.nonAdi.s2,0)} / ${fmt(r.nonAdi.s3,0)}</td></tr>
+      <tr><th>r2 / r3</th><td>${fmt(r.nonAdi.r2,1)} / ${fmt(r.nonAdi.r3,1)}</td></tr>
+      <tr><th>M</th><td>${fmt(r.nonAdi.M,5)}</td></tr>
+      <tr><th>Faktor e</th><td>${fmt(r.nonAdi.e,4)}</td></tr>
+      <tr><th>SCC Non-Adiabatic</th><td>${fmt(r.nonAdi.sccNonAdiabatic,3)} kA</td></tr>
+    </table>
+    <p style="margin-top:16px; font-size:11px; color:#888;">Dibuat via cable-electric.netlify.app — ${new Date().toLocaleString('id-ID')}</p>
+  `;
+}
+
+function saveState(){
+  const inp = getInputs();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({type: currentType, inp}));
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return false;
+  try{
+    const state = JSON.parse(raw);
+    currentType = state.type || 'T';
+    const inp = state.inp || {};
+    document.getElementById('rateVoltage').value = inp.rateVoltage ?? 1;
+    document.getElementById('duration').value = inp.duration ?? 1;
+    document.getElementById('core').value = inp.core ?? 1;
+    document.getElementById('csaCond').value = inp.csaCond ?? 185;
+    document.getElementById('csaScreen').value = inp.csaScreen ?? 25;
+    document.getElementById('diaBefore').value = inp.diaBefore ?? 31.8;
+    document.getElementById('withISC').value = inp.withISC ?? 'Y';
+    document.getElementById('bedding').value = inp.bedding ?? 'PVC';
+    document.getElementById('diaWire').value = inp.diaWire ?? 0.87;
+    document.getElementById('thickTapeW').value = inp.thickTapeW ?? 0.1;
+    document.getElementById('widthTapeW').value = inp.widthTapeW ?? 20;
+    document.getElementById('noTape').value = inp.noTape ?? 1;
+    document.getElementById('thickTape').value = inp.thickTape ?? 0.1;
+    return true;
+  }catch(e){ return false; }
+}
+
+function bindInputs(){
+  ['rateVoltage','duration','core','csaCond','csaScreen','diaBefore','withISC','bedding','diaWire','thickTapeW','widthTapeW','noTape','thickTape'].forEach(id => {
+    const el = document.getElementById(id);
+    el.addEventListener('input', () => { renderResults(); saveState(); });
+    el.addEventListener('change', () => { renderResults(); saveState(); });
+  });
+  document.querySelectorAll('#typeBtns button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentType = btn.dataset.type;
+      renderTypeFields();
+      renderResults();
+      saveState();
+    });
+  });
+}
+
+function init(){
+  const restored = loadState();
+  if(restored){
+    document.getElementById('restoreBanner').style.display = 'flex';
+  }
+  renderTypeFields();
+  renderResults();
+  bindInputs();
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    currentType = 'T';
+    document.getElementById('rateVoltage').value = 1;
+    document.getElementById('duration').value = 1;
+    document.getElementById('core').value = 1;
+    document.getElementById('csaCond').value = 185;
+    document.getElementById('csaScreen').value = 25;
+    document.getElementById('diaBefore').value = 31.8;
+    document.getElementById('withISC').value = 'Y';
+    document.getElementById('bedding').value = 'PVC';
+    document.getElementById('diaWire').value = 0.87;
+    document.getElementById('thickTapeW').value = 0.1;
+    document.getElementById('widthTapeW').value = 20;
+    document.getElementById('noTape').value = 1;
+    document.getElementById('thickTape').value = 0.1;
+    document.getElementById('restoreBanner').style.display = 'none';
+    renderTypeFields();
+    renderResults();
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    renderResults();
+    window.print();
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const r = computeAll(currentType);
+    let text = `SHORT CIRCUIT SCREEN — ${r.m.label}\n`;
+    text += `Adiabatic: Constant K=${fmt(r.K,4)}, CSA=${fmt(r.csaUsed,3)}mm², SCC=${fmt(r.sccAdiabatic,3)} kA\n`;
+    if(currentType === 'W'){
+      const q = r.wireQc;
+      text += `Wire: ${q.actualWire} pcs, CSA aktual=${fmt(q.actualCSA,2)}mm², spacing gap=${fmt(q.spacingGap,3)}mm (${q.qcPass?'OK':'???'})\n`;
+    }
+    text += `Non-Adiabatic: M=${fmt(r.nonAdi.M,5)}, e=${fmt(r.nonAdi.e,4)}, SCC=${fmt(r.nonAdi.sccNonAdiabatic,3)} kA\n`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Tersalin';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  });
+}
+
+init();
+</script>
+</body>
+</html>
