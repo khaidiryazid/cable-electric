@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coverage Braid & Berat Material — Cable Electric</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+  --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a;
+  --red:#a8402f; --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+}
+[data-theme="dark"]{
+  --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+  --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#c98a2c;
+  --red:#c9584a; --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif; padding:24px 16px 60px; transition:background .2s,color .2s;}
+.wrap{max-width:900px; margin:0 auto;}
+a.back{display:inline-block; margin-bottom:16px; color:var(--copper); text-decoration:none; font-size:14px; font-weight:500;}
+a.back:hover{text-decoration:underline;}
+header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;}
+h1{font-size:24px; margin:0 0 4px; color:var(--paper);}
+.sub{color:var(--text-dim); font-size:14px; margin:0 0 20px;}
+.ref{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:24px;}
+
+button.icon-btn{border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; padding:8px 10px; cursor:pointer; font-size:16px; line-height:1;}
+button.icon-btn:hover{border-color:var(--copper);}
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px;}
+.panel h2{font-size:15px; margin:0 0 14px; color:var(--paper); display:flex; align-items:center; gap:8px;}
+.panel h2 .n{background:var(--copper); color:#fff; width:22px; height:22px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;}
+.panel .desc{font-size:12.5px; color:var(--text-dim); margin:-6px 0 14px; line-height:1.6;}
+
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:4px;}
+.field input, .field select{width:100%; border:1px solid var(--line); background:var(--bg); color:var(--text); border-radius:8px; padding:9px 10px; font-family:'IBM Plex Mono',monospace; font-size:14px;}
+.field select{font-family:'Space Grotesk',sans-serif;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.row3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+.row4{display:grid; grid-template-columns:repeat(4,1fr); gap:12px;}
+
+.lookupnote{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:10px 12px; font-size:12.5px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap;}
+.lookupnote b{color:var(--paper); font-family:'IBM Plex Mono',monospace;}
+.applybtn{border:1px solid var(--copper); background:transparent; color:var(--copper); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:12px; font-weight:600; white-space:nowrap;}
+.applybtn:hover{background:var(--copper); color:#fff;}
+
+dl.res{margin:0;}
+dl.res div{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;}
+dl.res div:last-child{border-bottom:none;}
+dl.res dt{color:var(--text-dim);}
+dl.res dd{margin:0; font-family:'IBM Plex Mono',monospace; color:var(--text); text-align:right;}
+dl.res div.hl dt{color:var(--paper); font-weight:600;}
+dl.res div.hl dd{color:var(--copper-bright); font-weight:700; font-size:16px;}
+
+.badge{display:inline-block; padding:3px 8px; border-radius:6px; font-size:11px; font-weight:700; font-family:'IBM Plex Mono',monospace; margin-left:6px;}
+.badge.pass{background:rgba(47,107,98,.15); color:var(--teal);}
+.badge.fail{background:rgba(168,64,47,.15); color:var(--red);}
+
+.subhead{font-size:12.5px; font-weight:600; color:var(--paper); margin:14px 0 6px; text-transform:uppercase; letter-spacing:.03em;}
+.subhead:first-child{margin-top:0;}
+
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;}
+.toolbar button{flex:1; min-width:160px; border:none; border-radius:10px; padding:12px 16px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; cursor:pointer;}
+.btn-print{background:var(--copper); color:#fff;}
+.btn-print:hover{background:var(--copper-bright);}
+.btn-copy{background:var(--panel); color:var(--text); border:1px solid var(--line) !important;}
+.btn-copy:hover{border-color:var(--copper) !important;}
+
+.banner{background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:8px 12px; font-size:12px; color:var(--text-dim); display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;}
+.banner button{border:none; background:transparent; color:var(--red); cursor:pointer; font-size:12px; text-decoration:underline;}
+
+#printArea{display:none;}
+@media print{
+  body{background:#fff; padding:0;}
+  .wrap > *{display:none !important;}
+  .wrap > #printArea{display:block !important;}
+  #printArea{font-family:'Space Grotesk',sans-serif; color:#2b2118; padding:20px;}
+  #printArea h1{font-size:20px; margin-bottom:2px;}
+  #printArea table{width:100%; border-collapse:collapse; margin:10px 0; font-size:12px;}
+  #printArea table th, #printArea table td{border:1px solid #ccc; padding:6px 8px; text-align:left;}
+}
+
+@media (max-width:640px){
+  .row2, .row3, .row4{grid-template-columns:1fr 1fr;}
+  header{flex-direction:column;}
+}
+@media (max-width:420px){
+  .row2, .row3, .row4{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Semua kalkulator</a>
+
+  <header>
+    <div>
+      <h1>Coverage Braid & Berat Material</h1>
+      <p class="sub">Hitung % coverage, filling factor, braid angle, dan berat material braid (kg/km)</p>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Ganti tema">🌙</button>
+  </header>
+  <p class="ref">REF: Standar konstruksi braid pabrik — tabel Dia. before 2–44.5 mm</p>
+
+  <div class="banner" id="restoreBanner" style="display:none;">
+    <span>Parameter terakhir dimuat otomatis</span>
+    <button id="resetBtn">Reset ke default</button>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">1</span> Diameter & material</h2>
+    <div class="row2">
+      <div class="field"><label>Overall diameter before braid (mm)</label><input type="number" id="diaBefore" value="10.46" step="0.01"></div>
+      <div class="field">
+        <label>Material screen</label>
+        <select id="material">
+          <option value="8.89">Copper (Cu) — 8.89 g/cm³</option>
+          <option value="3.65">Copper Clad Aluminium (CCA) — 3.65 g/cm³</option>
+          <option value="2.70">Aluminium (Al) — 2.70 g/cm³</option>
+          <option value="custom">Custom…</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" id="customDensityField" style="display:none;">
+      <label>Density custom (g/cm³)</label>
+      <input type="number" id="density" value="8.89" step="0.01">
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span> Konstruksi braid</h2>
+    <p class="desc">Otomatis diisi dari tabel standar berdasarkan diameter (dibulatkan ke atas ke kelipatan 0,5mm terdekat) — bisa diubah manual kalau konstruksi aktual beda dari standar.</p>
+    <div class="lookupnote">
+      <span>Dipakai kunci tabel: <b id="lookupDia">-</b> mm</span>
+      <button class="applybtn" id="applyStd">↺ Pakai standar tabel</button>
+    </div>
+    <div class="row4">
+      <div class="field"><label>No. of Unit (spindle)</label><input type="number" id="noUnit" value="24" step="1"></div>
+      <div class="field"><label>No. of wire per unit</label><input type="number" id="wirePerUnit" value="9" step="1"></div>
+      <div class="field"><label>Diameter of wire (mm)</label><input type="number" id="wireDia" value="0.15" step="0.01"></div>
+      <div class="field"><label>Lay of length (mm)</label><input type="number" id="layLength" value="42" step="1"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span> Hasil perhitungan</h2>
+    <div class="subhead">Geometri braid</div>
+    <dl class="res" id="resGeo"></dl>
+    <div class="subhead">Coverage & filling factor</div>
+    <dl class="res" id="resCoverage"></dl>
+    <div class="subhead">Berat material</div>
+    <dl class="res" id="resWeight"></dl>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-print" id="printBtn">🖨 Cetak / Unduh PDF</button>
+    <button class="btn-copy" id="copyBtn">📋 Salin hasil</button>
+  </div>
+
+  <div id="printArea"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'cable_braidcoverage_params';
+const THEME_KEY = 'cable_theme';
+
+// [diaBefore, noUnit, wirePerUnit, wireDia, layLength] — tabel standar konstruksi braid
+const TABLE = [[2,12,6,0.12,45],[2.5,12,7,0.12,26],[3,12,8,0.12,24],[3.5,16,7,0.12,32],[4,16,8,0.12,35],[4.5,16,9,0.12,45],[5,16,10,0.12,50],[5.5,16,10,0.12,32],[6,16,12,0.12,55],[6.5,16,10,0.15,50],[7,16,10,0.15,40],[7.5,16,11,0.15,45],[8,16,12,0.15,55],[8.5,16,12,0.15,45],[9,16,12,0.15,41],[9.5,16,12,0.15,36],[10,24,9,0.15,47],[10.5,24,9,0.15,42],[11,24,9,0.15,40],[11.5,24,9,0.15,39],[12,24,9,0.15,37],[12.5,24,9,0.15,35],[13,24,9,0.15,34],[13.5,24,9,0.15,33],[14,24,10,0.15,39],[14.5,24,10,0.15,38],[15,24,10,0.15,37],[15.5,24,9,0.19,46],[16,24,9,0.19,45],[16.5,24,9,0.19,43],[17,24,9,0.19,43],[17.5,24,9,0.19,42],[18,24,9,0.19,41],[18.5,24,9,0.19,40],[19,24,9,0.19,40],[19.5,24,9,0.19,40],[20,24,9,0.19,39],[20.5,24,9,0.19,39],[21,24,10,0.19,45],[21.5,24,10,0.19,45],[22,24,10,0.19,44],[22.5,24,10,0.19,44],[23,24,10,0.19,43],[23.5,24,10,0.19,43],[24,24,10,0.19,43],[24.5,24,10,0.19,42],[25,24,10,0.19,42],[25.5,24,11,0.24,65],[26,24,11,0.24,65],[26.5,24,11,0.24,65],[27,24,11,0.24,65],[27.5,24,11,0.24,65],[28,24,11,0.24,64],[28.5,24,11,0.24,63],[29,24,11,0.24,63],[29.5,24,11,0.24,62],[30,24,11,0.24,62],[30.5,24,11,0.24,62],[31,24,12,0.24,69],[31.5,24,12,0.24,68],[32,24,12,0.24,68],[32.5,24,12,0.24,68],[33,24,12,0.24,67],[33.5,24,12,0.24,67],[34,24,12,0.24,67],[34.5,24,12,0.24,66],[35,24,12,0.24,66],[35.5,24,11,0.29,75],[36,24,11,0.29,75],[36.5,24,11,0.29,75],[37,24,11,0.29,74],[37.5,24,11,0.29,74],[38,24,11,0.29,74],[38.5,24,11,0.29,72],[39,24,11,0.29,72],[39.5,24,11,0.29,72],[40,24,11,0.29,72],[40.5,24,12,0.29,80],[41,24,12,0.29,80],[41.5,24,12,0.29,80],[42,24,12,0.29,80],[42.5,24,12,0.29,80],[43,24,12,0.29,79],[43.5,24,12,0.29,79],[44,24,12,0.29,79],[44.5,24,12,0.29,79]];
+const TABLE_MIN = TABLE[0][0], TABLE_MAX = TABLE[TABLE.length-1][0];
+
+function fmt(n, d=3){
+  if(!isFinite(n)) return '-';
+  return n.toLocaleString('id-ID', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+(function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, cur);
+    applyTheme(cur);
+  });
+})();
+
+function ceilToHalf(x){ return Math.ceil(x*2)/2; }
+
+function lookupTable(dia){
+  let key = ceilToHalf(dia);
+  if(key < TABLE_MIN) key = TABLE_MIN;
+  if(key > TABLE_MAX) key = TABLE_MAX;
+  const row = TABLE.find(r => Math.abs(r[0]-key) < 0.001);
+  return {key, row};
+}
+
+function getDensity(){
+  const sel = document.getElementById('material').value;
+  if(sel === 'custom') return parseFloat(document.getElementById('density').value) || 0;
+  return parseFloat(sel);
+}
+
+function getInputs(){
+  return {
+    diaBefore: parseFloat(document.getElementById('diaBefore').value) || 0,
+    density: getDensity(),
+    noUnit: parseFloat(document.getElementById('noUnit').value) || 0,
+    wirePerUnit: parseFloat(document.getElementById('wirePerUnit').value) || 0,
+    wireDia: parseFloat(document.getElementById('wireDia').value) || 0,
+    layLength: parseFloat(document.getElementById('layLength').value) || 0,
+  };
+}
+
+function compute(){
+  const inp = getInputs();
+  const dp = inp.diaBefore + 2*inp.wireDia;
+  const Dm = inp.diaBefore + 2.25*inp.wireDia;
+  const p = Math.sqrt(inp.layLength**2 + ((inp.diaBefore+dp)*Math.PI)**2);
+  const sudutRad = Math.atan(Math.PI*Dm/inp.layLength);
+  const braidAngleDeg = sudutRad * 180/Math.PI;
+  const layFactorKL = Math.sqrt(1 + (Math.PI**2 * Dm**2)/(inp.layLength**2));
+  const fillingFactor = ((inp.noUnit*inp.wirePerUnit*inp.wireDia)/(2*Math.PI*Dm)) * layFactorKL;
+  const coveragePct = Math.round((2*fillingFactor - fillingFactor**2)*10000)/100;
+  const totalCSA = inp.noUnit*inp.wirePerUnit*(Math.PI/4)*(inp.wireDia**2);
+  const beratKgKm = (totalCSA*inp.density)/Math.cos(sudutRad);
+  return {inp, dp, Dm, p, sudutRad, braidAngleDeg, layFactorKL, fillingFactor, coveragePct, totalCSA, beratKgKm};
+}
+
+function badge(pass){
+  return pass ? '<span class="badge pass">PASS</span>' : '<span class="badge fail">FAIL</span>';
+}
+
+function renderLookupNote(){
+  const dia = parseFloat(document.getElementById('diaBefore').value) || 0;
+  const {key} = lookupTable(dia);
+  document.getElementById('lookupDia').textContent = fmt(key,1);
+}
+
+function applyStandard(){
+  const dia = parseFloat(document.getElementById('diaBefore').value) || 0;
+  const {row} = lookupTable(dia);
+  if(row){
+    document.getElementById('noUnit').value = row[1];
+    document.getElementById('wirePerUnit').value = row[2];
+    document.getElementById('wireDia').value = row[3];
+    document.getElementById('layLength').value = row[4];
+  }
+  renderAll();
+  saveState();
+}
+
+function renderAll(){
+  renderLookupNote();
+  const r = compute();
+
+  document.getElementById('resGeo').innerHTML = `
+    <div><dt>dp (Dia. + 2×wire)</dt><dd>${fmt(r.dp,3)} mm</dd></div>
+    <div><dt>Mean diameter of Braid (Dm)</dt><dd>${fmt(r.Dm,3)} mm</dd></div>
+    <div><dt>Pitch (p)</dt><dd>${fmt(r.p,3)} mm</dd></div>
+    <div><dt>Braid angle (q)</dt><dd>${fmt(r.braidAngleDeg,2)}°</dd></div>
+    <div><dt>Lay factor (KL)</dt><dd>${fmt(r.layFactorKL,4)}</dd></div>
+  `;
+
+  document.getElementById('resCoverage').innerHTML = `
+    <div class="hl"><dt>% Coverage</dt><dd>${fmt(r.coveragePct,2)}% ${badge(r.coveragePct>=80)}</dd></div>
+    <div><dt>Filling factor</dt><dd>${fmt(r.fillingFactor,4)} ${badge(r.fillingFactor>=0.6)}</dd></div>
+  `;
+
+  document.getElementById('resWeight').innerHTML = `
+    <div><dt>Total CSA seluruh wire</dt><dd>${fmt(r.totalCSA,4)} mm²</dd></div>
+    <div><dt>Density dipakai</dt><dd>${fmt(r.inp.density,2)} g/cm³</dd></div>
+    <div class="hl"><dt>Berat material</dt><dd>${fmt(r.beratKgKm,3)} kg/km</dd></div>
+  `;
+
+  buildPrintArea(r);
+}
+
+function buildPrintArea(r){
+  const pa = document.getElementById('printArea');
+  pa.innerHTML = `
+    <h1>Coverage Braid & Berat Material</h1>
+    <p>Overall diameter before braid: ${fmt(r.inp.diaBefore,2)} mm — Konstruksi: ${r.inp.noUnit} unit × ${r.inp.wirePerUnit} wire, Ø${fmt(r.inp.wireDia,2)}mm, lay ${fmt(r.inp.layLength,1)}mm</p>
+    <table>
+      <tr><th>dp</th><td>${fmt(r.dp,3)} mm</td></tr>
+      <tr><th>Mean diameter of Braid (Dm)</th><td>${fmt(r.Dm,3)} mm</td></tr>
+      <tr><th>Pitch (p)</th><td>${fmt(r.p,3)} mm</td></tr>
+      <tr><th>Braid angle (q)</th><td>${fmt(r.braidAngleDeg,2)}°</td></tr>
+      <tr><th>Lay factor (KL)</th><td>${fmt(r.layFactorKL,4)}</td></tr>
+      <tr><th>% Coverage</th><td>${fmt(r.coveragePct,2)}% (${r.coveragePct>=80?'PASS':'FAIL'}, min. 80%)</td></tr>
+      <tr><th>Filling factor</th><td>${fmt(r.fillingFactor,4)} (${r.fillingFactor>=0.6?'PASS':'FAIL'}, min. 0.6)</td></tr>
+      <tr><th>Total CSA wire</th><td>${fmt(r.totalCSA,4)} mm²</td></tr>
+      <tr><th>Density</th><td>${fmt(r.inp.density,2)} g/cm³</td></tr>
+      <tr><th>Berat material</th><td>${fmt(r.beratKgKm,3)} kg/km</td></tr>
+    </table>
+    <p style="margin-top:16px; font-size:11px; color:#888;">Dibuat via cable-electric.netlify.app — ${new Date().toLocaleString('id-ID')}</p>
+  `;
+}
+
+function saveState(){
+  const state = {
+    diaBefore: document.getElementById('diaBefore').value,
+    material: document.getElementById('material').value,
+    density: document.getElementById('density').value,
+    noUnit: document.getElementById('noUnit').value,
+    wirePerUnit: document.getElementById('wirePerUnit').value,
+    wireDia: document.getElementById('wireDia').value,
+    layLength: document.getElementById('layLength').value,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return false;
+  try{
+    const state = JSON.parse(raw);
+    document.getElementById('diaBefore').value = state.diaBefore ?? 10.46;
+    document.getElementById('material').value = state.material ?? '8.89';
+    document.getElementById('density').value = state.density ?? 8.89;
+    document.getElementById('noUnit').value = state.noUnit ?? 24;
+    document.getElementById('wirePerUnit').value = state.wirePerUnit ?? 9;
+    document.getElementById('wireDia').value = state.wireDia ?? 0.15;
+    document.getElementById('layLength').value = state.layLength ?? 42;
+    return true;
+  }catch(e){ return false; }
+}
+
+function updateDensityFieldVisibility(){
+  const sel = document.getElementById('material').value;
+  document.getElementById('customDensityField').style.display = sel === 'custom' ? 'block' : 'none';
+}
+
+function init(){
+  const restored = loadState();
+  if(restored){
+    document.getElementById('restoreBanner').style.display = 'flex';
+  }
+  updateDensityFieldVisibility();
+  renderAll();
+
+  document.getElementById('diaBefore').addEventListener('input', () => { renderLookupNote(); renderAll(); saveState(); });
+  ['noUnit','wirePerUnit','wireDia','layLength','density'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => { renderAll(); saveState(); });
+  });
+  document.getElementById('material').addEventListener('change', () => {
+    updateDensityFieldVisibility();
+    if(document.getElementById('material').value !== 'custom'){
+      document.getElementById('density').value = document.getElementById('material').value;
+    }
+    renderAll();
+    saveState();
+  });
+
+  document.getElementById('applyStd').addEventListener('click', applyStandard);
+
+  document.getElementById('resetBtn').addEventListener('click', () => {
+    localStorage.removeItem(STORAGE_KEY);
+    document.getElementById('diaBefore').value = 10.46;
+    document.getElementById('material').value = '8.89';
+    document.getElementById('density').value = 8.89;
+    document.getElementById('noUnit').value = 24;
+    document.getElementById('wirePerUnit').value = 9;
+    document.getElementById('wireDia').value = 0.15;
+    document.getElementById('layLength').value = 42;
+    document.getElementById('restoreBanner').style.display = 'none';
+    updateDensityFieldVisibility();
+    renderAll();
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    renderAll();
+    window.print();
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const r = compute();
+    const text = `COVERAGE BRAID & BERAT MATERIAL\nDia. before braid: ${fmt(r.inp.diaBefore,2)} mm | Konstruksi: ${r.inp.noUnit} unit x ${r.inp.wirePerUnit} wire, Ø${fmt(r.inp.wireDia,2)}mm, lay ${fmt(r.inp.layLength,1)}mm\nBraid angle: ${fmt(r.braidAngleDeg,2)}° | Coverage: ${fmt(r.coveragePct,2)}% (${r.coveragePct>=80?'PASS':'FAIL'}) | Filling factor: ${fmt(r.fillingFactor,4)} (${r.fillingFactor>=0.6?'PASS':'FAIL'})\nBerat material: ${fmt(r.beratKgKm,3)} kg/km (density ${fmt(r.inp.density,2)} g/cm³)`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Tersalin';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  });
+}
+
+init();
+</script>
+</body>
+</html>
