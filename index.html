@@ -20,7 +20,7 @@
   body, a.card{transition:background-color 0.2s, color 0.2s, border-color 0.2s;}
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk', sans-serif; padding:48px 20px 60px;}
-  .wrap{max-width:820px; margin:0 auto;}
+  .wrap{max-width:980px; margin:0 auto;}
 
   .theme-toggle{
     position:fixed; top:20px; right:20px;
@@ -35,7 +35,8 @@
   h1{font-size:1.9rem; font-weight:700; margin:0 0 8px; color:var(--paper);}
   .sub{font-family:'IBM Plex Mono', monospace; font-size:0.85rem; color:var(--text-dim);}
 
-  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  @media (max-width:900px){ .grid{grid-template-columns:1fr 1fr;} }
   @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
   @media (max-width:420px){ h1{font-size:1.5rem;} }
 
@@ -105,6 +106,34 @@
       <h2>Panjang Kabel dalam Drum</h2>
       <p>Hitung panjang maksimum kabel yang bisa dimuat dalam drum (haspel biasa, tembaga, atau custom) berdasarkan diameter kabel &amp; ukuran drum.</p>
       <span class="go">Buka kalkulator →</span>
+    </a>
+
+    <a class="card" href="fire-test.html">
+      <span class="tag">FIRE-TEST-CALC</span>
+      <h2>Extra Length Uji Bakar</h2>
+      <p>Hitung jumlah sampel &amp; panjang kabel yang dibutuhkan untuk uji bakar vertikal IEC 60332-3 (Category A/B/C) dari berat &amp; berat jenis material kabel.</p>
+      <span class="go">Buka kalkulator →</span>
+    </a>
+
+    <a class="card soon" href="#">
+      <span class="tag">SOON</span>
+      <h2>Kalkulator Berikutnya</h2>
+      <p>Lagi disiapin — bakal muncul di sini kalau udah jadi.</p>
+      <span class="go">Segera →</span>
+    </a>
+
+    <a class="card soon" href="#">
+      <span class="tag">SOON</span>
+      <h2>Kalkulator Berikutnya</h2>
+      <p>Lagi disiapin — bakal muncul di sini kalau udah jadi.</p>
+      <span class="go">Segera →</span>
+    </a>
+
+    <a class="card soon" href="#">
+      <span class="tag">SOON</span>
+      <h2>Kalkulator Berikutnya</h2>
+      <p>Lagi disiapin — bakal muncul di sini kalau udah jadi.</p>
+      <span class="go">Segera →</span>
     </a>
   </div>
 
