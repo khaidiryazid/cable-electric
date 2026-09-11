@@ -20,7 +20,7 @@
   body, a.card{transition:background-color 0.2s, color 0.2s, border-color 0.2s;}
   *{box-sizing:border-box;}
   body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk', sans-serif; padding:48px 20px 60px;}
-  .wrap{max-width:980px; margin:0 auto;}
+  .wrap{max-width:820px; margin:0 auto;}
 
   .theme-toggle{
     position:fixed; top:20px; right:20px;
@@ -30,13 +30,20 @@
   }
   .theme-toggle:hover{border-color:var(--copper);}
 
+  .install-btn{
+    margin-top:16px; background:var(--copper); color:#fff9ef; border:none; border-radius:6px;
+    padding:10px 20px; font-family:'Space Grotesk', sans-serif; font-size:0.88rem; font-weight:600;
+    cursor:pointer; letter-spacing:0.01em;
+  }
+  .install-btn:hover{background:var(--copper-bright);}
+  .install-btn.hidden{display:none;}
+
   header{text-align:center; margin-bottom:40px;}
   .icon{margin:0 auto 18px;}
   h1{font-size:1.9rem; font-weight:700; margin:0 0 8px; color:var(--paper);}
   .sub{font-family:'IBM Plex Mono', monospace; font-size:0.85rem; color:var(--text-dim);}
 
-  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
-  @media (max-width:900px){ .grid{grid-template-columns:1fr 1fr;} }
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
   @media (max-width:640px){ .grid{grid-template-columns:1fr;} }
   @media (max-width:420px){ h1{font-size:1.5rem;} }
 
@@ -58,6 +65,9 @@
 
   footer{text-align:center; margin-top:44px; font-size:0.75rem; color:var(--text-dim); font-family:'IBM Plex Mono', monospace;}
 </style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#b5661f">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
@@ -77,6 +87,7 @@
     </svg>
     <h1>Kalkulator Kabel Listrik</h1>
     <div class="sub">Voltage Drop, Dihitung Benar. Bukan Ditebak.</div>
+    <button class="install-btn hidden" id="installBtn">📲 Install App</button>
   </header>
 
   <div class="grid">
@@ -107,41 +118,6 @@
       <p>Hitung panjang maksimum kabel yang bisa dimuat dalam drum (haspel biasa, tembaga, atau custom) berdasarkan diameter kabel &amp; ukuran drum.</p>
       <span class="go">Buka kalkulator →</span>
     </a>
-
-    <a class="card" href="fire-test.html">
-      <span class="tag">FIRE-TEST-CALC</span>
-      <h2>Extra Length Uji Bakar</h2>
-      <p>Hitung jumlah sampel &amp; panjang kabel yang dibutuhkan untuk uji bakar vertikal IEC 60332-3 (Category A/B/C) dari berat &amp; berat jenis material kabel.</p>
-      <span class="go">Buka kalkulator →</span>
-    </a>
-
-    <a class="card" href="tensile-test.html">
-      <span class="tag">TENSILE-TEST-CALC</span>
-      <h2>Uji Tarik & Elongasi</h2>
-      <p>Hitung luas penampang, elongasi &amp; kuat tarik kabel (IEC 60811-501, ASTM E8/B49), lengkap acuan standar material &amp; contoh perhitungan.</p>
-      <span class="go">Buka kalkulator →</span>
-    </a>
-
-    <a class="card" href="short-circuit-screen.html">
-      <span class="tag">SCC-SCREEN-CALC</span>
-      <h2>Short Circuit Screen</h2>
-      <p>Hitung SCC (Short Circuit Current) screen kabel — Copper Wire, Copper Tape, Aluminium Tape, atau Lead Sheath — metode adiabatic &amp; non-adiabatic.</p>
-      <span class="go">Buka kalkulator →</span>
-    </a>
-
-    <a class="card" href="braid-coverage.html">
-      <span class="tag">BRAID-COVERAGE-CALC</span>
-      <h2>Coverage Braid & Berat Material</h2>
-      <p>Hitung % coverage, filling factor, braid angle &amp; berat material braid (kg/km) — Copper, Copper Clad Aluminium, Aluminium, atau custom density.</p>
-      <span class="go">Buka kalkulator →</span>
-    </a>
-
-    <a class="card soon" href="#">
-      <span class="tag">SOON</span>
-      <h2>Kalkulator Berikutnya</h2>
-      <p>Lagi disiapin — bakal muncul di sini kalau udah jadi.</p>
-      <span class="go">Segera →</span>
-    </a>
   </div>
 
   <footer>Kalkulator kabel listrik — gratis, bebas dipakai siapa saja.</footer>
@@ -159,6 +135,31 @@
     terapkanTema(skrg);
   });
   terapkanTema(localStorage.getItem('cable_theme') || 'light');
+
+  let deferredPrompt;
+  const installBtn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.classList.remove('hidden');
+  });
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    installBtn.classList.add('hidden');
+  });
+  window.addEventListener('appinstalled', () => {
+    installBtn.classList.add('hidden');
+  });
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
+  }
 </script>
 </body>
 </html>

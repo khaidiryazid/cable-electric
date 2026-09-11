@@ -145,6 +145,9 @@
     #printArea .print-footer{margin-top:24px; font-size:10px; color:#555;}
   }
 </style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#b5661f">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 <div class="wrap">
@@ -255,19 +258,7 @@
           <line x1="290" y1="135" x2="290" y2="145"></line>
           <line x1="314" y1="135" x2="314" y2="145"></line>
         </g>
-        <text x="232" y="132" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold" text-anchor="middle">T</text>
-
-        <!-- Garis Panah Hubung di atas Barrel (menghubungkan barrel ke lilitan) -->
-        <g stroke="#e04040" stroke-width="1">
-          <line x1="120" y1="125" x2="120" y2="105"></line><polygon points="120,105 117,112 123,112" fill="#e04040"></polygon>
-          <line x1="150" y1="125" x2="150" y2="105"></line><polygon points="150,105 147,112 153,112" fill="#e04040"></polygon>
-          <line x1="180" y1="125" x2="180" y2="105"></line><polygon points="180,105 177,112 183,112" fill="#e04040"></polygon>
-          <line x1="210" y1="125" x2="210" y2="105"></line><polygon points="210,105 207,112 213,112" fill="#e04040"></polygon>
-          <line x1="240" y1="125" x2="240" y2="105"></line><polygon points="240,105 237,112 243,112" fill="#e04040"></polygon>
-          <line x1="270" y1="125" x2="270" y2="105"></line><polygon points="270,105 267,112 273,112" fill="#e04040"></polygon>
-          <line x1="300" y1="125" x2="300" y2="105"></line><polygon points="300,105 297,112 303,112" fill="#e04040"></polygon>
-          <line x1="330" y1="125" x2="330" y2="105"></line><polygon points="330,105 327,112 333,112" fill="#e04040"></polygon>
-        </g>
+        <text x="232" y="150" fill="#e04040" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="bold" text-anchor="middle">T</text>
 
         <!-- Garis & Label B (Diameter Barrel di kanan) -->
         <g stroke="#e04040" stroke-width="1.2">
@@ -786,6 +777,13 @@
   if (adaTersimpan){
     const notif = document.getElementById('paramNotif');
     if (notif) notif.classList.remove('hidden');
+  }
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
   }
 </script>
 </body>

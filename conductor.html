@@ -122,6 +122,9 @@
     #printArea .print-footer{margin-top:24px; font-size:10px; color:#555;}
   }
 </style>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#b5661f">
+  <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
 <div class="wrap">
@@ -582,6 +585,13 @@
   if (adaTersimpan){
     const notif = document.getElementById('paramNotif');
     if (notif) notif.classList.remove('hidden');
+  }
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
   }
 </script>
 </body>
