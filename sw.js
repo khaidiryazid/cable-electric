@@ -1,10 +1,14 @@
-const CACHE_NAME = 'cable-calc-v1';
+const CACHE_NAME = 'cable-calc-v2';
 const ASSETS = [
   './index.html',
   './voltage-drop.html',
   './short-circuit.html',
   './conductor.html',
   './drum.html',
+  './short-circuit-screen.html',
+  './braid-coverage.html',
+  './tensile-test.html',
+  './fire-test.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
