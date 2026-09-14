@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Uji Conductor Resistance (CR) Lapangan — Cable Electric</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#b5661f">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+  --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a;
+  --red:#a8402f; --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+}
+:root[data-theme="dark"]{
+  --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+  --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#e2a03f;
+  --red:#c65b4a; --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif; padding:32px 20px 60px; transition:background .2s,color .2s;}
+.wrap{max-width:1080px; margin:0 auto;}
+
+a.back{display:inline-block; margin-bottom:14px; color:var(--copper); text-decoration:none; font-size:0.75rem; font-family:'IBM Plex Mono',monospace;}
+a.back:hover{text-decoration:underline;}
+
+header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:10px;}
+header .htitle{display:flex; align-items:center; gap:14px;}
+header h1{font-size:1.4rem; font-weight:600; margin:0; color:var(--paper);}
+header .tag{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--copper); border:1px solid var(--copper); padding:3px 8px; border-radius:3px; letter-spacing:0.04em;}
+header .htools{display:flex; align-items:center; gap:10px;}
+.theme-toggle{background:var(--panel-2); border:1px solid var(--line); color:var(--text); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;}
+.theme-toggle:hover{border-color:var(--copper);}
+.source-note{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--text-dim); margin:0 0 22px; line-height:1.6;}
+.source-note b{color:var(--teal);}
+
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+.grid3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px;}
+@media (max-width:760px){ .grid{grid-template-columns:1fr;} .grid3{grid-template-columns:1fr 1fr;} }
+@media (max-width:480px){ .row2, .grid3{grid-template-columns:1fr;} header h1{font-size:1.15rem;} }
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:22px; margin-bottom:20px;}
+.panel h2{font-size:0.78rem; font-weight:600; color:var(--text-dim); margin:0 0 4px; text-transform:uppercase; letter-spacing:0.08em;}
+.panel h2 + .hint{margin-top:0; margin-bottom:16px;}
+
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:0.82rem; margin-bottom:6px; color:var(--text);}
+.field .unit{color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:0.75rem;}
+.field input, .field select{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:0.95rem; padding:9px 10px; border-radius:4px; outline:none;}
+.field input:focus, .field select:focus{border-color:var(--copper);}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.hint{font-size:0.72rem; color:var(--text-dim); margin-top:-10px; margin-bottom:16px; line-height:1.5;}
+
+.const-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; font-family:'IBM Plex Mono',monospace; font-size:0.8rem;}
+@media (max-width:600px){ .const-grid{grid-template-columns:1fr;} }
+.const-card{background:var(--panel-2); border:1px solid var(--line); border-radius:6px; padding:12px 14px;}
+.const-card .mat{color:var(--paper); font-weight:600; margin-bottom:6px;}
+.const-card div{color:var(--text-dim); display:flex; justify-content:space-between; padding:2px 0;}
+.const-card div span:last-child{color:var(--text);}
+.formula-box{background:var(--panel-2); border:1px solid var(--line); border-radius:6px; padding:12px 14px; font-family:'IBM Plex Mono',monospace; font-size:0.82rem; color:var(--text); margin-bottom:16px; line-height:1.8;}
+
+.addrow{width:100%; background:var(--copper); color:#fff9ef; border:none; border-radius:6px; padding:11px; font-family:'Space Grotesk',sans-serif; font-size:0.9rem; font-weight:600; cursor:pointer;}
+.addrow:hover{background:var(--copper-bright);}
+
+.summary-grid{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:20px;}
+@media (max-width:600px){ .summary-grid{grid-template-columns:1fr;} }
+.summary-card{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:18px; text-align:center;}
+.summary-card .num{font-family:'IBM Plex Mono',monospace; font-size:1.8rem; font-weight:700; color:var(--paper);}
+.summary-card.pass .num{color:var(--teal);}
+.summary-card.fail .num{color:var(--red);}
+.summary-card .lbl{font-size:0.75rem; color:var(--text-dim); margin-top:4px; text-transform:uppercase; letter-spacing:0.05em;}
+
+.table-panel{margin-top:0;}
+.table-scroll{overflow-x:auto;}
+table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:0.76rem;}
+thead th{text-align:right; padding:9px 8px; color:var(--text-dim); border-bottom:2px solid var(--line); font-weight:600; font-size:0.64rem; text-transform:uppercase; letter-spacing:0.03em;}
+thead th:first-child, thead th:nth-child(2), tbody td:first-child, tbody td:nth-child(2){text-align:left;}
+tbody td{padding:8px 8px; border-bottom:1px solid var(--line); color:var(--text); text-align:right; white-space:nowrap;}
+tbody tr:nth-child(even){background:rgba(181,102,31,0.03);}
+td.status-pass{color:var(--teal); font-weight:700;}
+td.status-fail{color:var(--red); font-weight:700;}
+.delbtn{background:none; border:1px solid var(--line); color:var(--red); border-radius:4px; padding:3px 8px; cursor:pointer; font-size:0.7rem;}
+.delbtn:hover{border-color:var(--red);}
+.empty-row td{text-align:center; color:var(--text-dim); padding:24px;}
+
+.btn-row{display:flex; gap:10px; margin-top:14px;}
+.print-btn{flex:1; background:var(--paper); color:#fff9ef; border:none; border-radius:5px; font-family:'Space Grotesk',sans-serif; font-size:0.85rem; font-weight:600; padding:10px; cursor:pointer;}
+.print-btn:hover{background:var(--copper);}
+.copy-btn{flex:1; background:var(--panel-2); color:var(--text); border:1px solid var(--line); border-radius:5px; font-family:'Space Grotesk',sans-serif; font-size:0.85rem; font-weight:600; padding:10px; cursor:pointer;}
+.copy-btn:hover{border-color:var(--copper); color:var(--copper);}
+.copy-btn.copied{background:var(--teal); color:#fff; border-color:var(--teal);}
+.clear-btn{background:none; border:1px solid var(--line); color:var(--text-dim); border-radius:5px; font-family:'Space Grotesk',sans-serif; font-size:0.78rem; padding:8px 14px; cursor:pointer;}
+.clear-btn:hover{border-color:var(--red); color:var(--red);}
+
+footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.6;}
+#printArea{display:none;}
+@media print{
+  body{background:#fff; padding:0;}
+  .wrap > *{display:none !important;}
+  .wrap > #printArea{display:block !important; padding:0; color:#000;}
+  #printArea h2{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:0 0 4px; color:#000;}
+  #printArea .print-sub{font-family:'IBM Plex Mono',monospace; font-size:10px; color:#555; margin-bottom:16px;}
+  #printArea table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:10px; margin-bottom:14px;}
+  #printArea th{text-align:left; background:#eee; padding:5px 6px; border:1px solid #ccc;}
+  #printArea td{padding:5px 6px; border:1px solid #ccc;}
+  #printArea .print-footer{margin-top:20px; font-size:10px; color:#555;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="index.html">← Semua kalkulator</a>
+  <header>
+    <div class="htitle">
+      <svg width="42" height="42" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="47" fill="var(--panel-2)" stroke="var(--line)" stroke-width="2"/>
+        <path d="M30 65 L40 40 L48 55 L58 30 L70 65" fill="none" stroke="var(--copper-bright)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="30" cy="65" r="5" fill="var(--copper)"/>
+        <circle cx="70" cy="65" r="5" fill="var(--copper)"/>
+      </svg>
+      <h1>Kalkulator Uji Conductor Resistance (CR) Lapangan</h1>
+    </div>
+    <div class="htools">
+      <span class="tag">CR-FIELD-TEST</span>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+    </div>
+  </header>
+  <p class="source-note">Formula &amp; limit standar: <b>tabel Excel yang kamu unggah</b> (IEC 60228 Class 2). Koreksi suhu ke 20°C, evaluasi PASS/FAIL otomatis terhadap limit resistansi maksimum.</p>
+
+  <!-- ===================== PANDUAN FORMULA ===================== -->
+  <div class="panel">
+    <h2>Formula & Konstanta Material</h2>
+    <div class="formula-box">
+      kt = 1 / [1 + α20 × (t − 20)]<br>
+      R20 = Rt × kt × (1000 / L)&nbsp;&nbsp;&nbsp;[Ω/km]
+    </div>
+    <div class="const-grid">
+      <div class="const-card">
+        <div class="mat">Plain / Tinned Copper</div>
+        <div><span>α20</span><span>0.00393 /°C</span></div>
+        <div><span>Tk</span><span>234.5 °C</span></div>
+      </div>
+      <div class="const-card">
+        <div class="mat">Aluminum</div>
+        <div><span>α20</span><span>0.00403 /°C</span></div>
+        <div><span>Tk</span><span>228.0 °C</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== INPUT SAMPEL ===================== -->
+  <div class="panel">
+    <h2>Tambah Sampel Uji</h2>
+    <div class="hint">Isi hasil pengukuran lapangan, klik "Tambah ke Log" — otomatis dikoreksi ke 20°C dan dievaluasi terhadap limit IEC 60228.</div>
+
+    <div class="grid3">
+      <div class="field">
+        <label>Tag / ID Kabel</label>
+        <input type="text" id="in_tag" placeholder="mis. SKTM-20kV-240-Cu">
+      </div>
+      <div class="field">
+        <label>Material Konduktor</label>
+        <select id="in_material">
+          <option value="Plain Copper">Plain Copper</option>
+          <option value="Tinned Copper">Tinned Copper</option>
+          <option value="Aluminum">Aluminum</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Penampang Nominal <span class="unit">(mm²)</span></label>
+        <select id="in_csa"></select>
+      </div>
+    </div>
+    <div class="grid3">
+      <div class="field">
+        <label>Suhu Lapangan t <span class="unit">(°C)</span></label>
+        <input type="number" id="in_temp" step="0.1">
+      </div>
+      <div class="field">
+        <label>Panjang Kabel L <span class="unit">(m)</span></label>
+        <input type="number" id="in_length" step="1" min="0.1">
+      </div>
+      <div class="field">
+        <label>Resistansi Terukur Rt <span class="unit">(Ω)</span></label>
+        <input type="number" id="in_rt" step="0.0001" min="0">
+      </div>
+    </div>
+    <div class="field">
+      <label>Catatan QC <span class="unit">(opsional)</span></label>
+      <input type="text" id="in_note" placeholder="mis. suhu lapangan panas siang hari">
+    </div>
+    <button class="addrow" id="addRow">+ Tambah ke Log</button>
+  </div>
+
+  <!-- ===================== RINGKASAN ===================== -->
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num" id="sum_total">0</div><div class="lbl">Total Sampel</div></div>
+    <div class="summary-card pass"><div class="num" id="sum_pass">0</div><div class="lbl">PASS</div></div>
+    <div class="summary-card fail"><div class="num" id="sum_fail">0</div><div class="lbl">FAIL</div></div>
+  </div>
+
+  <!-- ===================== LOG PENGUJIAN ===================== -->
+  <div class="panel table-panel">
+    <h2>Log Pengujian CR Lapangan</h2>
+    <div class="hint">Data tersimpan otomatis di browser ini (localStorage) — aman biarpun halaman ditutup/refresh.</div>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Tag ID</th>
+          <th>Material</th>
+          <th>CSA (mm²)</th>
+          <th>t (°C)</th>
+          <th>L (m)</th>
+          <th>Rt (Ω)</th>
+          <th>kt</th>
+          <th>R20 (Ω/km)</th>
+          <th>Limit IEC (Ω/km)</th>
+          <th>Margin (%)</th>
+          <th>Status</th>
+          <th>Catatan</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="logBody"></tbody>
+    </table>
+    </div>
+    <div class="btn-row">
+      <button class="copy-btn" id="copyBtn" onclick="salinLog()">📋 Salin Log</button>
+      <button class="print-btn" onclick="cetakLog()">🖨 Cetak / PDF</button>
+    </div>
+    <div style="text-align:right; margin-top:10px;">
+      <button class="clear-btn" onclick="hapusSemua()">🗑 Hapus semua log</button>
+    </div>
+  </div>
+
+  <div id="printArea"></div>
+
+  <footer>
+    R20 dihitung: R20 = Rt × kt × (1000/L), kt = 1/(1+α20×(t−20)). Limit maksimum R20 diambil dari tabel IEC 60228 Class 2 sesuai penampang &amp; material.
+    Status PASS jika R20 hasil hitung ≤ limit IEC; FAIL jika melebihi. Verifikasi ke datasheet/standar resmi untuk sertifikasi.
+  </footer>
+
+</div>
+
+<script>
+  // Limit maksimum R20 (Ω/km) per IEC 60228 Class 2 — dari tabel Excel yang diunggah
+  const IEC_LIMIT = [
+    {csa:1.5,  cu:12.1,   sn:12.2,   al:null},
+    {csa:2.5,  cu:7.41,   sn:7.56,   al:null},
+    {csa:4,    cu:4.61,   sn:4.7,    al:null},
+    {csa:6,    cu:3.08,   sn:3.11,   al:null},
+    {csa:10,   cu:1.83,   sn:1.84,   al:3.08},
+    {csa:16,   cu:1.15,   sn:1.16,   al:1.91},
+    {csa:25,   cu:0.727,  sn:0.734,  al:1.2},
+    {csa:35,   cu:0.524,  sn:0.529,  al:0.868},
+    {csa:50,   cu:0.387,  sn:0.391,  al:0.641},
+    {csa:70,   cu:0.268,  sn:0.27,   al:0.443},
+    {csa:95,   cu:0.193,  sn:0.195,  al:0.32},
+    {csa:120,  cu:0.153,  sn:0.154,  al:0.253},
+    {csa:150,  cu:0.124,  sn:0.125,  al:0.206},
+    {csa:185,  cu:0.101,  sn:0.102,  al:0.164},
+    {csa:240,  cu:0.0754, sn:0.0762, al:0.125},
+    {csa:300,  cu:0.0601, sn:0.0607, al:0.1},
+    {csa:400,  cu:0.047,  sn:0.0475, al:0.0778},
+    {csa:500,  cu:0.0366, sn:0.037,  al:0.0605},
+    {csa:630,  cu:0.0283, sn:0.0286, al:0.0469},
+    {csa:800,  cu:0.0221, sn:0.0224, al:0.0367},
+    {csa:1000, cu:0.0176, sn:0.0178, al:0.0291},
+    {csa:1200, cu:0.0151, sn:0.0153, al:0.0247},
+  ];
+  const MATERIAL_KEY = {'Plain Copper':'cu', 'Tinned Copper':'sn', 'Aluminum':'al'};
+
+  function alphaFor(material){ return material === 'Aluminum' ? 0.00403 : 0.00393; }
+  function limitFor(material, csa){
+    const row = IEC_LIMIT.find(r => r.csa === csa);
+    if (!row) return null;
+    return row[MATERIAL_KEY[material]];
+  }
+
+  const inTag = document.getElementById('in_tag');
+  const inMaterial = document.getElementById('in_material');
+  const inCsa = document.getElementById('in_csa');
+  const inTemp = document.getElementById('in_temp');
+  const inLength = document.getElementById('in_length');
+  const inRt = document.getElementById('in_rt');
+  const inNote = document.getElementById('in_note');
+
+  IEC_LIMIT.forEach(r => {
+    const opt = document.createElement('option');
+    opt.value = r.csa;
+    opt.textContent = r.csa + ' mm²';
+    inCsa.appendChild(opt);
+  });
+
+  const STORAGE_KEY = 'cr_field_log_v1';
+  function muatLog(){
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch(e){ return []; }
+  }
+  function simpanLog(log){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+  }
+  let LOG = muatLog();
+
+  function hitungSampel(s){
+    const alpha = alphaFor(s.material);
+    const kt = 1 / (1 + alpha * (s.temp - 20));
+    const r20 = s.rt * kt * (1000 / s.length);
+    const limit = limitFor(s.material, s.csa);
+    const margin = (limit && limit > 0) ? ((limit - r20) / limit) * 100 : null;
+    const status = (limit !== null && r20 <= limit) ? 'PASS' : (limit === null ? 'N/A' : 'FAIL');
+    return {alpha, kt, r20, limit, margin, status};
+  }
+
+  function fmt(v, dec){
+    if (v === null || v === undefined || isNaN(v)) return '—';
+    return v.toFixed(dec);
+  }
+
+  function renderLog(){
+    const tbody = document.getElementById('logBody');
+    tbody.innerHTML = '';
+    if (LOG.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="13">Belum ada sampel. Isi form di atas dan klik "Tambah ke Log".</td></tr>';
+    }
+    let pass = 0, fail = 0;
+    LOG.forEach((s, idx) => {
+      const c = hitungSampel(s);
+      if (c.status === 'PASS') pass++;
+      else if (c.status === 'FAIL') fail++;
+      const tr = document.createElement('tr');
+      const statusClass = c.status === 'PASS' ? 'status-pass' : (c.status === 'FAIL' ? 'status-fail' : '');
+      tr.innerHTML = `
+        <td>${s.tag || '—'}</td>
+        <td>${s.material}</td>
+        <td>${s.csa}</td>
+        <td>${fmt(s.temp,1)}</td>
+        <td>${fmt(s.length,0)}</td>
+        <td>${fmt(s.rt,5)}</td>
+        <td>${fmt(c.kt,4)}</td>
+        <td>${fmt(c.r20,5)}</td>
+        <td>${c.limit !== null ? fmt(c.limit,4) : '—'}</td>
+        <td>${c.margin !== null ? fmt(c.margin,2)+'%' : '—'}</td>
+        <td class="${statusClass}">${c.status}</td>
+        <td>${s.note || '—'}</td>
+        <td><button class="delbtn" onclick="hapusBaris(${idx})">✕</button></td>
+      `;
+      tbody.appendChild(tr);
+    });
+    document.getElementById('sum_total').textContent = LOG.length;
+    document.getElementById('sum_pass').textContent = pass;
+    document.getElementById('sum_fail').textContent = fail;
+  }
+
+  document.getElementById('addRow').addEventListener('click', () => {
+    const temp = parseFloat(inTemp.value);
+    const length = parseFloat(inLength.value);
+    const rt = parseFloat(inRt.value);
+    if (!(length > 0) || isNaN(temp) || isNaN(rt)){
+      alert('Lengkapi suhu, panjang kabel, dan resistansi terukur dulu ya.');
+      return;
+    }
+    LOG.push({
+      tag: inTag.value.trim(),
+      material: inMaterial.value,
+      csa: parseFloat(inCsa.value),
+      temp, length, rt,
+      note: inNote.value.trim(),
+    });
+    simpanLog(LOG);
+    renderLog();
+    inTag.value = ''; inTemp.value = ''; inLength.value = ''; inRt.value = ''; inNote.value = '';
+    inTag.focus();
+  });
+
+  function hapusBaris(idx){
+    LOG.splice(idx, 1);
+    simpanLog(LOG);
+    renderLog();
+  }
+
+  function hapusSemua(){
+    if (LOG.length === 0) return;
+    if (!confirm('Hapus semua log pengujian? Tindakan ini tidak bisa dibatalkan.')) return;
+    LOG = [];
+    simpanLog(LOG);
+    renderLog();
+  }
+
+  // ---------- Salin log ke clipboard ----------
+  function salinLog(){
+    if (LOG.length === 0){ alert('Log masih kosong.'); return; }
+    const baris = ['LOG PENGUJIAN CONDUCTOR RESISTANCE (CR) LAPANGAN', ''];
+    LOG.forEach(s => {
+      const c = hitungSampel(s);
+      baris.push(`${s.tag || '(tanpa tag)'} — ${s.material} ${s.csa}mm² — t=${s.temp}°C, L=${s.length}m, Rt=${s.rt}Ω → R20=${fmt(c.r20,5)}Ω/km (limit ${c.limit!==null?fmt(c.limit,4):'—'}) — ${c.status}${s.note ? ' — '+s.note : ''}`);
+    });
+    const total = LOG.length;
+    const pass = LOG.filter(s => hitungSampel(s).status === 'PASS').length;
+    baris.push('', `Total: ${total} sampel — PASS: ${pass} — FAIL: ${total-pass}`);
+    const teks = baris.join('\n');
+    const btn = document.getElementById('copyBtn');
+    navigator.clipboard.writeText(teks).then(() => {
+      const asli = btn.textContent;
+      btn.textContent = '✓ Tersalin!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = asli; btn.classList.remove('copied'); }, 1800);
+    }).catch(() => alert('Gagal menyalin.'));
+  }
+
+  // ---------- Cetak / Unduh PDF ----------
+  function fmtTanggal(){
+    const d = new Date();
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function cetakLog(){
+    if (LOG.length === 0){ alert('Log masih kosong.'); return; }
+    let rows = '';
+    let pass = 0;
+    LOG.forEach(s => {
+      const c = hitungSampel(s);
+      if (c.status === 'PASS') pass++;
+      rows += `<tr>
+        <td>${s.tag || '—'}</td><td>${s.material}</td><td>${s.csa}</td>
+        <td>${fmt(s.temp,1)}</td><td>${fmt(s.length,0)}</td><td>${fmt(s.rt,5)}</td>
+        <td>${fmt(c.kt,4)}</td><td>${fmt(c.r20,5)}</td>
+        <td>${c.limit!==null?fmt(c.limit,4):'—'}</td>
+        <td>${c.margin!==null?fmt(c.margin,2)+'%':'—'}</td>
+        <td>${c.status}</td><td>${s.note || '—'}</td>
+      </tr>`;
+    });
+    document.getElementById('printArea').innerHTML = `
+      <h2>Log Pengujian Conductor Resistance (CR) Lapangan</h2>
+      <div class="print-sub">Dibuat: ${fmtTanggal()} — Total ${LOG.length} sampel, PASS ${pass}, FAIL ${LOG.length-pass} — Standar: IEC 60228 Class 2</div>
+      <table>
+        <tr><th>Tag ID</th><th>Material</th><th>CSA</th><th>t(°C)</th><th>L(m)</th><th>Rt(Ω)</th><th>kt</th><th>R20(Ω/km)</th><th>Limit</th><th>Margin</th><th>Status</th><th>Catatan</th></tr>
+        ${rows}
+      </table>
+      <div class="print-footer">Dihasilkan otomatis oleh Kalkulator Uji Conductor Resistance Lapangan. Verifikasi ke standar/prosedur resmi untuk sertifikasi.</div>
+    `;
+    window.print();
+  }
+
+  // ---------- Theme toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function terapkanTema(tema){
+    document.documentElement.setAttribute('data-theme', tema);
+    themeToggle.textContent = tema === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('cable_theme', tema);
+  }
+  themeToggle.addEventListener('click', () => {
+    const skrg = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    terapkanTema(skrg);
+  });
+  terapkanTema(localStorage.getItem('cable_theme') || 'light');
+
+  renderLog();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kalkulator Konversi Daya ke Ampere — Cable Electric</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#b5661f">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap');
+
+:root{
+  --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+  --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a;
+  --red:#a8402f; --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+}
+:root[data-theme="dark"]{
+  --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+  --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#e2a03f;
+  --red:#c65b4a; --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif; padding:32px 20px 60px; transition:background .2s,color .2s;}
+.wrap{max-width:980px; margin:0 auto;}
+
+a.back{display:inline-block; margin-bottom:14px; color:var(--copper); text-decoration:none; font-size:0.75rem; font-family:'IBM Plex Mono',monospace;}
+a.back:hover{text-decoration:underline;}
+
+header{display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; border-bottom:1px solid var(--line); padding-bottom:18px; margin-bottom:10px;}
+header .htitle{display:flex; align-items:center; gap:14px;}
+header h1{font-size:1.4rem; font-weight:600; margin:0; color:var(--paper);}
+header .tag{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--copper); border:1px solid var(--copper); padding:3px 8px; border-radius:3px; letter-spacing:0.04em;}
+header .htools{display:flex; align-items:center; gap:10px;}
+.theme-toggle{background:var(--panel-2); border:1px solid var(--line); color:var(--text); width:36px; height:36px; border-radius:50%; cursor:pointer; font-size:1rem; display:flex; align-items:center; justify-content:center;}
+.theme-toggle:hover{border-color:var(--copper);}
+.source-note{font-family:'IBM Plex Mono',monospace; font-size:0.72rem; color:var(--text-dim); margin:0 0 22px; line-height:1.6;}
+.source-note b{color:var(--teal);}
+
+.grid{display:grid; grid-template-columns:1fr 1fr; gap:20px;}
+@media (max-width:760px){ .grid{grid-template-columns:1fr;} }
+@media (max-width:480px){ .row2{grid-template-columns:1fr;} header h1{font-size:1.15rem;} }
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:22px; margin-bottom:20px;}
+.panel h2{font-size:0.9rem; font-weight:600; color:var(--paper); margin:0 0 4px;}
+.panel h2 + .hint{margin-top:0; margin-bottom:16px;}
+
+.field{margin-bottom:16px;}
+.field label{display:block; font-size:0.82rem; margin-bottom:6px; color:var(--text);}
+.field .unit{color:var(--text-dim); font-family:'IBM Plex Mono',monospace; font-size:0.75rem;}
+.field input, .field select{width:100%; background:var(--panel-2); border:1px solid var(--line); color:var(--paper); font-family:'IBM Plex Mono',monospace; font-size:0.95rem; padding:9px 10px; border-radius:4px; outline:none;}
+.field input:focus, .field select:focus{border-color:var(--copper);}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.hint{font-size:0.72rem; color:var(--text-dim); margin-top:-10px; margin-bottom:16px; line-height:1.5;}
+
+.result-main{text-align:center; padding:14px 0 18px; border-bottom:1px solid var(--line); margin-bottom:16px;}
+.result-main .value{font-family:'IBM Plex Mono',monospace; font-size:2.1rem; font-weight:700; color:var(--copper-bright); line-height:1.1;}
+.result-main .value small{font-size:1rem; color:var(--text-dim); font-weight:400;}
+.result-main .label{font-size:0.8rem; color:var(--text-dim); margin-top:4px;}
+
+.cable-reco{
+  background:var(--panel-2); border:1px solid var(--copper); border-radius:6px;
+  padding:12px 14px; text-align:center; margin-bottom:14px;
+}
+.cable-reco .lbl{font-size:0.7rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;}
+.cable-reco .val{font-family:'IBM Plex Mono',monospace; font-size:1.15rem; font-weight:700; color:var(--copper-bright);}
+
+.step-box{
+  font-family:'IBM Plex Mono',monospace; font-size:0.78rem; color:var(--text-dim);
+  background:var(--panel-2); border-radius:6px; padding:10px 12px; line-height:1.6;
+}
+
+.btn-row{display:flex; gap:10px; margin-top:16px;}
+.print-btn{flex:1; background:var(--paper); color:#fff9ef; border:none; border-radius:5px; font-family:'Space Grotesk',sans-serif; font-size:0.85rem; font-weight:600; padding:10px; cursor:pointer;}
+.print-btn:hover{background:var(--copper);}
+.copy-btn{flex:1; background:var(--panel-2); color:var(--text); border:1px solid var(--line); border-radius:5px; font-family:'Space Grotesk',sans-serif; font-size:0.85rem; font-weight:600; padding:10px; cursor:pointer;}
+.copy-btn:hover{border-color:var(--copper); color:var(--copper);}
+.copy-btn.copied{background:var(--teal); color:#fff; border-color:var(--teal);}
+
+.table-panel{margin-top:0;}
+.table-scroll{overflow-x:auto;}
+table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:0.8rem;}
+thead th{text-align:right; padding:9px 8px; color:var(--text-dim); border-bottom:2px solid var(--line); font-weight:600; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.04em;}
+thead th:first-child, tbody td:first-child{text-align:left;}
+tbody td{padding:8px 8px; border-bottom:1px solid var(--line); color:var(--text); text-align:right;}
+tbody tr:nth-child(even){background:rgba(181,102,31,0.03);}
+
+footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.6;}
+#printArea{display:none;}
+@media print{
+  body{background:#fff; padding:0;}
+  .wrap > *{display:none !important;}
+  .wrap > #printArea{display:block !important; padding:0; color:#000;}
+  #printArea h2{font-family:'Space Grotesk',sans-serif; font-size:18px; margin:0 0 4px; color:#000;}
+  #printArea .print-sub{font-family:'IBM Plex Mono',monospace; font-size:10px; color:#555; margin-bottom:16px;}
+  #printArea table{width:100%; border-collapse:collapse; font-family:'IBM Plex Mono',monospace; font-size:11px; margin-bottom:14px;}
+  #printArea th{text-align:left; background:#eee; padding:5px 6px; border:1px solid #ccc;}
+  #printArea td{padding:5px 6px; border:1px solid #ccc;}
+  #printArea .print-result{border:2px solid #000; padding:12px; margin-top:6px;}
+  #printArea .print-result .big{font-family:'IBM Plex Mono',monospace; font-size:18px; font-weight:700;}
+  #printArea .print-footer{margin-top:20px; font-size:10px; color:#555;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a class="back" href="index.html">← Semua kalkulator</a>
+  <header>
+    <div class="htitle">
+      <svg width="42" height="42" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="50" cy="50" r="47" fill="var(--panel-2)" stroke="var(--line)" stroke-width="2"/>
+        <path d="M54 22 L34 55 L48 55 L44 80 L68 45 L52 45 Z" fill="var(--copper-bright)" stroke="var(--bg)" stroke-width="1.5"/>
+      </svg>
+      <h1>Kalkulator Konversi Daya ke Ampere</h1>
+    </div>
+    <div class="htools">
+      <span class="tag">POWER-TO-AMP</span>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
+    </div>
+  </header>
+  <p class="source-note">Formula &amp; rekomendasi ukuran kabel: <b>tabel Excel yang kamu unggah</b> (PUIL 2011). Hasil dihitung live, plus rekomendasi ukuran kabel NYA/NYY.</p>
+
+  <!-- ===================== DUA PANEL SEJAJAR ===================== -->
+  <div class="grid">
+
+    <!-- kVA -->
+    <div class="panel">
+      <h2>1. Konversi kVA → Ampere</h2>
+      <div class="hint">Daya semu (apparent power).</div>
+
+      <div class="field">
+        <label>Daya <span class="unit">(kVA)</span></label>
+        <input type="number" id="s_kva" step="0.1" min="0">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Fasa</label>
+          <select id="s_fasa_kva">
+            <option value="1">1 Fasa</option>
+            <option value="3">3 Fasa</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tegangan <span class="unit">(V)</span></label>
+          <input type="number" id="s_volt_kva" step="1" min="1">
+        </div>
+      </div>
+
+      <div class="result-main">
+        <div class="value" id="s_out_ampere">— <small>A</small></div>
+        <div class="label">Arus</div>
+      </div>
+      <div class="cable-reco">
+        <div class="lbl">Rekomendasi Kabel NYA/NYY</div>
+        <div class="val" id="s_out_kabel">—</div>
+      </div>
+      <div class="step-box" id="s_out_step">—</div>
+
+      <div class="btn-row">
+        <button class="copy-btn" id="s_copyBtn" onclick="salinHasil('kva')">📋 Salin</button>
+        <button class="print-btn" onclick="cetakHasil('kva')">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+
+    <!-- kW -->
+    <div class="panel">
+      <h2>2. Konversi kW → Ampere</h2>
+      <div class="hint">Daya nyata (real power) — perlu faktor daya (PF).</div>
+
+      <div class="field">
+        <label>Daya <span class="unit">(kW)</span></label>
+        <input type="number" id="p_kw" step="0.1" min="0">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Fasa</label>
+          <select id="p_fasa_kw">
+            <option value="1">1 Fasa</option>
+            <option value="3">3 Fasa</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Tegangan <span class="unit">(V)</span></label>
+          <input type="number" id="p_volt_kw" step="1" min="1">
+        </div>
+      </div>
+      <div class="field">
+        <label>Faktor Daya <span class="unit">(PF, mis. 0.8–0.95)</span></label>
+        <input type="number" id="p_pf" step="0.01" min="0.01" max="1">
+      </div>
+
+      <div class="result-main">
+        <div class="value" id="p_out_ampere">— <small>A</small></div>
+        <div class="label">Arus</div>
+      </div>
+      <div class="cable-reco">
+        <div class="lbl">Rekomendasi Kabel NYA/NYY</div>
+        <div class="val" id="p_out_kabel">—</div>
+      </div>
+      <div class="step-box" id="p_out_step">—</div>
+
+      <div class="btn-row">
+        <button class="copy-btn" id="p_copyBtn" onclick="salinHasil('kw')">📋 Salin</button>
+        <button class="print-btn" onclick="cetakHasil('kw')">🖨 Cetak / PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== TABEL REFERENSI UKURAN KABEL ===================== -->
+  <div class="panel table-panel">
+    <h2>Tabel Referensi Ukuran Kabel berdasarkan Arus</h2>
+    <div class="hint">Ambang batas arus yang dipakai untuk rekomendasi ukuran kabel otomatis di atas (kabel NYA/NYY, sesuai PUIL 2011).</div>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Arus Maksimum (A)</th><th>Ukuran Kabel</th></tr></thead>
+      <tbody id="tabelKabel"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div id="printArea"></div>
+
+  <footer>
+    kVA→A: I = (kVA×1000)/V (1 fasa) atau I = (kVA×1000)/(V×1.732) (3 fasa).
+    kW→A: I = (kW×1000)/(V×PF) (1 fasa) atau I = (kW×1000)/(V×1.732×PF) (3 fasa).
+    Rekomendasi ukuran kabel adalah estimasi awal berdasarkan ambang arus — selalu verifikasi ke tabel KHA (kemampuan hantar arus) resmi &amp; kondisi pemasangan aktual (suhu, jumlah kabel berkelompok, metode instalasi) sebelum eksekusi.
+  </footer>
+
+</div>
+
+<script>
+  const CABLE_STEPS = [
+    {max:15,  size:'1.5 mm²'},
+    {max:20,  size:'2.5 mm²'},
+    {max:27,  size:'4.0 mm²'},
+    {max:35,  size:'6.0 mm²'},
+    {max:50,  size:'10.0 mm²'},
+    {max:68,  size:'16.0 mm²'},
+    {max:90,  size:'25.0 mm²'},
+    {max:111, size:'35.0 mm²'},
+    {max:143, size:'50.0 mm²'},
+    {max:182, size:'70.0 mm²'},
+  ];
+  function rekomendasiKabel(ampere){
+    for (const s of CABLE_STEPS){
+      if (ampere <= s.max) return s.size;
+    }
+    return '≥ 95 mm²';
+  }
+
+  const tabelKabel = document.getElementById('tabelKabel');
+  CABLE_STEPS.forEach(s => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>≤ ${s.max} A</td><td>${s.size}</td>`;
+    tabelKabel.appendChild(tr);
+  });
+  const trLast = document.createElement('tr');
+  trLast.innerHTML = `<td>&gt; 182 A</td><td>≥ 95 mm²</td>`;
+  tabelKabel.appendChild(trLast);
+
+  function fmt(v, dec){
+    if (v === null || v === undefined || isNaN(v)) return '—';
+    return v.toFixed(dec);
+  }
+
+  // ---------- kVA ----------
+  const sKva = document.getElementById('s_kva');
+  const sFasa = document.getElementById('s_fasa_kva');
+  const sVolt = document.getElementById('s_volt_kva');
+
+  function hitungKva(){
+    const kva = parseFloat(sKva.value) || 0;
+    const fasa = sFasa.value;
+    const v = parseFloat(sVolt.value) || 0;
+    let ampere = null, stepTxt = '—';
+
+    if (kva > 0 && v > 0){
+      ampere = fasa === '1' ? (kva*1000)/v : (kva*1000)/(v*1.732);
+      const rumus = fasa === '1' ? `${v} V` : `(${v} V × 1.732)`;
+      stepTxt = `Langkah: (${kva} kVA × 1000) ÷ ${rumus} → Hasil: ${fmt(ampere,2)} A`;
+    }
+
+    document.getElementById('s_out_ampere').innerHTML = fmt(ampere,2) + ' <small>A</small>';
+    document.getElementById('s_out_kabel').textContent = ampere !== null ? rekomendasiKabel(ampere) : '—';
+    document.getElementById('s_out_step').textContent = stepTxt;
+  }
+  [sKva, sFasa, sVolt].forEach(el => el.addEventListener('input', hitungKva));
+
+  // ---------- kW ----------
+  const pKw = document.getElementById('p_kw');
+  const pFasa = document.getElementById('p_fasa_kw');
+  const pVolt = document.getElementById('p_volt_kw');
+  const pPf = document.getElementById('p_pf');
+
+  function hitungKw(){
+    const kw = parseFloat(pKw.value) || 0;
+    const fasa = pFasa.value;
+    const v = parseFloat(pVolt.value) || 0;
+    const pf = parseFloat(pPf.value) || 0;
+    let ampere = null, stepTxt = '—';
+
+    if (kw > 0 && v > 0 && pf > 0){
+      ampere = fasa === '1' ? (kw*1000)/(v*pf) : (kw*1000)/(v*1.732*pf);
+      const rumus = fasa === '1' ? `(${v} V × ${pf} PF)` : `(${v} V × 1.732 × ${pf} PF)`;
+      stepTxt = `Langkah: (${kw} kW × 1000) ÷ ${rumus} → Hasil: ${fmt(ampere,2)} A`;
+    }
+
+    document.getElementById('p_out_ampere').innerHTML = fmt(ampere,2) + ' <small>A</small>';
+    document.getElementById('p_out_kabel').textContent = ampere !== null ? rekomendasiKabel(ampere) : '—';
+    document.getElementById('p_out_step').textContent = stepTxt;
+  }
+  [pKw, pFasa, pVolt, pPf].forEach(el => el.addEventListener('input', hitungKw));
+
+  // ---------- Salin & Cetak ----------
+  function fmtTanggal(){
+    const d = new Date();
+    const bulan = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+    return d.getDate() + ' ' + bulan[d.getMonth()] + ' ' + d.getFullYear() + ', ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+
+  function salinHasil(mode){
+    let teks, btnId;
+    if (mode === 'kva'){
+      btnId = 's_copyBtn';
+      teks = [
+        'KONVERSI kVA → AMPERE',
+        `Daya: ${sKva.value} kVA, Fasa: ${sFasa.value}, Tegangan: ${sVolt.value} V`,
+        '',
+        document.getElementById('s_out_step').textContent,
+        `Rekomendasi kabel: ${document.getElementById('s_out_kabel').textContent}`,
+      ].join('\n');
+    } else {
+      btnId = 'p_copyBtn';
+      teks = [
+        'KONVERSI kW → AMPERE',
+        `Daya: ${pKw.value} kW, Fasa: ${pFasa.value}, Tegangan: ${pVolt.value} V, PF: ${pPf.value}`,
+        '',
+        document.getElementById('p_out_step').textContent,
+        `Rekomendasi kabel: ${document.getElementById('p_out_kabel').textContent}`,
+      ].join('\n');
+    }
+    const btn = document.getElementById(btnId);
+    navigator.clipboard.writeText(teks).then(() => {
+      const asli = btn.textContent;
+      btn.textContent = '✓ Tersalin!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = asli; btn.classList.remove('copied'); }, 1800);
+    }).catch(() => alert('Gagal menyalin.'));
+  }
+
+  function cetakHasil(mode){
+    let html;
+    if (mode === 'kva'){
+      html = `
+        <h2>Laporan Konversi kVA ke Ampere</h2>
+        <div class="print-sub">Dibuat: ${fmtTanggal()}</div>
+        <table>
+          <tr><th>Parameter</th><th>Nilai</th></tr>
+          <tr><td>Daya</td><td>${sKva.value} kVA</td></tr>
+          <tr><td>Fasa</td><td>${sFasa.value} Fasa</td></tr>
+          <tr><td>Tegangan</td><td>${sVolt.value} V</td></tr>
+        </table>
+        <div class="print-result">
+          <div class="big">Arus: ${document.getElementById('s_out_ampere').textContent}</div>
+          <div style="margin-top:6px;">Rekomendasi kabel: ${document.getElementById('s_out_kabel').textContent}</div>
+        </div>
+        <div class="print-footer">${document.getElementById('s_out_step').textContent}<br>Dihasilkan otomatis oleh Kalkulator Konversi Daya ke Ampere. Verifikasi ke tabel KHA resmi untuk eksekusi.</div>
+      `;
+    } else {
+      html = `
+        <h2>Laporan Konversi kW ke Ampere</h2>
+        <div class="print-sub">Dibuat: ${fmtTanggal()}</div>
+        <table>
+          <tr><th>Parameter</th><th>Nilai</th></tr>
+          <tr><td>Daya</td><td>${pKw.value} kW</td></tr>
+          <tr><td>Fasa</td><td>${pFasa.value} Fasa</td></tr>
+          <tr><td>Tegangan</td><td>${pVolt.value} V</td></tr>
+          <tr><td>Faktor Daya (PF)</td><td>${pPf.value}</td></tr>
+        </table>
+        <div class="print-result">
+          <div class="big">Arus: ${document.getElementById('p_out_ampere').textContent}</div>
+          <div style="margin-top:6px;">Rekomendasi kabel: ${document.getElementById('p_out_kabel').textContent}</div>
+        </div>
+        <div class="print-footer">${document.getElementById('p_out_step').textContent}<br>Dihasilkan otomatis oleh Kalkulator Konversi Daya ke Ampere. Verifikasi ke tabel KHA resmi untuk eksekusi.</div>
+      `;
+    }
+    document.getElementById('printArea').innerHTML = html;
+    window.print();
+  }
+
+  // ---------- Theme toggle ----------
+  const themeToggle = document.getElementById('themeToggle');
+  function terapkanTema(tema){
+    document.documentElement.setAttribute('data-theme', tema);
+    themeToggle.textContent = tema === 'dark' ? '☀️' : '🌙';
+    localStorage.setItem('cable_theme', tema);
+  }
+  themeToggle.addEventListener('click', () => {
+    const skrg = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    terapkanTema(skrg);
+  });
+  terapkanTema(localStorage.getItem('cable_theme') || 'light');
+
+  hitungKva();
+  hitungKw();
+</script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    });
+  }
+</script>
+</body>
+</html>
