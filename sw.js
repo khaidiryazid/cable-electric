@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cable-calc-v9';
+const CACHE_NAME = 'cable-calc-v10';
 const ASSETS = [
   './index.html',
   './voltage-drop.html',

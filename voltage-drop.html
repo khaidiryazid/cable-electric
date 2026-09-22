@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+<script>if(window.self!==window.top){document.documentElement.classList.add("embedded");}</script>
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalkulator Voltage Drop</title>
@@ -163,6 +165,9 @@
     #printArea .print-result .big{font-family:'IBM Plex Mono', monospace; font-size:22px; font-weight:700;}
     #printArea .print-footer{margin-top:24px; font-size:10px; color:#555;}
   }
+
+  html.embedded header, html.embedded .backlink, html.embedded .back{display:none!important;}
+  html.embedded body{padding-top:20px;}
 </style>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#b5661f">
