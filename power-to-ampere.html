@@ -119,102 +119,164 @@ footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.
       <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
     </div>
   </header>
-  <p class="source-note">Formula &amp; rekomendasi ukuran kabel: <b>tabel Excel yang kamu unggah</b> (PUIL 2011). Hasil dihitung live, plus rekomendasi ukuran kabel NYA/NYY.</p>
+  <p class="source-note">Formula: rumus daya standar. Tabel KHA: <b>diekstrak langsung dari SNI 0225:2011/Amd 1:2013 (PUIL 2011)</b> yang kamu unggah — Tabel K.52.3.1 (NYA), K.52.3.5a (NYY-Cu), K.52.3.5b (NAYY-Al), K.52.3.9a (N2XY-XLPE).</p>
 
-  <!-- ===================== DUA PANEL SEJAJAR ===================== -->
-  <div class="grid">
-
-    <!-- kVA -->
-    <div class="panel">
-      <h2>1. Konversi kVA → Ampere</h2>
-      <div class="hint">Daya semu (apparent power).</div>
-
-      <div class="field">
-        <label>Daya <span class="unit">(kVA)</span></label>
-        <input type="number" id="s_kva" step="0.1" min="0">
+  <!-- ===================== JENIS KABEL (SHARED) ===================== -->
+  <div class="panel">
+    <h2>Jenis & Kondisi Pemasangan Kabel</h2>
+    <div class="hint">Menentukan tabel KHA yang dipakai untuk rekomendasi ukuran kabel di kedua panel di bawah — sesuai tabel resmi PUIL 2011 per jenis kabel.</div>
+    <div class="row2" style="margin-bottom:0;">
+      <div class="field" style="margin-bottom:0;">
+        <label>Jenis Kabel</label>
+        <select id="jenisKabel">
+          <option value="nya">NYA — berinti tunggal, PVC</option>
+          <option value="nyy">NYY — kabel tanah, Cu, PVC</option>
+          <option value="nayy">NAYY — kabel tanah, Al, PVC</option>
+          <option value="n2xy">N2XY — kabel tanah, Cu, XLPE</option>
+        </select>
       </div>
-      <div class="row2">
-        <div class="field">
-          <label>Fasa</label>
-          <select id="s_fasa_kva">
-            <option value="1">1 Fasa</option>
-            <option value="3">3 Fasa</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Tegangan <span class="unit">(V)</span></label>
-          <input type="number" id="s_volt_kva" step="1" min="1">
-        </div>
+      <div class="field" style="margin-bottom:0;" id="nyaOptWrap">
+        <label>Kondisi (khusus NYA)</label>
+        <select id="nyaKondisi">
+          <option value="konduit">Dalam pipa/conduit</option>
+          <option value="udara">Di udara terbuka</option>
+        </select>
       </div>
-
-      <div class="result-main">
-        <div class="value" id="s_out_ampere">— <small>A</small></div>
-        <div class="label">Arus</div>
-      </div>
-      <div class="cable-reco">
-        <div class="lbl">Rekomendasi Kabel NYA/NYY</div>
-        <div class="val" id="s_out_kabel">—</div>
-      </div>
-      <div class="step-box" id="s_out_step">—</div>
-
-      <div class="btn-row">
-        <button class="copy-btn" id="s_copyBtn" onclick="salinHasil('kva')">📋 Salin</button>
-        <button class="print-btn" onclick="cetakHasil('kva')">🖨 Cetak / PDF</button>
-      </div>
-    </div>
-
-    <!-- kW -->
-    <div class="panel">
-      <h2>2. Konversi kW → Ampere</h2>
-      <div class="hint">Daya nyata (real power) — perlu faktor daya (PF).</div>
-
-      <div class="field">
-        <label>Daya <span class="unit">(kW)</span></label>
-        <input type="number" id="p_kw" step="0.1" min="0">
-      </div>
-      <div class="row2">
-        <div class="field">
-          <label>Fasa</label>
-          <select id="p_fasa_kw">
-            <option value="1">1 Fasa</option>
-            <option value="3">3 Fasa</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Tegangan <span class="unit">(V)</span></label>
-          <input type="number" id="p_volt_kw" step="1" min="1">
-        </div>
-      </div>
-      <div class="field">
-        <label>Faktor Daya <span class="unit">(PF, mis. 0.8–0.95)</span></label>
-        <input type="number" id="p_pf" step="0.01" min="0.01" max="1">
-      </div>
-
-      <div class="result-main">
-        <div class="value" id="p_out_ampere">— <small>A</small></div>
-        <div class="label">Arus</div>
-      </div>
-      <div class="cable-reco">
-        <div class="lbl">Rekomendasi Kabel NYA/NYY</div>
-        <div class="val" id="p_out_kabel">—</div>
-      </div>
-      <div class="step-box" id="p_out_step">—</div>
-
-      <div class="btn-row">
-        <button class="copy-btn" id="p_copyBtn" onclick="salinHasil('kw')">📋 Salin</button>
-        <button class="print-btn" onclick="cetakHasil('kw')">🖨 Cetak / PDF</button>
+      <div class="field" style="margin-bottom:0;" id="nyyOptWrap">
+        <label>Kondisi (kabel tanah)</label>
+        <select id="nyyKondisi">
+          <option value="tunggal_tanah">Inti tunggal — ditanam</option>
+          <option value="tunggal_udara">Inti tunggal — di udara</option>
+          <option value="dua_tanah">2 inti — ditanam</option>
+          <option value="dua_udara">2 inti — di udara</option>
+          <option value="tiga_tanah">3–4 inti — ditanam</option>
+          <option value="tiga_udara">3–4 inti — di udara</option>
+        </select>
       </div>
     </div>
   </div>
 
-  <!-- ===================== TABEL REFERENSI UKURAN KABEL ===================== -->
+  <!-- ===================== FORM GABUNGAN ===================== -->
+  <div class="panel">
+    <h2>Konversi Daya → Ampere</h2>
+    <div class="hint" id="jenisDayaHint">Daya semu (apparent power) — tidak butuh faktor daya.</div>
+
+    <div class="row2">
+      <div class="field">
+        <label>Jenis Daya</label>
+        <select id="jenisDaya">
+          <option value="kva">kVA (Daya Semu)</option>
+          <option value="kw">kW (Daya Nyata)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Daya <span class="unit" id="dayaUnit">(kVA)</span></label>
+        <input type="number" id="in_daya" step="0.1" min="0">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Fasa</label>
+        <select id="in_fasa">
+          <option value="1">1 Fasa</option>
+          <option value="3">3 Fasa</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Tegangan <span class="unit">(V)</span></label>
+        <input type="number" id="in_volt" step="1" min="1">
+      </div>
+    </div>
+    <div class="field" id="pfWrap">
+      <label>Faktor Daya <span class="unit">(PF, mis. 0.8–0.95)</span></label>
+      <input type="number" id="in_pf" step="0.01" min="0.01" max="1">
+    </div>
+
+    <div class="result-main">
+      <div class="value" id="out_ampere">— <small>A</small></div>
+      <div class="label">Arus</div>
+    </div>
+    <div class="cable-reco">
+      <div class="lbl">Rekomendasi Kabel</div>
+      <div class="val" id="out_kabel">—</div>
+    </div>
+    <div class="step-box" id="out_step">—</div>
+
+    <div class="btn-row">
+      <button class="copy-btn" id="copyBtn" onclick="salinHasil()">📋 Salin</button>
+      <button class="print-btn" onclick="cetakHasil()">🖨 Cetak / PDF</button>
+    </div>
+  </div>
+
+  <!-- ===================== TABEL REFERENSI KHA ===================== -->
   <div class="panel table-panel">
-    <h2>Tabel Referensi Ukuran Kabel berdasarkan Arus</h2>
-    <div class="hint">Ambang batas arus yang dipakai untuk rekomendasi ukuran kabel otomatis di atas (kabel NYA/NYY, sesuai PUIL 2011).</div>
+    <h2>Tabel Referensi KHA — NYA (Tabel K.52.3.1)</h2>
+    <div class="hint">
+      Kabel berinti tunggal PVC. Nilai <b style="color:var(--teal);">diekstrak langsung</b> dari dokumen SNI 0225:2011/Amd 1:2013 yang kamu unggah — suhu ambien 30°C.
+      <b style="color:var(--red);">⚠ CSA 240mm² di udara</b> tercetak "5285" di dokumen asli — jelas salah cetak (meloncat dari pola 448→608), dipakai nilai koreksi 528 (ditandai *).
+    </div>
     <div class="table-scroll">
     <table>
-      <thead><tr><th>Arus Maksimum (A)</th><th>Ukuran Kabel</th></tr></thead>
-      <tbody id="tabelKabel"></tbody>
+      <thead><tr><th>CSA (mm²)</th><th>Dalam Konduit (A)</th><th>Di Udara (A)</th></tr></thead>
+      <tbody id="tabelNya"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel table-panel">
+    <h2>Tabel Referensi KHA — NYY (Tabel K.52.3.5a)</h2>
+    <div class="hint">
+      Kabel tanah berkonduktor tembaga, insulasi &amp; selubung PVC. Nilai <b style="color:var(--teal);">diekstrak langsung</b> dari dokumen resmi — suhu ambien 30°C.
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="vertical-align:bottom;">CSA (mm²)</th>
+          <th colspan="2">Inti Tunggal</th><th colspan="2">2 Inti</th><th colspan="2">3–4 Inti</th>
+        </tr>
+        <tr><th>Tanah</th><th>Udara</th><th>Tanah</th><th>Udara</th><th>Tanah</th><th>Udara</th></tr>
+      </thead>
+      <tbody id="tabelNyy"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel table-panel">
+    <h2>Tabel Referensi KHA — NAYY (Tabel K.52.3.5b)</h2>
+    <div class="hint">
+      Kabel tanah berkonduktor aluminium, insulasi &amp; selubung PVC. Nilai diekstrak dari dokumen resmi.
+      <b style="color:var(--red);">⚠ CSA 120mm² inti tunggal/tanah</b> tercetak "683" di dokumen asli — jelas salah cetak (meloncat dari pola 319→409), dipakai nilai interpolasi ≈365 (ditandai *).
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="vertical-align:bottom;">CSA (mm²)</th>
+          <th colspan="2">Inti Tunggal</th><th colspan="2">2 Inti</th><th colspan="2">3–4 Inti</th>
+        </tr>
+        <tr><th>Tanah</th><th>Udara</th><th>Tanah</th><th>Udara</th><th>Tanah</th><th>Udara</th></tr>
+      </thead>
+      <tbody id="tabelNayy"></tbody>
+    </table>
+    </div>
+  </div>
+
+  <div class="panel table-panel">
+    <h2>Tabel Referensi KHA — N2XY (Tabel K.52.3.9a)</h2>
+    <div class="hint">
+      Kabel tanah berkonduktor tembaga, insulasi XLPE, selubung PVC. Nilai <b style="color:var(--teal);">diekstrak langsung</b> dari dokumen resmi — suhu ambien 30°C.
+    </div>
+    <div class="table-scroll">
+    <table>
+      <thead>
+        <tr>
+          <th rowspan="2" style="vertical-align:bottom;">CSA (mm²)</th>
+          <th colspan="2">Inti Tunggal</th><th colspan="2">2 Inti</th><th colspan="2">3–4 Inti</th>
+        </tr>
+        <tr><th>Tanah</th><th>Udara</th><th>Tanah</th><th>Udara</th><th>Tanah</th><th>Udara</th></tr>
+      </thead>
+      <tbody id="tabelN2xy"></tbody>
     </table>
     </div>
   </div>
@@ -224,93 +286,221 @@ footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.
   <footer>
     kVA→A: I = (kVA×1000)/V (1 fasa) atau I = (kVA×1000)/(V×1.732) (3 fasa).
     kW→A: I = (kW×1000)/(V×PF) (1 fasa) atau I = (kW×1000)/(V×1.732×PF) (3 fasa).
-    Rekomendasi ukuran kabel adalah estimasi awal berdasarkan ambang arus — selalu verifikasi ke tabel KHA (kemampuan hantar arus) resmi &amp; kondisi pemasangan aktual (suhu, jumlah kabel berkelompok, metode instalasi) sebelum eksekusi.
+    Semua tabel KHA (NYA/NYY/NAYY/N2XY) diekstrak langsung dari dokumen resmi SNI 0225:2011/Amd 1:2013 (PUIL 2011) yang diunggah — Tabel K.52.3.1, K.52.3.5a, K.52.3.5b, K.52.3.9a. Dua nilai dikoreksi dari salah cetak di dokumen asli (ditandai *): NYA 240mm²/di udara ("5285"→528) dan NAYY 120mm²/inti tunggal/tanah ("683"→365 interpolasi).
+    Semua nilai untuk suhu ambien 30°C tanpa faktor derating tambahan (jumlah kabel berkelompok, suhu aktual, dll) — <b>tetap verifikasi ke dokumen PUIL 2011 &amp; datasheet kabel</b> sebelum dipakai untuk desain/eksekusi proyek.
   </footer>
 
 </div>
 
 <script>
-  const CABLE_STEPS = [
-    {max:15,  size:'1.5 mm²'},
-    {max:20,  size:'2.5 mm²'},
-    {max:27,  size:'4.0 mm²'},
-    {max:35,  size:'6.0 mm²'},
-    {max:50,  size:'10.0 mm²'},
-    {max:68,  size:'16.0 mm²'},
-    {max:90,  size:'25.0 mm²'},
-    {max:111, size:'35.0 mm²'},
-    {max:143, size:'50.0 mm²'},
-    {max:182, size:'70.0 mm²'},
+  // ============ DATA RESMI DARI SNI 0225:2011/Amd 1:2013 (PUIL 2011) ============
+
+  // Tabel K.52.3.1 — NYA, berinti tunggal PVC. Kolom: dalam konduit / di udara.
+  const NYA_TABLE = [
+    {csa:0.5,  konduit:2.5, udara:null},
+    {csa:0.75, konduit:7,   udara:15},
+    {csa:1,    konduit:11,  udara:19},
+    {csa:1.5,  konduit:15,  udara:24},
+    {csa:2.5,  konduit:20,  udara:32},
+    {csa:4,    konduit:25,  udara:42},
+    {csa:6,    konduit:33,  udara:54},
+    {csa:10,   konduit:45,  udara:73},
+    {csa:16,   konduit:61,  udara:98},
+    {csa:25,   konduit:83,  udara:129},
+    {csa:35,   konduit:103, udara:158},
+    {csa:50,   konduit:132, udara:198},
+    {csa:70,   konduit:165, udara:245},
+    {csa:95,   konduit:197, udara:292},
+    {csa:120,  konduit:235, udara:344},
+    {csa:150,  konduit:null,udara:391},
+    {csa:185,  konduit:null,udara:448},
+    {csa:240,  konduit:null,udara:528, catatan:'*'},
+    {csa:300,  konduit:null,udara:608},
+    {csa:400,  konduit:null,udara:726},
+    {csa:500,  konduit:null,udara:830},
   ];
+
+  // Tabel K.52.3.5a — NYY dkk (Cu, PVC), kabel tanah.
+  const NYY_TABLE = [
+    {csa:1.5, tunggal_tanah:40,  tunggal_udara:26,  dua_tanah:31,  dua_udara:20,  tiga_tanah:26,  tiga_udara:18.5},
+    {csa:2.5, tunggal_tanah:54,  tunggal_udara:35,  dua_tanah:41,  dua_udara:27,  tiga_tanah:34,  tiga_udara:25},
+    {csa:4,   tunggal_tanah:70,  tunggal_udara:46,  dua_tanah:54,  dua_udara:37,  tiga_tanah:44,  tiga_udara:34},
+    {csa:6,   tunggal_tanah:90,  tunggal_udara:58,  dua_tanah:68,  dua_udara:48,  tiga_tanah:56,  tiga_udara:43},
+    {csa:10,  tunggal_tanah:122, tunggal_udara:79,  dua_tanah:92,  dua_udara:66,  tiga_tanah:75,  tiga_udara:60},
+    {csa:16,  tunggal_tanah:160, tunggal_udara:105, dua_tanah:121, dua_udara:89,  tiga_tanah:98,  tiga_udara:80},
+    {csa:25,  tunggal_tanah:206, tunggal_udara:140, dua_tanah:153, dua_udara:118, tiga_tanah:128, tiga_udara:106},
+    {csa:35,  tunggal_tanah:249, tunggal_udara:174, dua_tanah:187, dua_udara:145, tiga_tanah:157, tiga_udara:131},
+    {csa:50,  tunggal_tanah:296, tunggal_udara:212, dua_tanah:222, dua_udara:176, tiga_tanah:185, tiga_udara:159},
+    {csa:70,  tunggal_tanah:365, tunggal_udara:269, dua_tanah:272, dua_udara:224, tiga_tanah:228, tiga_udara:202},
+    {csa:95,  tunggal_tanah:438, tunggal_udara:331, dua_tanah:328, dua_udara:271, tiga_tanah:275, tiga_udara:244},
+    {csa:120, tunggal_tanah:499, tunggal_udara:386, dua_tanah:375, dua_udara:314, tiga_tanah:313, tiga_udara:282},
+    {csa:150, tunggal_tanah:561, tunggal_udara:442, dua_tanah:419, dua_udara:361, tiga_tanah:353, tiga_udara:324},
+    {csa:185, tunggal_tanah:637, tunggal_udara:511, dua_tanah:475, dua_udara:412, tiga_tanah:399, tiga_udara:371},
+    {csa:240, tunggal_tanah:743, tunggal_udara:612, dua_tanah:550, dua_udara:484, tiga_tanah:464, tiga_udara:436},
+    {csa:300, tunggal_tanah:843, tunggal_udara:707, dua_tanah:525, dua_udara:590, tiga_tanah:524, tiga_udara:481},
+    {csa:400, tunggal_tanah:986, tunggal_udara:859, dua_tanah:605, dua_udara:710, tiga_tanah:600, tiga_udara:560},
+    {csa:500, tunggal_tanah:1125,tunggal_udara:1000,dua_tanah:null,dua_udara:null,tiga_tanah:null,tiga_udara:null},
+  ];
+
+  // Tabel K.52.3.5b — NAYY dkk (Al, PVC), kabel tanah.
+  // Catatan: nilai 120mm² tunggal/tanah tercetak "683" di dokumen asli — pola datanya jelas nggak
+  // konsisten (harusnya di antara 319 dan 409), jadi dipakai nilai interpolasi ~365 dengan penanda "*".
+  const NAYY_TABLE = [
+    {csa:4,   tunggal_tanah:45,  tunggal_udara:36,  dua_tanah:36,  dua_udara:29,  tiga_tanah:32,  tiga_udara:26},
+    {csa:6,   tunggal_tanah:57,  tunggal_udara:45,  dua_tanah:45,  dua_udara:37,  tiga_tanah:40,  tiga_udara:34},
+    {csa:10,  tunggal_tanah:76,  tunggal_udara:62,  dua_tanah:61,  dua_udara:51,  tiga_tanah:53,  tiga_udara:46},
+    {csa:16,  tunggal_tanah:102, tunggal_udara:82,  dua_tanah:79,  dua_udara:70,  tiga_tanah:69,  tiga_udara:62},
+    {csa:25,  tunggal_tanah:134, tunggal_udara:125, dua_tanah:102, dua_udara:91,  tiga_tanah:93,  tiga_udara:83},
+    {csa:35,  tunggal_tanah:180, tunggal_udara:145, dua_tanah:125, dua_udara:113, tiga_tanah:111, tiga_udara:102},
+    {csa:50,  tunggal_tanah:215, tunggal_udara:176, dua_tanah:147, dua_udara:138, tiga_tanah:133, tiga_udara:124},
+    {csa:70,  tunggal_tanah:265, tunggal_udara:224, dua_tanah:178, dua_udara:174, tiga_tanah:165, tiga_udara:158},
+    {csa:95,  tunggal_tanah:319, tunggal_udara:271, dua_tanah:218, dua_udara:210, tiga_tanah:198, tiga_udara:190},
+    {csa:120, tunggal_tanah:365, tunggal_udara:314, dua_tanah:245, dua_udara:244, tiga_tanah:227, tiga_udara:221, catatan:'*'},
+    {csa:150, tunggal_tanah:409, tunggal_udara:361, dua_tanah:280, dua_udara:281, tiga_tanah:254, tiga_udara:252},
+    {csa:185, tunggal_tanah:464, tunggal_udara:412, dua_tanah:316, dua_udara:320, tiga_tanah:290, tiga_udara:289},
+    {csa:240, tunggal_tanah:543, tunggal_udara:484, dua_tanah:369, dua_udara:378, tiga_tanah:341, tiga_udara:339},
+    {csa:300, tunggal_tanah:615, tunggal_udara:548, dua_tanah:414, dua_udara:460, tiga_tanah:387, tiga_udara:377},
+    {csa:400, tunggal_tanah:719, tunggal_udara:666, dua_tanah:481, dua_udara:550, tiga_tanah:446, tiga_udara:444},
+    {csa:500, tunggal_tanah:821, tunggal_udara:776, dua_tanah:null,dua_udara:null,tiga_tanah:null,tiga_udara:null},
+  ];
+
+  // Tabel K.52.3.9a — N2XY dkk (Cu, XLPE), kabel tanah.
+  const N2XY_TABLE = [
+    {csa:1.5, tunggal_tanah:43,  tunggal_udara:35,  dua_tanah:33,  dua_udara:27,  tiga_tanah:29,  tiga_udara:23},
+    {csa:2.5, tunggal_tanah:58,  tunggal_udara:43,  dua_tanah:44,  dua_udara:36,  tiga_tanah:38,  tiga_udara:32},
+    {csa:4,   tunggal_tanah:76,  tunggal_udara:57,  dua_tanah:58,  dua_udara:48,  tiga_tanah:49,  tiga_udara:41},
+    {csa:6,   tunggal_tanah:95,  tunggal_udara:72,  dua_tanah:72,  dua_udara:61,  tiga_tanah:60,  tiga_udara:52},
+    {csa:10,  tunggal_tanah:128, tunggal_udara:98,  dua_tanah:97,  dua_udara:83,  tiga_tanah:97,  tiga_udara:71},
+    {csa:16,  tunggal_tanah:169, tunggal_udara:132, dua_tanah:128, dua_udara:113, tiga_tanah:108, tiga_udara:96},
+    {csa:25,  tunggal_tanah:220, tunggal_udara:187, dua_tanah:167, dua_udara:150, tiga_tanah:141, tiga_udara:130},
+    {csa:35,  tunggal_tanah:265, tunggal_udara:217, dua_tanah:201, dua_udara:186, tiga_tanah:170, tiga_udara:159},
+    {csa:50,  tunggal_tanah:316, tunggal_udara:263, dua_tanah:239, dua_udara:226, tiga_tanah:201, tiga_udara:193},
+    {csa:70,  tunggal_tanah:385, tunggal_udara:331, dua_tanah:295, dua_udara:290, tiga_tanah:249, tiga_udara:245},
+    {csa:95,  tunggal_tanah:465, tunggal_udara:408, dua_tanah:355, dua_udara:353, tiga_tanah:299, tiga_udara:302},
+    {csa:120, tunggal_tanah:531, tunggal_udara:474, dua_tanah:404, dua_udara:413, tiga_tanah:340, tiga_udara:349},
+    {csa:150, tunggal_tanah:597, tunggal_udara:550, dua_tanah:458, dua_udara:468, tiga_tanah:381, tiga_udara:400},
+    {csa:185, tunggal_tanah:680, tunggal_udara:633, dua_tanah:516, dua_udara:540, tiga_tanah:434, tiga_udara:464},
+    {csa:240, tunggal_tanah:790, tunggal_udara:750, dua_tanah:600, dua_udara:590, tiga_tanah:506, tiga_udara:552},
+    {csa:300, tunggal_tanah:901, tunggal_udara:871, dua_tanah:695, dua_udara:745, tiga_tanah:585, tiga_udara:640},
+    {csa:400, tunggal_tanah:1032,tunggal_udara:1019,dua_tanah:null,dua_udara:null,tiga_tanah:null,tiga_udara:null},
+    {csa:500, tunggal_tanah:1180,tunggal_udara:1188,dua_tanah:null,dua_udara:null,tiga_tanah:null,tiga_udara:null},
+  ];
+
+  const KABEL_TANAH_DATA = {nyy: NYY_TABLE, nayy: NAYY_TABLE, n2xy: N2XY_TABLE};
+  const KABEL_TANAH_LABEL = {nyy:'NYY', nayy:'NAYY', n2xy:'N2XY'};
+
+  const jenisKabel = document.getElementById('jenisKabel');
+  const nyaKondisi = document.getElementById('nyaKondisi');
+  const nyaOptWrap = document.getElementById('nyaOptWrap');
+  const nyyKondisi = document.getElementById('nyyKondisi');
+  const nyyOptWrap = document.getElementById('nyyOptWrap');
+
+  function refreshJenisKabelUI(){
+    const isNya = jenisKabel.value === 'nya';
+    nyaOptWrap.style.visibility = isNya ? 'visible' : 'hidden';
+    nyyOptWrap.style.visibility = isNya ? 'hidden' : 'visible';
+  }
+  jenisKabel.addEventListener('change', () => { refreshJenisKabelUI(); hitung(); });
+  refreshJenisKabelUI();
+
   function rekomendasiKabel(ampere){
-    for (const s of CABLE_STEPS){
-      if (ampere <= s.max) return s.size;
+    const jenis = jenisKabel.value;
+    if (jenis === 'nya'){
+      const kolom = nyaKondisi.value;
+      for (const row of NYA_TABLE){
+        if (row[kolom] !== null && row[kolom] >= ampere) return row.csa + (row.catatan||'') + ' mm² (NYA)';
+      }
+      return '> 500 mm² (NYA) — konsultasi teknis';
+    } else {
+      const table = KABEL_TANAH_DATA[jenis];
+      const kolom = nyyKondisi.value;
+      for (const row of table){
+        if (row[kolom] !== null && row[kolom] >= ampere) return row.csa + ' mm² (' + KABEL_TANAH_LABEL[jenis] + (row.catatan||'') + ')';
+      }
+      return '> 500 mm² (' + KABEL_TANAH_LABEL[jenis] + ') — konsultasi teknis';
     }
-    return '≥ 95 mm²';
   }
 
-  const tabelKabel = document.getElementById('tabelKabel');
-  CABLE_STEPS.forEach(s => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>≤ ${s.max} A</td><td>${s.size}</td>`;
-    tabelKabel.appendChild(tr);
-  });
-  const trLast = document.createElement('tr');
-  trLast.innerHTML = `<td>&gt; 182 A</td><td>≥ 95 mm²</td>`;
-  tabelKabel.appendChild(trLast);
+  function renderTabelReferensi(){
+    const tabelNya = document.getElementById('tabelNya');
+    tabelNya.innerHTML = '';
+    NYA_TABLE.forEach(row => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${row.csa}${row.catatan||''}</td><td>${row.konduit !== null ? row.konduit : '—'}</td><td>${row.udara !== null ? row.udara : '—'}</td>`;
+      tabelNya.appendChild(tr);
+    });
+
+    function isiTabelTanah(tbodyId, table){
+      const tbody = document.getElementById(tbodyId);
+      tbody.innerHTML = '';
+      table.forEach(row => {
+        const tr = document.createElement('tr');
+        const v = (x) => x !== null && x !== undefined ? x : '—';
+        tr.innerHTML = `<td>${row.csa}${row.catatan||''}</td><td>${v(row.tunggal_tanah)}</td><td>${v(row.tunggal_udara)}</td><td>${v(row.dua_tanah)}</td><td>${v(row.dua_udara)}</td><td>${v(row.tiga_tanah)}</td><td>${v(row.tiga_udara)}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    isiTabelTanah('tabelNyy', NYY_TABLE);
+    isiTabelTanah('tabelNayy', NAYY_TABLE);
+    isiTabelTanah('tabelN2xy', N2XY_TABLE);
+  }
+  renderTabelReferensi();
 
   function fmt(v, dec){
     if (v === null || v === undefined || isNaN(v)) return '—';
     return v.toFixed(dec);
   }
 
-  // ---------- kVA ----------
-  const sKva = document.getElementById('s_kva');
-  const sFasa = document.getElementById('s_fasa_kva');
-  const sVolt = document.getElementById('s_volt_kva');
+  // ---------- Form gabungan ----------
+  const jenisDaya = document.getElementById('jenisDaya');
+  const inDaya = document.getElementById('in_daya');
+  const inFasa = document.getElementById('in_fasa');
+  const inVolt = document.getElementById('in_volt');
+  const inPf = document.getElementById('in_pf');
+  const pfWrap = document.getElementById('pfWrap');
+  const dayaUnit = document.getElementById('dayaUnit');
+  const jenisDayaHint = document.getElementById('jenisDayaHint');
 
-  function hitungKva(){
-    const kva = parseFloat(sKva.value) || 0;
-    const fasa = sFasa.value;
-    const v = parseFloat(sVolt.value) || 0;
+  function refreshJenisDayaUI(){
+    const isKva = jenisDaya.value === 'kva';
+    pfWrap.style.visibility = isKva ? 'hidden' : 'visible';
+    pfWrap.style.height = isKva ? '0' : 'auto';
+    pfWrap.style.marginBottom = isKva ? '0' : '16px';
+    dayaUnit.textContent = isKva ? '(kVA)' : '(kW)';
+    jenisDayaHint.textContent = isKva
+      ? 'Daya semu (apparent power) — tidak butuh faktor daya.'
+      : 'Daya nyata (real power) — perlu faktor daya (PF).';
+  }
+  jenisDaya.addEventListener('change', () => { refreshJenisDayaUI(); hitung(); });
+  refreshJenisDayaUI();
+
+  function hitung(){
+    const daya = parseFloat(inDaya.value) || 0;
+    const fasa = inFasa.value;
+    const v = parseFloat(inVolt.value) || 0;
+    const isKva = jenisDaya.value === 'kva';
     let ampere = null, stepTxt = '—';
 
-    if (kva > 0 && v > 0){
-      ampere = fasa === '1' ? (kva*1000)/v : (kva*1000)/(v*1.732);
-      const rumus = fasa === '1' ? `${v} V` : `(${v} V × 1.732)`;
-      stepTxt = `Langkah: (${kva} kVA × 1000) ÷ ${rumus} → Hasil: ${fmt(ampere,2)} A`;
+    if (isKva){
+      if (daya > 0 && v > 0){
+        ampere = fasa === '1' ? (daya*1000)/v : (daya*1000)/(v*1.732);
+        const rumus = fasa === '1' ? `${v} V` : `(${v} V × 1.732)`;
+        stepTxt = `Langkah: (${daya} kVA × 1000) ÷ ${rumus} → Hasil: ${fmt(ampere,2)} A`;
+      }
+    } else {
+      const pf = parseFloat(inPf.value) || 0;
+      if (daya > 0 && v > 0 && pf > 0){
+        ampere = fasa === '1' ? (daya*1000)/(v*pf) : (daya*1000)/(v*1.732*pf);
+        const rumus = fasa === '1' ? `(${v} V × ${pf} PF)` : `(${v} V × 1.732 × ${pf} PF)`;
+        stepTxt = `Langkah: (${daya} kW × 1000) ÷ ${rumus} → Hasil: ${fmt(ampere,2)} A`;
+      }
     }
 
-    document.getElementById('s_out_ampere').innerHTML = fmt(ampere,2) + ' <small>A</small>';
-    document.getElementById('s_out_kabel').textContent = ampere !== null ? rekomendasiKabel(ampere) : '—';
-    document.getElementById('s_out_step').textContent = stepTxt;
+    document.getElementById('out_ampere').innerHTML = fmt(ampere,2) + ' <small>A</small>';
+    document.getElementById('out_kabel').textContent = ampere !== null ? rekomendasiKabel(ampere) : '—';
+    document.getElementById('out_step').textContent = stepTxt;
   }
-  [sKva, sFasa, sVolt].forEach(el => el.addEventListener('input', hitungKva));
-
-  // ---------- kW ----------
-  const pKw = document.getElementById('p_kw');
-  const pFasa = document.getElementById('p_fasa_kw');
-  const pVolt = document.getElementById('p_volt_kw');
-  const pPf = document.getElementById('p_pf');
-
-  function hitungKw(){
-    const kw = parseFloat(pKw.value) || 0;
-    const fasa = pFasa.value;
-    const v = parseFloat(pVolt.value) || 0;
-    const pf = parseFloat(pPf.value) || 0;
-    let ampere = null, stepTxt = '—';
-
-    if (kw > 0 && v > 0 && pf > 0){
-      ampere = fasa === '1' ? (kw*1000)/(v*pf) : (kw*1000)/(v*1.732*pf);
-      const rumus = fasa === '1' ? `(${v} V × ${pf} PF)` : `(${v} V × 1.732 × ${pf} PF)`;
-      stepTxt = `Langkah: (${kw} kW × 1000) ÷ ${rumus} → Hasil: ${fmt(ampere,2)} A`;
-    }
-
-    document.getElementById('p_out_ampere').innerHTML = fmt(ampere,2) + ' <small>A</small>';
-    document.getElementById('p_out_kabel').textContent = ampere !== null ? rekomendasiKabel(ampere) : '—';
-    document.getElementById('p_out_step').textContent = stepTxt;
-  }
-  [pKw, pFasa, pVolt, pPf].forEach(el => el.addEventListener('input', hitungKw));
+  [inDaya, inFasa, inVolt, inPf, jenisKabel, nyaKondisi, nyyKondisi].forEach(el => el.addEventListener('input', hitung));
 
   // ---------- Salin & Cetak ----------
   function fmtTanggal(){
@@ -320,28 +510,34 @@ footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.
       String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
   }
 
-  function salinHasil(mode){
-    let teks, btnId;
-    if (mode === 'kva'){
-      btnId = 's_copyBtn';
-      teks = [
-        'KONVERSI kVA → AMPERE',
-        `Daya: ${sKva.value} kVA, Fasa: ${sFasa.value}, Tegangan: ${sVolt.value} V`,
-        '',
-        document.getElementById('s_out_step').textContent,
-        `Rekomendasi kabel: ${document.getElementById('s_out_kabel').textContent}`,
-      ].join('\n');
-    } else {
-      btnId = 'p_copyBtn';
-      teks = [
-        'KONVERSI kW → AMPERE',
-        `Daya: ${pKw.value} kW, Fasa: ${pFasa.value}, Tegangan: ${pVolt.value} V, PF: ${pPf.value}`,
-        '',
-        document.getElementById('p_out_step').textContent,
-        `Rekomendasi kabel: ${document.getElementById('p_out_kabel').textContent}`,
-      ].join('\n');
-    }
-    const btn = document.getElementById(btnId);
+  const KONDISI_LABEL = {
+    tunggal_tanah: 'Inti tunggal — ditanam',
+    tunggal_udara: 'Inti tunggal — di udara',
+    dua_tanah: '2 inti — ditanam',
+    dua_udara: '2 inti — di udara',
+    tiga_tanah: '3–4 inti — ditanam',
+    tiga_udara: '3–4 inti — di udara',
+  };
+  const NYA_KONDISI_LABEL = { konduit: 'Dalam pipa/conduit', udara: 'Di udara terbuka' };
+  function labelJenisKabel(){
+    if (jenisKabel.value === 'nya') return 'NYA — ' + NYA_KONDISI_LABEL[nyaKondisi.value];
+    return KABEL_TANAH_LABEL[jenisKabel.value] + ' — ' + KONDISI_LABEL[nyyKondisi.value];
+  }
+
+  function salinHasil(){
+    const isKva = jenisDaya.value === 'kva';
+    const teks = [
+      isKva ? 'KONVERSI kVA → AMPERE' : 'KONVERSI kW → AMPERE',
+      isKva
+        ? `Daya: ${inDaya.value} kVA, Fasa: ${inFasa.value}, Tegangan: ${inVolt.value} V`
+        : `Daya: ${inDaya.value} kW, Fasa: ${inFasa.value}, Tegangan: ${inVolt.value} V, PF: ${inPf.value}`,
+      `Jenis kabel: ${labelJenisKabel()}`,
+      '',
+      document.getElementById('out_step').textContent,
+      `Rekomendasi kabel: ${document.getElementById('out_kabel').textContent}`,
+      '(Nilai KHA dari SNI 0225:2011/Amd 1:2013 — verifikasi ke dokumen resmi)',
+    ].join('\n');
+    const btn = document.getElementById('copyBtn');
     navigator.clipboard.writeText(teks).then(() => {
       const asli = btn.textContent;
       btn.textContent = '✓ Tersalin!';
@@ -350,42 +546,25 @@ footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.
     }).catch(() => alert('Gagal menyalin.'));
   }
 
-  function cetakHasil(mode){
-    let html;
-    if (mode === 'kva'){
-      html = `
-        <h2>Laporan Konversi kVA ke Ampere</h2>
-        <div class="print-sub">Dibuat: ${fmtTanggal()}</div>
-        <table>
-          <tr><th>Parameter</th><th>Nilai</th></tr>
-          <tr><td>Daya</td><td>${sKva.value} kVA</td></tr>
-          <tr><td>Fasa</td><td>${sFasa.value} Fasa</td></tr>
-          <tr><td>Tegangan</td><td>${sVolt.value} V</td></tr>
-        </table>
-        <div class="print-result">
-          <div class="big">Arus: ${document.getElementById('s_out_ampere').textContent}</div>
-          <div style="margin-top:6px;">Rekomendasi kabel: ${document.getElementById('s_out_kabel').textContent}</div>
-        </div>
-        <div class="print-footer">${document.getElementById('s_out_step').textContent}<br>Dihasilkan otomatis oleh Kalkulator Konversi Daya ke Ampere. Verifikasi ke tabel KHA resmi untuk eksekusi.</div>
-      `;
-    } else {
-      html = `
-        <h2>Laporan Konversi kW ke Ampere</h2>
-        <div class="print-sub">Dibuat: ${fmtTanggal()}</div>
-        <table>
-          <tr><th>Parameter</th><th>Nilai</th></tr>
-          <tr><td>Daya</td><td>${pKw.value} kW</td></tr>
-          <tr><td>Fasa</td><td>${pFasa.value} Fasa</td></tr>
-          <tr><td>Tegangan</td><td>${pVolt.value} V</td></tr>
-          <tr><td>Faktor Daya (PF)</td><td>${pPf.value}</td></tr>
-        </table>
-        <div class="print-result">
-          <div class="big">Arus: ${document.getElementById('p_out_ampere').textContent}</div>
-          <div style="margin-top:6px;">Rekomendasi kabel: ${document.getElementById('p_out_kabel').textContent}</div>
-        </div>
-        <div class="print-footer">${document.getElementById('p_out_step').textContent}<br>Dihasilkan otomatis oleh Kalkulator Konversi Daya ke Ampere. Verifikasi ke tabel KHA resmi untuk eksekusi.</div>
-      `;
-    }
+  function cetakHasil(){
+    const isKva = jenisDaya.value === 'kva';
+    const html = `
+      <h2>Laporan Konversi ${isKva ? 'kVA' : 'kW'} ke Ampere</h2>
+      <div class="print-sub">Dibuat: ${fmtTanggal()}</div>
+      <table>
+        <tr><th>Parameter</th><th>Nilai</th></tr>
+        <tr><td>Daya</td><td>${inDaya.value} ${isKva ? 'kVA' : 'kW'}</td></tr>
+        <tr><td>Fasa</td><td>${inFasa.value} Fasa</td></tr>
+        <tr><td>Tegangan</td><td>${inVolt.value} V</td></tr>
+        ${isKva ? '' : `<tr><td>Faktor Daya (PF)</td><td>${inPf.value}</td></tr>`}
+        <tr><td>Jenis kabel</td><td>${labelJenisKabel()}</td></tr>
+      </table>
+      <div class="print-result">
+        <div class="big">Arus: ${document.getElementById('out_ampere').textContent}</div>
+        <div style="margin-top:6px;">Rekomendasi kabel: ${document.getElementById('out_kabel').textContent}</div>
+      </div>
+      <div class="print-footer">${document.getElementById('out_step').textContent}<br><b>Nilai KHA dari SNI 0225:2011/Amd 1:2013</b> — verifikasi ke dokumen resmi &amp; datasheet kabel sebelum eksekusi.</div>
+    `;
     document.getElementById('printArea').innerHTML = html;
     window.print();
   }
@@ -403,8 +582,7 @@ footer{margin-top:26px; font-size:0.75rem; color:var(--text-dim); line-height:1.
   });
   terapkanTema(localStorage.getItem('cable_theme') || 'light');
 
-  hitungKva();
-  hitungKw();
+  hitung();
 </script>
 
 <script>
