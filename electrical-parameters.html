@@ -198,12 +198,12 @@ html.embedded body{padding-top:20px;}
 
   <div class="panel">
     <h2><span class="n">3</span> Tabel Simulasi Multi-Item Kabel (Batch Calculation)</h2>
-    <p class="desc">R20 & material otomatis dicocokkan ke tabel IEC 60228 kalau ukurannya persis sama; kapasitansi/XC di tabel ini pakai asumsi insulasi XLPE (εr = 2.5) karena tabel sumbernya tidak punya kolom insulasi per item.</p>
+    <p class="desc">R20 otomatis dicocokkan ke tabel IEC 60228 kalau ukuran & material persis sama. Yp &amp; kapasitansi dihitung penuh per item (pakai dc/s masing-masing baris dan εr sesuai insulasi yang dipilih).</p>
     <div class="tablewrap">
       <table class="datatable">
         <thead>
           <tr>
-            <th>Nama / Tag</th><th>Material</th><th>A (mm²)</th><th>dc (mm)</th><th>Di (mm)</th><th>s (mm)</th><th>t (°C)</th><th>R20 (Ω/km)</th>
+            <th>Nama / Tag</th><th>Material</th><th>Insulasi</th><th>A (mm²)</th><th>dc (mm)</th><th>Di (mm)</th><th>s (mm)</th><th>t (°C)</th><th>R20 (Ω/km)</th>
             <th>R_DC,t (Ω/km)</th><th>R_AC (Ω/km)</th><th>L (mH/km)</th><th>XL (Ω/km)</th><th>C (µF/km)</th><th>XC (kΩ·km)</th><th>Z (Ω/km)</th><th></th>
           </tr>
         </thead>
@@ -215,22 +215,29 @@ html.embedded body{padding-top:20px;}
 
   <div class="panel">
     <h2 class="toggleh2" id="matrixToggle" style="cursor:pointer;">
-      <span class="n">4</span> Matriks Komparasi Uji Tegangan Kabel Menengah (IEC 60502-2 vs SPLN)
-      <span id="matrixChevron" style="margin-left:auto; color:var(--text-dim); font-size:12px;">▸ Lihat tabel</span>
+      <span class="n">4</span> Rumus-Rumus Parameter Elektrikal
+      <span id="matrixChevron" style="margin-left:auto; color:var(--text-dim); font-size:12px;">▸ Lihat rumus</span>
     </h2>
     <div id="matrixContent" style="display:none;">
-      <p class="desc">Tabel referensi statis kelas tegangan 6–30 kV, tidak terhubung ke input di atas.</p>
+      <p class="desc">Semua rumus yang dipakai di kalkulator ini, REF. IEC 60287 &amp; IEC 60228 — sama persis dipakai di poin 1-2 maupun tabel batch poin 3 (tidak ada simplifikasi).</p>
+      <div class="guide-list" id="guideList"></div>
+
+      <p class="desc" style="margin:18px 0 10px;">Keterangan variabel:</p>
       <div class="tablewrap">
-        <table class="datatable matrix">
-          <thead>
-            <tr>
-              <th>U (kV)</th><th>U₀ (kV)</th><th>Uji Rutin IEC (3.5×U₀)</th><th>Uji Rutin SPLN (2.5×U₀)</th><th>Selisih</th><th>Rasio SPLN/IEC</th><th>Uji Jenis IEC (4×U₀, 4 jam)</th><th>BIL Impuls (kV peak)</th>
-            </tr>
-          </thead>
-          <tbody id="matrixBody"></tbody>
+        <table class="datatable">
+          <thead><tr><th>Simbol</th><th>Arti</th><th>Satuan</th></tr></thead>
+          <tbody>
+            <tr><td>R20</td><td>Resistansi DC konduktor pada 20°C</td><td>Ω/km</td></tr>
+            <tr><td>α20</td><td>Koefisien temperatur material konduktor</td><td>/°C</td></tr>
+            <tr><td>t</td><td>Suhu kerja konduktor</td><td>°C</td></tr>
+            <tr><td>f</td><td>Frekuensi sistem</td><td>Hz</td></tr>
+            <tr><td>dc</td><td>Diameter konduktor</td><td>mm</td></tr>
+            <tr><td>Di</td><td>Diameter luar insulasi</td><td>mm</td></tr>
+            <tr><td>s</td><td>Jarak aksial antar kabel</td><td>mm</td></tr>
+            <tr><td>εr</td><td>Permitivitas relatif material insulasi</td><td>-</td></tr>
+          </tbody>
         </table>
       </div>
-      <div class="guide-list" id="guideList"></div>
     </div>
   </div>
 
@@ -268,29 +275,26 @@ const IEC60228 = [
 const MATCOL = { 'Plain Copper':1, 'Tinned Copper':2, 'Aluminum':3 };
 
 const defaultBatch = [
-  { nama:'SKTT 150kV 1x1200mm² Al CAS', material:'Aluminum', csa:1200, dc:43.5, di:82.5, s:115, t:90, r20:0.0247 },
-  { nama:'SKTT 150kV 1x800mm² Cu LS', material:'Plain Copper', csa:800, dc:35, di:72, s:100, t:90, r20:0.0221 },
-  { nama:'SKTM 20kV Feeder 1x240mm² Cu', material:'Plain Copper', csa:240, dc:18.5, di:34, s:60, t:90, r20:0.0754 },
-  { nama:'SKTM 20kV Feeder 1x240mm² Al', material:'Aluminum', csa:240, dc:18.5, di:34, s:60, t:90, r20:0.125 },
-  { nama:'Kabel Inverter PV 1x185mm² Al', material:'Aluminum', csa:185, dc:16, di:28, s:45, t:75, r20:0.164 },
-  { nama:'Kabel Outfall 0.4kV 1x150mm² Cu', material:'Plain Copper', csa:150, dc:14.2, di:22, s:35, t:70, r20:0.124 },
-  { nama:'SKTT 150kV 1x2000mm² Al CAS', material:'Aluminum', csa:2000, dc:56.3, di:93.8, s:135, t:90, r20:0.0149 },
-  { nama:'SKTT 150kV 1x1000mm² Cu CAS', material:'Plain Copper', csa:1000, dc:39.5, di:78, s:110, t:90, r20:0.0176 }
+  { nama:'SKTT 150kV 1x1200mm² Al CAS', material:'Aluminum', insulasi:'XLPE', csa:1200, dc:43.5, di:82.5, s:115, t:90, r20:0.0247 },
+  { nama:'SKTT 150kV 1x800mm² Cu LS', material:'Plain Copper', insulasi:'XLPE', csa:800, dc:35, di:72, s:100, t:90, r20:0.0221 },
+  { nama:'SKTM 20kV Feeder 1x240mm² Cu', material:'Plain Copper', insulasi:'XLPE', csa:240, dc:18.5, di:34, s:60, t:90, r20:0.0754 },
+  { nama:'SKTM 20kV Feeder 1x240mm² Al', material:'Aluminum', insulasi:'XLPE', csa:240, dc:18.5, di:34, s:60, t:90, r20:0.125 },
+  { nama:'Kabel Inverter PV 1x185mm² Al', material:'Aluminum', insulasi:'XLPE', csa:185, dc:16, di:28, s:45, t:75, r20:0.164 },
+  { nama:'Kabel Outfall 0.4kV 1x150mm² Cu', material:'Plain Copper', insulasi:'PVC', csa:150, dc:14.2, di:22, s:35, t:70, r20:0.124 },
+  { nama:'SKTT 150kV 1x2000mm² Al CAS', material:'Aluminum', insulasi:'XLPE', csa:2000, dc:56.3, di:93.8, s:135, t:90, r20:0.0149 },
+  { nama:'SKTT 150kV 1x1000mm² Cu CAS', material:'Plain Copper', insulasi:'XLPE', csa:1000, dc:39.5, di:78, s:110, t:90, r20:0.0176 }
 ];
 
-const MATRIX = [
-  { u:6, u0:3.6, bil:60, note:'Diturunkan dari 2.5×U₀ (2.5 × 3.6 kV = 9 kV)' },
-  { u:10, u0:6, bil:75, note:'Diturunkan dari 2.5×U₀ (2.5 × 6.0 kV = 15 kV)' },
-  { u:15, u0:8.7, bil:95, note:'Diturunkan dari 2.5×U₀ (2.5 × 8.7 kV = 21.75 ≈ 22 kV)' },
-  { u:20, u0:12, bil:125, note:'Diturunkan dari 2.5×U₀ (2.5 × 12.0 kV = 30 kV) / SKTM 20kV PLN' },
-  { u:30, u0:18, bil:170, note:'Sama dengan IEC (3.5×U₀ = 63 kV) — Margin penuh untuk kelas 30 kV' }
-];
-
-const GUIDE = [
-  { t:'Metode Uji Komisioning SKTM 20 kV (SPLN 43-2 / S3.001-3)', d:'Pengujian di lapangan menggunakan tegangan AC VLF (Very Low Frequency) 0.1 Hz sebesar 24 kV rms (2 x U0) selama 30 menit untuk kabel baru.' },
-  { t:'Uji VLF Kabel Pasca Pemeliharaan / Perbaikan', d:'Digunakan tegangan VLF 0.1 Hz sebesar 19.2 kV rms (1.6 x U0) selama 15 menit untuk menghindari stress dielektrik berlebih pada insulasi tua.' },
-  { t:'Soak Test / Uji Bertegangan Tanpa Beban', d:'Kabel dihubungkan ke jaringan sistem 20 kV nominal selama 24 jam terus-menerus sebelum diberi beban operasional konsumen.' },
-  { t:'Alasan Teknis Perbedaan Faktor Pengali', d:'IEC 60502-2 mengunci faktor 3.5xU0 untuk memberikan ketahanan margin internasional tertinggi. SPLN menyesuaikan faktor 2.5xU0 (1.5xU) berdasarkan kondisi praktis operasional sistem jaringan tegangan menengah PLN di Indonesia.' }
+const FORMULAS = [
+  { t:'1. Resistansi DC Suhu Kerja (R_DC,t)', d:'R_DC,t = R20 × (1 + α20 × (t − 20))   [Ω/km]' },
+  { t:'2. Faktor Skin Effect (ys)', d:'xs² = (8π·f·10⁻⁷·R_DC,t / 1000)²  →  ys = xs² / (192 + 0.8×xs²)' },
+  { t:'3. Faktor Proximity Effect (yp)', d:'yp = ys × (dc/s)² × 0.312   — dipakai penuh, baik di poin 1-2 maupun tabel batch (poin 3)' },
+  { t:'4. Resistansi AC (R_AC)', d:'R_AC = R_DC,t × (1 + ys + yp)   [Ω/km]' },
+  { t:'5. Induktansi Kabel (L)', d:'L = 0.05 + 0.2 × ln(2s / dc)   [mH/km]' },
+  { t:'6. Reaktansi Induktif (XL)', d:'XL = 2π × f × (L / 1000)   [Ω/km]' },
+  { t:'7. Kapasitansi Kabel (C)', d:'C = εr / (18 × ln(Di / dc))   [µF/km]  — εr diambil dari insulasi yang dipilih tiap item (XLPE/EPR/PVC)' },
+  { t:'8. Reaktansi Kapasitif (XC)', d:'XC = (10⁶ / (2π × f × C)) / 1000   [kΩ·km]' },
+  { t:'9. Impedansi Total (Z)', d:'Z = √(R_AC² + XL²)   [Ω/km]' }
 ];
 
 let batch = [];
@@ -392,18 +396,21 @@ function renderLookupNote(){
 
 // ---------- Batch calculation ----------
 function computeBatchRow(row){
-  const alpha20 = MATERIALS[row.material].alpha20;
+  const alpha20 = (MATERIALS[row.material] || MATERIALS['Aluminum']).alpha20;
+  const epsilon = (INSULATIONS[row.insulasi] || INSULATIONS['XLPE']).epsilon;
   const rdct = row.r20 * (1 + alpha20 * (row.t - 20));
   let xs2 = Math.pow(8*Math.PI*50*1e-7*rdct/1000, 2);
   let ys = xs2 / (192 + 0.8*xs2);
   if(!isFinite(ys)) ys = 0.02;
-  const rac = rdct * (1 + ys + 0.002);
+  let yp = ys * Math.pow(row.dc/row.s, 2) * 0.312;
+  if(!isFinite(yp)) yp = 0.001;
+  const rac = rdct * (1 + ys + yp);
   const L = 0.05 + 0.2 * Math.log(2*row.s/row.dc);
   const XL = 2 * Math.PI * 50 * (L/1000);
-  const C = 2.5 / (18 * Math.log(row.di/row.dc));
+  const C = epsilon / (18 * Math.log(row.di/row.dc));
   const XC = (1e6 / (2*Math.PI*50*C)) / 1000;
   const Z = Math.sqrt(rac*rac + XL*XL);
-  return { rdct, rac, L, XL, C, XC, Z };
+  return { rdct, rac, yp, L, XL, C, XC, Z };
 }
 
 function renderBatch(){
@@ -419,6 +426,13 @@ function renderBatch(){
           <option value="Plain Copper" ${row.material==='Plain Copper'?'selected':''}>Plain Copper</option>
           <option value="Tinned Copper" ${row.material==='Tinned Copper'?'selected':''}>Tinned Copper</option>
           <option value="Aluminum" ${row.material==='Aluminum'?'selected':''}>Aluminum</option>
+        </select>
+      </td>
+      <td>
+        <select data-id="${row.id}" data-f="insulasi">
+          <option value="XLPE" ${row.insulasi==='XLPE'?'selected':''}>XLPE</option>
+          <option value="EPR" ${row.insulasi==='EPR'?'selected':''}>EPR</option>
+          <option value="PVC" ${row.insulasi==='PVC'?'selected':''}>PVC</option>
         </select>
       </td>
       <td><input type="number" step="0.1" value="${row.csa}" data-id="${row.id}" data-f="csa"></td>
@@ -444,7 +458,7 @@ function renderBatch(){
       const id = +e.target.dataset.id, f = e.target.dataset.f;
       const row = batch.find(x => x.id === id);
       if(!row) return;
-      row[f] = (f === 'nama' || f === 'material') ? e.target.value : (parseFloat(e.target.value) || 0);
+      row[f] = (f === 'nama' || f === 'material' || f === 'insulasi') ? e.target.value : (parseFloat(e.target.value) || 0);
       if(f === 'material' || f === 'csa'){
         const lv = lookupR20(row.material, row.csa);
         if(lv !== null) row.r20 = lv;
@@ -464,27 +478,14 @@ function renderBatch(){
 }
 
 function addBatchRow(data){
-  const d = data || { nama:'Item baru', material:'Aluminum', csa:0, dc:0, di:0, s:0, t:90, r20:0 };
+  const d = data || { nama:'Item baru', material:'Aluminum', insulasi:'XLPE', csa:0, dc:0, di:0, s:0, t:90, r20:0 };
   batch.push({ id: rowId++, ...d });
 }
 
-// ---------- Matrix (static reference) ----------
-function renderMatrix(){
-  const body = document.getElementById('matrixBody');
-  body.innerHTML = MATRIX.map(m => {
-    const iecRutin = m.u0 === 3.6 ? 12.5 : (m.u0 === 8.7 ? 30.5 : m.u0*3.5);
-    const splnRutin = m.u0 === 18 ? 63 : Math.round(m.u0*2.5);
-    const selisih = iecRutin - splnRutin;
-    const rasio = (splnRutin/iecRutin)*100;
-    const iecJenis = m.u0*4;
-    return `<tr>
-      <td>${fmt(m.u,0)}</td><td>${fmt(m.u0,1)}</td><td>${fmt(iecRutin,1)} kV</td><td>${fmt(splnRutin,1)} kV</td>
-      <td>${fmt(selisih,1)} kV</td><td>${fmt(rasio,1)}%</td><td>${fmt(iecJenis,1)} kV</td><td>${fmt(m.bil,0)}</td>
-    </tr>`;
-  }).join('');
-
-  document.getElementById('guideList').innerHTML = GUIDE.map(g => `
-    <div class="guide-item"><b>${g.t}</b><span>${g.d}</span></div>
+// ---------- Daftar rumus (static reference) ----------
+function renderFormulas(){
+  document.getElementById('guideList').innerHTML = FORMULAS.map(g => `
+    <div class="guide-item"><b>${g.t}</b><span style="font-family:'IBM Plex Mono',monospace;">${g.d}</span></div>
   `).join('');
 }
 
@@ -523,7 +524,7 @@ function loadState(){
     document.getElementById('r20').value = state.r20 ?? 0.0247;
     if(Array.isArray(state.batch) && state.batch.length){
       batch = [];
-      state.batch.forEach(b => addBatchRow(b));
+      state.batch.forEach(b => addBatchRow({ insulasi:'XLPE', ...b }));
     }
     return true;
   }catch(e){ return false; }
@@ -549,7 +550,7 @@ function buildPrintArea(){
   const area = document.getElementById('printArea');
   const batchRows = batch.map(row => {
     const c = computeBatchRow(row);
-    return `<tr><td>${row.nama}</td><td>${row.material}</td><td>${fmt(row.csa,0)}</td><td>${fmt(c.rdct,5)}</td><td>${fmt(c.rac,5)}</td><td>${fmt(c.L,4)}</td><td>${fmt(c.XL,5)}</td><td>${fmt(c.C,4)}</td><td>${fmt(c.XC,3)}</td><td>${fmt(c.Z,5)}</td></tr>`;
+    return `<tr><td>${row.nama}</td><td>${row.material}</td><td>${row.insulasi}</td><td>${fmt(row.csa,0)}</td><td>${fmt(c.rdct,5)}</td><td>${fmt(c.rac,5)}</td><td>${fmt(c.L,4)}</td><td>${fmt(c.XL,5)}</td><td>${fmt(c.C,4)}</td><td>${fmt(c.XC,3)}</td><td>${fmt(c.Z,5)}</td></tr>`;
   }).join('');
   area.innerHTML = `
     <h1>Parameter Elektrikal Kabel</h1>
@@ -565,7 +566,7 @@ function buildPrintArea(){
     </table>
     <h3 style="font-size:14px;">Batch — ${batch.length} item</h3>
     <table>
-      <tr><th>Nama</th><th>Material</th><th>CSA</th><th>R_DC,t</th><th>R_AC</th><th>L</th><th>XL</th><th>C</th><th>XC</th><th>Z</th></tr>
+      <tr><th>Nama</th><th>Material</th><th>Insulasi</th><th>CSA</th><th>R_DC,t</th><th>R_AC</th><th>L</th><th>XL</th><th>C</th><th>XC</th><th>Z</th></tr>
       ${batchRows}
     </table>
     <p style="margin-top:16px; font-size:11px; color:#888;">Dibuat via cable-electric — ${new Date().toLocaleString('id-ID')}</p>
@@ -575,7 +576,7 @@ function buildPrintArea(){
 function renderAll(){
   renderSingle();
   renderBatch();
-  renderMatrix();
+  renderFormulas();
 }
 
 function init(){

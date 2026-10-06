@@ -1,4 +1,4 @@
-const CACHE_NAME = 'cable-calc-v11';
+const CACHE_NAME = 'cable-calc-v12';
 const ASSETS = [
   './index.html',
   './voltage-drop.html',
@@ -12,6 +12,7 @@ const ASSETS = [
   './cr-test.html',
   './power-to-ampere.html',
   './electrical-parameters.html',
+  './weight-length.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',

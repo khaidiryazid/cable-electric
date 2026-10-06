@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Konversi Berat ↔ Panjang Kabel — Cable Electric</title>
+<script>if(window.self!==window.top){document.documentElement.classList.add("embedded");}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+  --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a;
+  --red:#a8402f; --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+}
+[data-theme="dark"]{
+  --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+  --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#c98a2c;
+  --red:#c9584a; --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif; padding:24px 16px 60px; transition:background .2s,color .2s;}
+.wrap{max-width:900px; margin:0 auto;}
+a.back{display:inline-block; margin-bottom:16px; color:var(--copper); text-decoration:none; font-size:14px; font-weight:500;}
+a.back:hover{text-decoration:underline;}
+header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;}
+h1{font-size:24px; margin:0 0 4px; color:var(--paper);}
+.sub{color:var(--text-dim); font-size:14px; margin:0 0 20px;}
+.ref{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:24px;}
+
+button.icon-btn{border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; padding:8px 10px; cursor:pointer; font-size:16px; line-height:1;}
+button.icon-btn:hover{border-color:var(--copper);}
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px;}
+.panel h2{font-size:15px; margin:0 0 14px; color:var(--paper); display:flex; align-items:center; gap:8px;}
+.panel h2 .n{background:var(--copper); color:#fff; width:22px; height:22px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
+.panel .desc{font-size:12.5px; color:var(--text-dim); margin:-6px 0 14px; line-height:1.6;}
+
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:4px;}
+.field input, .field select{width:100%; border:1px solid var(--line); background:var(--bg); color:var(--text); border-radius:8px; padding:9px 10px; font-family:'IBM Plex Mono',monospace; font-size:14px;}
+.field select{font-family:'Space Grotesk',sans-serif;}
+.row3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+
+.wresult{background:var(--panel-2); border:1px solid var(--copper); border-radius:10px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center; margin-top:4px;}
+.wresult span:first-child{font-size:13px; color:var(--text-dim);}
+.wresult span:last-child{font-family:'IBM Plex Mono',monospace; font-weight:700; color:var(--copper-bright); font-size:16px;}
+
+.convgrid{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+@media (max-width:600px){ .convgrid{grid-template-columns:1fr;} .row3{grid-template-columns:1fr 1fr;} }
+@media (max-width:420px){ .row3{grid-template-columns:1fr;} }
+
+.convbox{background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:16px;}
+.convbox .ctitle{font-size:12px; font-weight:700; color:var(--paper); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px; display:flex; align-items:center; gap:6px;}
+.convbox .ctitle .arrow{color:var(--copper);}
+.convbox .field label{color:var(--text);}
+.convbox .result{margin-top:12px; text-align:center; padding:14px 10px; background:var(--panel); border-radius:10px; border:1px dashed var(--copper);}
+.convbox .result .val{font-family:'IBM Plex Mono',monospace; font-size:22px; font-weight:700; color:var(--copper-bright);}
+.convbox .result .unit{font-size:12px; color:var(--text-dim); margin-top:2px;}
+
+.tablewrap{overflow-x:auto;}
+table.datatable{width:100%; border-collapse:collapse; font-size:12.5px;}
+table.datatable th{background:var(--panel-2); color:var(--text-dim); text-align:left; padding:8px 7px; font-size:11px; text-transform:uppercase; letter-spacing:.03em; border-bottom:2px solid var(--line); white-space:nowrap;}
+table.datatable td{padding:8px 7px; border-bottom:1px solid var(--line); font-family:'IBM Plex Mono',monospace;}
+table.datatable tr.rowclick{cursor:pointer;}
+table.datatable tr.rowclick:hover{background:rgba(181,102,31,.06);}
+table.datatable tr.rowactive{background:rgba(181,102,31,.1);}
+
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;}
+.toolbar button{flex:1; min-width:160px; border:none; border-radius:10px; padding:12px 16px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; cursor:pointer;}
+.btn-print{background:var(--copper); color:#fff;}
+.btn-print:hover{background:var(--copper-bright);}
+.btn-copy{background:var(--panel); color:var(--text); border:1px solid var(--line) !important;}
+.btn-copy:hover{border-color:var(--copper) !important;}
+
+#printArea{display:none;}
+@media print{
+  body{background:#fff; padding:0;}
+  .wrap > *{display:none !important;}
+  .wrap > #printArea{display:block !important;}
+  #printArea{font-family:'Space Grotesk',sans-serif; color:#2b2118; padding:20px;}
+  #printArea table{width:100%; border-collapse:collapse; margin:10px 0; font-size:11px;}
+  #printArea table th, #printArea table td{border:1px solid #ccc; padding:5px 6px; text-align:left;}
+}
+
+html.embedded header, html.embedded .backlink, html.embedded .back{display:none!important;}
+html.embedded body{padding-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Semua kalkulator</a>
+
+  <header>
+    <div>
+      <h1>Konversi Berat ↔ Panjang Kabel</h1>
+      <p class="sub">Kg ke meter, atau meter ke kg — bolak-balik, berdasarkan luas penampang & material konduktor</p>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Ganti tema">🌙</button>
+  </header>
+  <p class="ref">Rumus: w (kg/m) = A (mm²) × Density (g/cm³) × Faktor Puntiran / 1000</p>
+
+  <div class="panel">
+    <h2><span class="n">1</span> Spesifikasi Konduktor</h2>
+    <div class="row3">
+      <div class="field">
+        <label>Material</label>
+        <select id="material"></select>
+      </div>
+      <div class="field" id="customDensityField" style="display:none;">
+        <label>Density Custom (g/cm³)</label>
+        <input type="number" id="customDensity" value="8.89" step="0.01">
+      </div>
+      <div class="field">
+        <label>Penampang A (mm²)</label>
+        <input type="number" id="csa" value="70" step="0.1">
+      </div>
+      <div class="field">
+        <label>Faktor Puntiran (Strand)</label>
+        <select id="faktor">
+          <option value="1">1.00 — solid / tanpa koreksi</option>
+          <option value="1.02" selected>1.02 — standar kabel stranded</option>
+          <option value="1.03">1.03 — stranded rapat (compact)</option>
+        </select>
+      </div>
+    </div>
+    <div class="wresult">
+      <span>Berat per meter (w)</span>
+      <span id="wOut">— kg/m</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span> Konversi Bolak-Balik</h2>
+    <div class="convgrid">
+      <div class="convbox">
+        <div class="ctitle">Berat <span class="arrow">→</span> Panjang</div>
+        <div class="field">
+          <label>Berat total (kg)</label>
+          <input type="number" id="inBerat" value="4000" step="0.1">
+        </div>
+        <div class="result">
+          <div class="val" id="outPanjang">— m</div>
+          <div class="unit">Panjang kabel</div>
+        </div>
+      </div>
+      <div class="convbox">
+        <div class="ctitle">Panjang <span class="arrow">→</span> Berat</div>
+        <div class="field">
+          <label>Panjang total (m)</label>
+          <input type="number" id="inPanjang" value="7136.61" step="0.1">
+        </div>
+        <div class="result">
+          <div class="val" id="outBerat">— kg</div>
+          <div class="unit">Berat kabel</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span> Tabel Referensi Density Material</h2>
+    <p class="desc">Klik baris buat langsung pakai density-nya di atas.</p>
+    <div class="tablewrap">
+      <table class="datatable">
+        <thead><tr><th>Kode</th><th>Material</th><th>Density (g/cm³)</th><th>Pemakaian umum</th></tr></thead>
+        <tbody id="refBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-print" id="printBtn">🖨 Cetak / Unduh PDF</button>
+    <button class="btn-copy" id="copyBtn">📋 Salin hasil</button>
+  </div>
+
+  <div id="printArea"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'cable_weightlength_params';
+const THEME_KEY = 'cable_theme';
+
+// Density referensi (g/cm³). GSW, CU, AL = dari sumber asli;
+// sisanya ditambahkan sebagai referensi umum material konduktor/kabel.
+const MATERIALS = [
+  { kode:'CU', nama:'Copper (Plain)', density:8.89, pakai:'Konduktor utama kabel power & kontrol' },
+  { kode:'TC', nama:'Tinned Copper', density:8.89, pakai:'Konduktor dilapis timah, kabel marine/fleksibel' },
+  { kode:'CCA', nama:'Copper Clad Aluminium', density:3.65, pakai:'Braid/shield, kabel ringan ekonomis' },
+  { kode:'AL', nama:'Aluminium', density:2.703, pakai:'Konduktor SKTT/SUTT, kabel daya besar' },
+  { kode:'GSW', nama:'Galvanized Steel Wire', density:7.85, pakai:'Armor wire, messenger wire, earth wire' },
+  { kode:'SS', nama:'Stainless Steel', density:7.9, pakai:'Armor wire tahan korosi' },
+  { kode:'PB', nama:'Lead (Timbal)', density:11.34, pakai:'Sheath kabel bawah tanah/bawah laut' },
+  { kode:'CUSTOM', nama:'Custom (isi manual)', density:null, pakai:'Material lain di luar daftar' },
+];
+
+function fmt(n, d=4){
+  if(!isFinite(n)) return '-';
+  return n.toLocaleString('id-ID', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+(function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, cur);
+    applyTheme(cur);
+  });
+})();
+
+const matSelect = document.getElementById('material');
+MATERIALS.forEach(m => {
+  const opt = document.createElement('option');
+  opt.value = m.kode;
+  opt.textContent = `${m.kode} — ${m.nama}${m.density ? ' (' + m.density + ' g/cm³)' : ''}`;
+  matSelect.appendChild(opt);
+});
+
+function currentDensity(){
+  const kode = matSelect.value;
+  if(kode === 'CUSTOM'){
+    return parseFloat(document.getElementById('customDensity').value) || 0;
+  }
+  return MATERIALS.find(m => m.kode === kode).density;
+}
+
+function hitungW(){
+  const A = parseFloat(document.getElementById('csa').value) || 0;
+  const density = currentDensity();
+  const faktor = parseFloat(document.getElementById('faktor').value) || 1;
+  return A * density * faktor / 1000;
+}
+
+function renderAll(){
+  const w = hitungW();
+  document.getElementById('wOut').textContent = fmt(w,6) + ' kg/m';
+
+  const berat = parseFloat(document.getElementById('inBerat').value) || 0;
+  const panjangHasil = w > 0 ? berat / w : 0;
+  document.getElementById('outPanjang').textContent = w > 0 ? fmt(panjangHasil,2) + ' m' : '— m';
+
+  const panjang = parseFloat(document.getElementById('inPanjang').value) || 0;
+  const beratHasil = w * panjang;
+  document.getElementById('outBerat').textContent = fmt(beratHasil,2) + ' kg';
+
+  document.getElementById('customDensityField').style.display = matSelect.value === 'CUSTOM' ? 'block' : 'none';
+  renderRefTable();
+}
+
+function renderRefTable(){
+  const body = document.getElementById('refBody');
+  body.innerHTML = MATERIALS.filter(m => m.kode !== 'CUSTOM').map(m => `
+    <tr class="rowclick ${matSelect.value===m.kode?'rowactive':''}" data-kode="${m.kode}">
+      <td>${m.kode}</td><td>${m.nama}</td><td>${fmt(m.density,3)}</td><td style="font-family:'Space Grotesk',sans-serif; white-space:normal;">${m.pakai}</td>
+    </tr>
+  `).join('');
+  body.querySelectorAll('tr[data-kode]').forEach(tr => {
+    tr.addEventListener('click', () => {
+      matSelect.value = tr.dataset.kode;
+      renderAll();
+      saveState();
+    });
+  });
+}
+
+function saveState(){
+  const state = {
+    material: matSelect.value,
+    customDensity: document.getElementById('customDensity').value,
+    csa: document.getElementById('csa').value,
+    faktor: document.getElementById('faktor').value,
+    inBerat: document.getElementById('inBerat').value,
+    inPanjang: document.getElementById('inPanjang').value,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  try{
+    const s = JSON.parse(raw);
+    if(s.material) matSelect.value = s.material;
+    if(s.customDensity) document.getElementById('customDensity').value = s.customDensity;
+    if(s.csa) document.getElementById('csa').value = s.csa;
+    if(s.faktor) document.getElementById('faktor').value = s.faktor;
+    if(s.inBerat) document.getElementById('inBerat').value = s.inBerat;
+    if(s.inPanjang) document.getElementById('inPanjang').value = s.inPanjang;
+  }catch(e){}
+}
+
+function buildPrintArea(){
+  const w = hitungW();
+  const mat = MATERIALS.find(m => m.kode === matSelect.value);
+  const area = document.getElementById('printArea');
+  area.innerHTML = `
+    <h1>Konversi Berat ↔ Panjang Kabel</h1>
+    <table>
+      <tr><th>Material</th><td>${mat.nama} (${fmt(currentDensity(),3)} g/cm³)</td></tr>
+      <tr><th>Penampang A</th><td>${fmt(parseFloat(document.getElementById('csa').value)||0,1)} mm²</td></tr>
+      <tr><th>Faktor Puntiran</th><td>${document.getElementById('faktor').value}</td></tr>
+      <tr><th>Berat per meter (w)</th><td>${fmt(w,6)} kg/m</td></tr>
+    </table>
+    <table>
+      <tr><th>Berat (kg)</th><td>${document.getElementById('inBerat').value}</td><th>→ Panjang (m)</th><td>${document.getElementById('outPanjang').textContent}</td></tr>
+      <tr><th>Panjang (m)</th><td>${document.getElementById('inPanjang').value}</td><th>→ Berat (kg)</th><td>${document.getElementById('outBerat').textContent}</td></tr>
+    </table>
+    <p style="margin-top:16px; font-size:11px; color:#888;">Dibuat via cable-electric — ${new Date().toLocaleString('id-ID')}</p>
+  `;
+}
+
+function init(){
+  loadState();
+  renderAll();
+
+  ['csa','faktor','inBerat','inPanjang','customDensity'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => { renderAll(); saveState(); });
+  });
+  matSelect.addEventListener('change', () => { renderAll(); saveState(); });
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    buildPrintArea();
+    window.print();
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const w = hitungW();
+    const mat = MATERIALS.find(m => m.kode === matSelect.value);
+    const text = `KONVERSI BERAT ↔ PANJANG KABEL\nMaterial: ${mat.nama} (${fmt(currentDensity(),3)} g/cm³) | A: ${document.getElementById('csa').value} mm² | w: ${fmt(w,6)} kg/m\nBerat ${document.getElementById('inBerat').value} kg → Panjang ${document.getElementById('outPanjang').textContent}\nPanjang ${document.getElementById('inPanjang').value} m → Berat ${document.getElementById('outBerat').textContent}`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Tersalin';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  });
+}
+
+init();
+</script>
+</body>
+</html>
