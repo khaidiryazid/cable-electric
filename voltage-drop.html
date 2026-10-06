@@ -2,7 +2,6 @@
 <html lang="id">
 <head>
 <script>if(window.self!==window.top){document.documentElement.classList.add("embedded");}</script>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kalkulator Voltage Drop</title>
@@ -197,7 +196,7 @@
       <button class="theme-toggle" id="themeToggle" title="Ganti tema" aria-label="Ganti tema">🌙</button>
     </div>
   </header>
-  <p class="source-note">Resistansi dasar (R@20°C) &amp; struktur perhitungan: <b>tabel Excel yang kamu unggah</b>. R@70°C/90°C dan reaktansi (Xl) dihitung <b>live dari rumus</b> yang sama persis dengan file itu — bukan angka tetap.</p>
+  <p class="source-note">Resistansi dasar (R@20°C) &amp; struktur perhitungan: <b>tabel Excel yang kamu unggah</b>. R@70°C/90°C dihitung <b>live dari rumus</b> yang sama persis dengan file itu. Induktansi (L) &amp; reaktansi (Xl) dihitung dari rumus IEC 60287 yang sama dengan kalkulator Parameter Elektrikal — satu nilai saja, tidak lagi dibedakan per ukuran CSA.</p>
 
   <div class="param-notif hidden" id="paramNotif">
     <span>📥 Parameter terakhir kamu dimuat otomatis dari penyimpanan browser ini.</span>
@@ -207,7 +206,7 @@
   <!-- ===================== PARAMETER KONSTRUKSI (GLOBAL) ===================== -->
   <div class="panel construction-panel">
     <h2>Parameter Konstruksi Kabel</h2>
-    <div class="hint">Ini yang menentukan hasil reaktansi (Xl) &amp; koreksi suhu resistansi — sama seperti sel input di bagian atas file Excel kamu.</div>
+    <div class="hint">Diameter konduktor (dc) &amp; jarak aksial antar kabel (s) menentukan hasil induktansi (L) &amp; reaktansi (Xl) — satu nilai untuk semua ukuran kabel, sesuai rumus IEC 60287.</div>
 
     <div class="cable-diagram">
       <svg viewBox="0 0 340 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram penampang kabel">
@@ -232,7 +231,7 @@
 
         <line x1="200" y1="14" x2="330" y2="14" stroke="var(--red)" stroke-width="1.2"/>
         <circle cx="130" cy="14" r="2.5" fill="var(--red)"/>
-        <text x="204" y="10" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">D kabel keseluruhan</text>
+        <text x="204" y="10" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">s — jarak antar kabel</text>
 
         <text x="204" y="90" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text-dim)">konduktor</text>
         <text x="204" y="106" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text-dim)">lapisan isolasi</text>
@@ -253,17 +252,15 @@
         <input type="number" id="g_dkonduktor" value="20.3" step="0.1">
       </div>
       <div class="field">
-        <label>Diameter keseluruhan kabel <span class="unit">(mm)</span></label>
-        <input type="number" id="g_dkabel" value="30.8" step="0.1">
+        <label>Jarak Aksial Antar Kabel s <span class="unit">(mm)</span></label>
+        <input type="number" id="g_dkabel" value="35" step="0.1">
       </div>
     </div>
-    <div class="hint" style="margin-top:-10px;">Frekuensi memakai nilai standar 50 Hz — tidak perlu diisi manual.</div>
+    <div class="hint" style="margin-top:-10px;">Frekuensi memakai nilai standar 50 Hz — tidak perlu diisi manual. L &amp; Xl dihitung satu rumus saja (tidak lagi beda untuk CSA kecil/besar): L = 0.05 + 0.2·ln(2s/dc).</div>
 
     <div class="live-readout">
-      <div><span>L untuk CSA &lt; 50 mm²</span><span id="g_outLSmall">— mH/km</span></div>
-      <div><span>L untuk CSA ≥ 50 mm²</span><span id="g_outLBig">— mH/km</span></div>
-      <div><span>Xl untuk CSA &lt; 50 mm²</span><span id="g_outXlSmall">— Ω/km</span></div>
-      <div><span>Xl untuk CSA ≥ 50 mm²</span><span id="g_outXlBig">— Ω/km</span></div>
+      <div><span>Induktansi L</span><span id="g_outL">— mH/km</span></div>
+      <div><span>Reaktansi Xl</span><span id="g_outXl">— Ω/km</span></div>
       <div><span>Koefisien suhu konduktor</span><span id="g_outCoeff">—</span></div>
     </div>
   </div>
@@ -404,7 +401,7 @@
   <!-- ===================== TABEL REFERENSI ===================== -->
   <div class="panel table-panel">
     <h2>Tabel Referensi Konduktor Tembaga (live, dari parameter konstruksi di atas)</h2>
-    <div class="hint">R@20°C = data dasar dari file kamu (tidak berubah). R@70°C/90°C dikoreksi otomatis sesuai bahan konduktor. Xl dihitung dari parameter konstruksi &amp; ukuran kabel (sedikit berbeda antara CSA di bawah dan di atas 50mm², sesuai rumus di file kamu). Klik baris untuk isi otomatis ke "Hitung Voltage Drop".</div>
+    <div class="hint">R@20°C = data dasar dari file kamu (tidak berubah). R@70°C/90°C dikoreksi otomatis sesuai bahan konduktor. Xl dihitung dari parameter konstruksi kabel (dc &amp; s) — satu nilai yang sama untuk semua ukuran. Klik baris untuk isi otomatis ke "Hitung Voltage Drop".</div>
     <table>
       <thead>
         <tr>
@@ -412,6 +409,7 @@
           <th>R @20°C</th>
           <th>R @70°C (PVC)</th>
           <th>R @90°C (XLPE)</th>
+          <th>L (mH/km)</th>
           <th>Xl (Ω/km)</th>
         </tr>
       </thead>
@@ -421,7 +419,7 @@
 
   <footer>
     Rumus voltage drop: 3 fasa → Vd = √3 × I × L × (R·cosφ + X·sinφ) / 1000. 1 fasa → Vd = 2 × I × L × (R·cosφ + X·sinφ) / 1000.
-    Rumus reaktansi: Xl = 2π·f·L×10⁻³ mH/km, dengan L dihitung otomatis dari konstruksi kabel (diameter konduktor &amp; kabel keseluruhan) dan ambang ukuran di 50mm² — persis rumus di file Excel kamu. R@20°C adalah data dasar dari file (dua nilai: Cu &amp; Al); R pada suhu operasi dikoreksi pakai koefisien 0.00393/°C (Cu) atau 0.00403/°C (Al). Arus beban dihitung dari Daya (P): I = P×1000/(V×cosφ×faktor) untuk kW, atau I = P×1000/(V×faktor) untuk kVA.
+    Rumus reaktansi: L = 0.05 + 0.2·ln(2s/dc) mH/km, Xl = 2π·f·(L/1000) Ω/km — rumus IEC 60287, sama persis dengan kalkulator Parameter Elektrikal, satu nilai untuk semua ukuran kabel (tidak lagi dibedakan per CSA). R@20°C adalah data dasar dari file (dua nilai: Cu &amp; Al); R pada suhu operasi dikoreksi pakai koefisien 0.00393/°C (Cu) atau 0.00403/°C (Al). Arus beban dihitung dari Daya (P): I = P×1000/(V×cosφ×faktor) untuk kW, atau I = P×1000/(V×faktor) untuk kVA.
   </footer>
 
 </div>
@@ -463,31 +461,26 @@
     dkabel: document.getElementById('g_dkabel'),
   };
   const gOut = {
-    LSmall: document.getElementById('g_outLSmall'),
-    LBig: document.getElementById('g_outLBig'),
-    XlSmall: document.getElementById('g_outXlSmall'),
-    XlBig: document.getElementById('g_outXlBig'),
+    L: document.getElementById('g_outL'),
+    Xl: document.getElementById('g_outXl'),
     coeff: document.getElementById('g_outCoeff'),
   };
 
   const FREKUENSI = 50; // Hz, standar jaringan kabel
-  function wireForCsa(csa){ return csa >= 50 ? 19 : 7; } // standar konstruksi: 19 wire mulai 50 mm²
 
   function coeffBahan(){ return g.bahan.value === 'al' ? 0.00403 : 0.00393; }
 
-  function termGeo(){
-    const dk = parseFloat(g.dkonduktor.value) || 0;
-    const dc = parseFloat(g.dkabel.value) || 0;
-    return 0.2 * Math.log((1.26*dc*2)/dk);
+  // Rumus sama persis dengan electrical-parameters.html (IEC 60287):
+  // L = 0.05 + 0.2*ln(2s/dc) [mH/km], Xl = 2*pi*f*(L/1000) [Ω/km]
+  // Satu nilai saja — tidak lagi dibedakan berdasarkan CSA konduktor.
+  function hitungL(){
+    const dc = parseFloat(g.dkonduktor.value) || 0;
+    const s = parseFloat(g.dkabel.value) || 0;
+    if (dc <= 0 || s <= 0) return 0;
+    return 0.05 + 0.2 * Math.log((2*s)/dc);
   }
-  function LforWire(wire){
-    const termWire = wire < 19
-      ? 0.0939 * Math.pow(wire, -0.1829)
-      : 0.0669 * Math.pow(wire, -0.0647);
-    return termWire + termGeo();
-  }
-  function XlForCsa(csa){
-    return 2*Math.PI*FREKUENSI*LforWire(wireForCsa(csa))*1e-3;
+  function XlForCsa(_csaDiabaikan){
+    return 2*Math.PI*FREKUENSI*(hitungL()/1000);
   }
   function r20ForBahan(row){
     return g.bahan.value === 'al' ? row.r20al : row.r20cu;
@@ -498,10 +491,8 @@
   }
 
   function refreshConstructionReadout(){
-    gOut.LSmall.textContent = LforWire(wireForCsa(25)).toFixed(6) + ' mH/km';
-    gOut.LBig.textContent = LforWire(wireForCsa(50)).toFixed(6) + ' mH/km';
-    gOut.XlSmall.textContent = XlForCsa(25).toFixed(6) + ' Ω/km';
-    gOut.XlBig.textContent = XlForCsa(50).toFixed(6) + ' Ω/km';
+    gOut.L.textContent = hitungL().toFixed(6) + ' mH/km';
+    gOut.Xl.textContent = XlForCsa().toFixed(6) + ' Ω/km';
     gOut.coeff.textContent = coeffBahan().toFixed(5) + ' /°C';
   }
 
@@ -516,10 +507,11 @@
     pilihUkuran.innerHTML = '<option value="">— pilih manual —</option>';
     CABLE_DATA.forEach(row => {
       const r20 = r20ForBahan(row);
+      const Lval = hitungL();
       const Xl = XlForCsa(row.csa);
       if (r20 === null){
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${row.csa}</td><td colspan="4" style="text-align:center; color:var(--text-dim);">tidak tersedia untuk bahan ini</td>`;
+        tr.innerHTML = `<td>${row.csa}</td><td colspan="5" style="text-align:center; color:var(--text-dim);">tidak tersedia untuk bahan ini</td>`;
         tabelBody.appendChild(tr);
         return;
       }
@@ -532,6 +524,7 @@
         <td>${r20}</td>
         <td class="${kolonAktif==='r70'?'col-active':''}">${r70.toFixed(4)}</td>
         <td class="${kolonAktif==='r90'?'col-active':''}">${r90.toFixed(4)}</td>
+        <td>${Lval.toFixed(4)}</td>
         <td>${Xl.toFixed(4)}</td>`;
       tr.addEventListener('click', () => {
         document.getElementById('m_rkabel').value = rAktif.toFixed(6);
