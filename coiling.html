@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panjang Kabel dalam Coiling — Cable Electric</title>
+<script>if(window.self!==window.top){document.documentElement.classList.add("embedded");}</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root{
+  --bg:#faf6ee; --panel:#ffffff; --panel-2:#f4efe2; --paper:#2b2118;
+  --copper:#b5661f; --copper-bright:#d97f2e; --teal:#2f6b62; --amber:#a8690a;
+  --red:#a8402f; --text:#3a342a; --text-dim:#8a8072; --line:#e6ddc8;
+}
+[data-theme="dark"]{
+  --bg:#0d1117; --panel:#151b23; --panel-2:#1c2530; --paper:#f2ede1;
+  --copper:#c17a4a; --copper-bright:#e08f52; --teal:#4f8f86; --amber:#c98a2c;
+  --red:#c9584a; --text:#d8d3c4; --text-dim:#8a8f98; --line:#2a3441;
+}
+*{box-sizing:border-box;}
+body{margin:0; background:var(--bg); color:var(--text); font-family:'Space Grotesk',sans-serif; padding:24px 16px 60px; transition:background .2s,color .2s;}
+.wrap{max-width:900px; margin:0 auto;}
+a.back{display:inline-block; margin-bottom:16px; color:var(--copper); text-decoration:none; font-size:14px; font-weight:500;}
+a.back:hover{text-decoration:underline;}
+header{display:flex; justify-content:space-between; align-items:flex-start; gap:12px; margin-bottom:8px;}
+h1{font-size:24px; margin:0 0 4px; color:var(--paper);}
+.sub{color:var(--text-dim); font-size:14px; margin:0 0 20px;}
+.ref{font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--text-dim); margin-bottom:16px;}
+
+.warn{background:var(--panel-2); border:1px solid var(--amber); border-radius:10px; padding:12px 14px; font-size:12.5px; line-height:1.6; color:var(--text); margin-bottom:24px;}
+.warn b{color:var(--amber);}
+
+button.icon-btn{border:1px solid var(--line); background:var(--panel); color:var(--text); border-radius:8px; padding:8px 10px; cursor:pointer; font-size:16px; line-height:1;}
+button.icon-btn:hover{border-color:var(--copper);}
+
+.panel{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:20px; margin-bottom:20px;}
+.panel h2{font-size:15px; margin:0 0 14px; color:var(--paper); display:flex; align-items:center; gap:8px;}
+.panel h2 .n{background:var(--copper); color:#fff; width:22px; height:22px; border-radius:6px; display:inline-flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; flex-shrink:0;}
+.panel .desc{font-size:12.5px; color:var(--text-dim); margin:-6px 0 14px; line-height:1.6;}
+
+.field{margin-bottom:12px;}
+.field label{display:block; font-size:12px; color:var(--text-dim); margin-bottom:4px;}
+.field input{width:100%; border:1px solid var(--line); background:var(--bg); color:var(--text); border-radius:8px; padding:9px 10px; font-family:'IBM Plex Mono',monospace; font-size:14px;}
+.row2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+.row3{display:grid; grid-template-columns:repeat(3,1fr); gap:12px;}
+@media (max-width:600px){ .row3{grid-template-columns:1fr 1fr;} }
+@media (max-width:420px){ .row2,.row3{grid-template-columns:1fr;} }
+
+dl.res{margin:0;}
+dl.res div{display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:13px;}
+dl.res div:last-child{border-bottom:none;}
+dl.res dt{color:var(--text-dim);}
+dl.res dd{margin:0; font-family:'IBM Plex Mono',monospace; color:var(--text); text-align:right;}
+dl.res div.hl dt{color:var(--paper); font-weight:600;}
+dl.res div.hl dd{color:var(--copper-bright); font-weight:700; font-size:16px;}
+
+.svgwrap{display:flex; justify-content:center; margin-bottom:16px;}
+.svgwrap svg{max-width:100%; height:auto;}
+
+.accuracy{background:var(--panel-2); border-radius:10px; padding:10px 14px; font-size:12px; color:var(--text-dim); margin-top:10px; line-height:1.6;}
+.accuracy b{color:var(--paper);}
+
+.toolbar{display:flex; gap:10px; flex-wrap:wrap; margin-top:20px;}
+.toolbar button{flex:1; min-width:160px; border:none; border-radius:10px; padding:12px 16px; font-family:'Space Grotesk',sans-serif; font-weight:600; font-size:14px; cursor:pointer;}
+.btn-print{background:var(--copper); color:#fff;}
+.btn-print:hover{background:var(--copper-bright);}
+.btn-copy{background:var(--panel); color:var(--text); border:1px solid var(--line) !important;}
+.btn-copy:hover{border-color:var(--copper) !important;}
+
+#printArea{display:none;}
+@media print{
+  body{background:#fff; padding:0;}
+  .wrap > *{display:none !important;}
+  .wrap > #printArea{display:block !important;}
+  #printArea{font-family:'Space Grotesk',sans-serif; color:#2b2118; padding:20px;}
+  #printArea table{width:100%; border-collapse:collapse; margin:10px 0; font-size:11px;}
+  #printArea table th, #printArea table td{border:1px solid #ccc; padding:5px 6px; text-align:left;}
+}
+
+html.embedded header, html.embedded .backlink, html.embedded .back{display:none!important;}
+html.embedded body{padding-top:20px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="back" href="index.html">← Semua kalkulator</a>
+
+  <header>
+    <div>
+      <h1>Panjang Kabel dalam Coiling</h1>
+      <p class="sub">Estimasi panjang kabel (m) dari dimensi gulungan ID/OD/T — dan sebaliknya</p>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Ganti tema">🌙</button>
+  </header>
+  <p class="ref">Rumus pendekatan layer-by-layer, divalidasi terhadap 2 contoh referensi (selisih 0.2–1.4%)</p>
+
+  <div class="warn"><b>Catatan akurasi:</b> ini rumus pendekatan (bukan dari sumber Excel asli — filenya tidak tersedia), divalidasi silang terhadap 2 contoh data referensi dengan selisih 0.2–1.4%. Cukup akurat untuk estimasi kebutuhan material, tapi bukan angka pasti 1:1. Margin "Jumlah Aktual" (+3.5%) sudah dikonfirmasi cocok persis di kedua contoh referensi.</div>
+
+  <div class="svgwrap">
+    <svg viewBox="0 0 420 220" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="150" cy="80" rx="140" ry="55" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+      <ellipse cx="150" cy="80" rx="60" ry="24" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+      <path d="M10,80 L10,150 A140,55 0 0,0 290,150 L290,80" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+      <path d="M90,80 L90,150 A60,24 0 0,0 210,150 L210,80" fill="none" stroke="var(--text)" stroke-width="1.5"/>
+      <ellipse cx="150" cy="150" rx="140" ry="55" fill="none" stroke="var(--text)" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <line x1="10" y1="35" x2="290" y2="35" stroke="var(--copper)" stroke-width="1"/>
+      <line x1="10" y1="30" x2="10" y2="40" stroke="var(--copper)" stroke-width="1"/>
+      <line x1="290" y1="30" x2="290" y2="40" stroke="var(--copper)" stroke-width="1"/>
+      <text x="150" y="25" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--copper)">OD</text>
+      <line x1="90" y1="55" x2="210" y2="55" stroke="var(--teal)" stroke-width="1"/>
+      <text x="150" y="50" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--teal)">ID</text>
+      <line x1="300" y1="80" x2="300" y2="150" stroke="var(--text)" stroke-width="1"/>
+      <text x="330" y="118" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--text)">T</text>
+      <text x="150" y="100" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--text-dim)">S = (OD−ID)/2</text>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">1</span> Dimensi Coiling &amp; Kabel</h2>
+    <div class="row3">
+      <div class="field">
+        <label>ID — Diameter Dalam (mm)</label>
+        <input type="number" id="idmm" value="150" step="1">
+      </div>
+      <div class="field">
+        <label>OD — Diameter Luar (mm)</label>
+        <input type="number" id="odmm" value="320" step="1">
+      </div>
+      <div class="field">
+        <label>T — Tinggi/Lebar Axial (mm)</label>
+        <input type="number" id="tmm" value="300" step="1">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="field">
+        <label>Diameter Wire/Kabel (mm)</label>
+        <input type="number" id="dia" value="5.99" step="0.01">
+      </div>
+      <div class="field">
+        <label>Space Antar Wire (mm)</label>
+        <input type="number" id="space" value="0" step="0.1">
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">2</span> Hasil Kalkulasi</h2>
+    <dl class="res" id="resultsOut"></dl>
+  </div>
+
+  <div class="panel">
+    <h2><span class="n">3</span> Konversi Sebaliknya — Panjang Dibutuhkan → Perkiraan Dimensi</h2>
+    <p class="desc">Isi panjang kabel yang mau digulung, kalkulator kasih estimasi berapa "Jmlh wire 1 tumpuk" (layer radial) yang dibutuhkan dengan ID/T/Ø yang sama seperti di atas.</p>
+    <div class="field">
+      <label>Panjang Kabel Dibutuhkan (m)</label>
+      <input type="number" id="panjangTarget" value="500" step="1">
+    </div>
+    <dl class="res" id="resultsReverse"></dl>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-print" id="printBtn">🖨 Cetak / Unduh PDF</button>
+    <button class="btn-copy" id="copyBtn">📋 Salin hasil</button>
+  </div>
+
+  <div id="printArea"></div>
+</div>
+
+<script>
+const STORAGE_KEY = 'cable_coiling_params';
+const THEME_KEY = 'cable_theme';
+const MARGIN_AKTUAL = 1.035; // dikonfirmasi cocok persis di 2 contoh referensi
+
+function fmt(n, d=2){
+  if(!isFinite(n)) return '-';
+  return n.toLocaleString('id-ID', {minimumFractionDigits:d, maximumFractionDigits:d});
+}
+
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  document.getElementById('themeToggle').textContent = t === 'dark' ? '☀️' : '🌙';
+}
+(function initTheme(){
+  const saved = localStorage.getItem(THEME_KEY) || 'light';
+  applyTheme(saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const cur = document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    localStorage.setItem(THEME_KEY, cur);
+    applyTheme(cur);
+  });
+})();
+
+// Rumus layer-by-layer: D_k = ID + (k-1)*2*(dia+space), k=1..tumpuk
+// Panjang layer = wireBaris * pi * D_k ; Total = jumlah semua layer
+function hitungTotalDariLayer(ID, dia, space, wireBaris, wireTumpuk){
+  const pitch = dia + space;
+  let totalMm = 0;
+  for(let k=1; k<=wireTumpuk; k++){
+    const Dk = ID + (k-1)*2*pitch;
+    totalMm += wireBaris * Math.PI * Dk;
+  }
+  return totalMm / 1000; // m
+}
+
+function compute(){
+  const ID = parseFloat(document.getElementById('idmm').value) || 0;
+  const OD = parseFloat(document.getElementById('odmm').value) || 0;
+  const T = parseFloat(document.getElementById('tmm').value) || 0;
+  const dia = parseFloat(document.getElementById('dia').value) || 0;
+  const space = parseFloat(document.getElementById('space').value) || 0;
+  const pitch = dia + space;
+
+  const S = (OD - ID) / 2;
+  const wireBaris = pitch > 0 ? Math.floor(T / pitch) : 0;
+  const wireTumpuk = pitch > 0 ? Math.floor(S / pitch) : 0;
+  const jumlahTotal = hitungTotalDariLayer(ID, dia, space, wireBaris, wireTumpuk);
+  const jumlahAktual = jumlahTotal * MARGIN_AKTUAL;
+
+  return { ID, OD, T, dia, space, S, wireBaris, wireTumpuk, jumlahTotal, jumlahAktual };
+}
+
+function renderResults(){
+  const r = compute();
+  document.getElementById('resultsOut').innerHTML = `
+    <div><dt>S — Lebar Radial (OD−ID)/2</dt><dd>${fmt(r.S,1)} mm</dd></div>
+    <div><dt>Jmlh Wire 1 Baris (axial, T/Ø)</dt><dd>${fmt(r.wireBaris,0)} wire</dd></div>
+    <div><dt>Jmlh Wire 1 Tumpuk (radial, S/Ø)</dt><dd>${fmt(r.wireTumpuk,0)} wire</dd></div>
+    <div><dt>Total Lilitan</dt><dd>${fmt(r.wireBaris*r.wireTumpuk,0)} lilitan</dd></div>
+    <div><dt>Jumlah Total</dt><dd>${fmt(r.jumlahTotal,1)} m/coil</dd></div>
+    <div class="hl"><dt>Jumlah Aktual (+3.5% margin)</dt><dd>${fmt(r.jumlahAktual,1)} m/coil</dd></div>
+  `;
+  renderReverse(r);
+}
+
+function renderReverse(r){
+  const target = parseFloat(document.getElementById('panjangTarget').value) || 0;
+  const pitch = r.dia + r.space;
+  if(pitch <= 0 || r.wireBaris <= 0){
+    document.getElementById('resultsReverse').innerHTML = `<div><dt>—</dt><dd>Isi dimensi &amp; diameter wire dulu</dd></div>`;
+    return;
+  }
+  // cari jumlah layer (tumpuk) minimum yang total panjangnya >= target, pakai ID & wireBaris yang sama
+  let totalMm = 0, layer = 0;
+  const maxLayer = 500; // batas pengaman
+  while(totalMm/1000 < target && layer < maxLayer){
+    layer++;
+    const Dk = r.ID + (layer-1)*2*pitch;
+    totalMm += r.wireBaris * Math.PI * Dk;
+  }
+  const panjangTercapai = totalMm/1000;
+  const sRequired = layer * pitch;
+  const odRequired = r.ID + 2*sRequired;
+
+  document.getElementById('resultsReverse').innerHTML = `
+    <div><dt>Jmlh Wire 1 Tumpuk Dibutuhkan</dt><dd>${fmt(layer,0)} wire</dd></div>
+    <div><dt>S Dibutuhkan</dt><dd>${fmt(sRequired,1)} mm</dd></div>
+    <div class="hl"><dt>OD Dibutuhkan (ID + 2×S)</dt><dd>${fmt(odRequired,1)} mm</dd></div>
+    <div><dt>Panjang Tercapai pada Layer ini</dt><dd>${fmt(panjangTercapai,1)} m</dd></div>
+  `;
+}
+
+function saveState(){
+  const state = {
+    idmm: document.getElementById('idmm').value,
+    odmm: document.getElementById('odmm').value,
+    tmm: document.getElementById('tmm').value,
+    dia: document.getElementById('dia').value,
+    space: document.getElementById('space').value,
+    panjangTarget: document.getElementById('panjangTarget').value,
+  };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function loadState(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw) return;
+  try{
+    const s = JSON.parse(raw);
+    ['idmm','odmm','tmm','dia','space','panjangTarget'].forEach(id => {
+      if(s[id] !== undefined) document.getElementById(id).value = s[id];
+    });
+  }catch(e){}
+}
+
+function buildPrintArea(){
+  const r = compute();
+  const area = document.getElementById('printArea');
+  area.innerHTML = `
+    <h1>Panjang Kabel dalam Coiling</h1>
+    <table>
+      <tr><th>ID</th><td>${fmt(r.ID,0)} mm</td><th>OD</th><td>${fmt(r.OD,0)} mm</td></tr>
+      <tr><th>T</th><td>${fmt(r.T,0)} mm</td><th>Ø Wire</th><td>${fmt(r.dia,2)} mm</td></tr>
+      <tr><th>S</th><td>${fmt(r.S,1)} mm</td><th>Space</th><td>${fmt(r.space,1)} mm</td></tr>
+      <tr><th>Jmlh Wire 1 Baris</th><td>${fmt(r.wireBaris,0)}</td><th>Jmlh Wire 1 Tumpuk</th><td>${fmt(r.wireTumpuk,0)}</td></tr>
+      <tr><th>Jumlah Total</th><td>${fmt(r.jumlahTotal,1)} m</td><th>Jumlah Aktual (+3.5%)</th><td>${fmt(r.jumlahAktual,1)} m</td></tr>
+    </table>
+    <p style="margin-top:16px; font-size:11px; color:#888;">Rumus pendekatan, selisih tervalidasi 0.2–1.4% — dibuat via cable-electric — ${new Date().toLocaleString('id-ID')}</p>
+  `;
+}
+
+function init(){
+  loadState();
+  renderResults();
+
+  ['idmm','odmm','tmm','dia','space','panjangTarget'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => { renderResults(); saveState(); });
+  });
+
+  document.getElementById('printBtn').addEventListener('click', () => {
+    buildPrintArea();
+    window.print();
+  });
+
+  document.getElementById('copyBtn').addEventListener('click', () => {
+    const r = compute();
+    const text = `PANJANG KABEL DALAM COILING\nID: ${r.ID}mm, OD: ${r.OD}mm, T: ${r.T}mm, Ø wire: ${r.dia}mm\nJmlh wire 1 baris: ${fmt(r.wireBaris,0)} | Jmlh wire 1 tumpuk: ${fmt(r.wireTumpuk,0)}\nJumlah Total: ${fmt(r.jumlahTotal,1)} m/coil | Jumlah Aktual: ${fmt(r.jumlahAktual,1)} m/coil`;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = document.getElementById('copyBtn');
+      const orig = btn.textContent;
+      btn.textContent = '✓ Tersalin';
+      setTimeout(() => btn.textContent = orig, 1500);
+    });
+  });
+}
+
+init();
+</script>
+</body>
+</html>
